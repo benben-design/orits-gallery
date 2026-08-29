@@ -1,0 +1,10 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+}
+
+/* Pushes the footer to the bottom on short pages, e.g. the stubs. */
+.main {
+  flex: 1 0 auto;
+}

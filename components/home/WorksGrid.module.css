@@ -1,0 +1,25 @@
+/**
+ * Uniform grid. Every cell is one fixed frame (set in ArtworkFrame), so mixed
+ * portrait / square / landscape paintings still produce rows that line up
+ * exactly, with nothing cropped to make them fit.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--frame-grid-min), 1fr));
+  gap: var(--space-8) var(--space-6);
+  margin-block-start: var(--space-8);
+}
+
+.cell {
+  display: flex;
+}
+
+.cell > * {
+  inline-size: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-block-start: var(--space-9);
+}

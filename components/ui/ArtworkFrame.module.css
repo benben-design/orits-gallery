@@ -1,0 +1,63 @@
+/**
+ * The no-crop frame.
+ *
+ * .frame is a fixed box: one aspect ratio for every card, which is what makes
+ * grid rows line up. .painting is scaled to fit *inside* it — never to fill it.
+ *
+ * Do not add object-fit: cover, a background-image, or width/height: 100% to
+ * .painting. Any of those crops the work, which the brief forbids.
+ */
+.frame {
+  position: relative;
+  aspect-ratio: var(--frame-ratio);
+}
+
+/* Hung on a white card. */
+.surface {
+  background-color: var(--color-surface);
+}
+
+/* Hung straight on the wall — used by the hero. */
+.bare {
+  background-color: transparent;
+}
+
+/**
+ * The mat: the breathing space around the work, and the box the painting is
+ * measured against.
+ *
+ * It is absolutely positioned on purpose. In normal flow the image's intrinsic
+ * height overrides the frame's aspect-ratio and stretches the frame, so cards
+ * come out different heights and the grid goes ragged. Out of flow, the
+ * frame's height is definite, so `max-height: 100%` below has something real to
+ * resolve against and the box cannot be pushed out of shape.
+ */
+.mat {
+  position: absolute;
+  inset: var(--frame-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bare .mat {
+  inset: 0;
+}
+
+.painting {
+  /* Shrink to fit the mat in both axes; never grow past the file's own size. */
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  /* Backstop: even if a width ever leaks in, the work still is not cropped. */
+  object-fit: contain;
+  box-shadow: var(--shadow-frame);
+  transition: transform var(--duration-slow) var(--ease);
+}
+
+@media (hover: hover) {
+  a:hover .painting {
+    transform: scale(1.012);
+  }
+}

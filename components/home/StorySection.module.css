@@ -1,0 +1,48 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-7);
+  align-items: center;
+}
+
+/* Empty frame at portrait proportions, waiting for the real photograph. */
+.portrait {
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background-color: var(--color-wall-sunk);
+  border: var(--border-hairline) dashed var(--color-rule-strong);
+}
+
+.portraitLabel {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  max-width: var(--measure);
+}
+
+.heading {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+}
+
+.body {
+  color: var(--color-ink-soft);
+}
+
+@media (min-width: 48rem) {
+  .layout {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-10);
+  }
+}

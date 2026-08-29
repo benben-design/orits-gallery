@@ -1,0 +1,27 @@
+/**
+ * Colourless by design. Availability is carried by weight and opacity only —
+ * introducing a green/red status colour would put the first non-neutral hue on
+ * the page and start competing with the paintings.
+ */
+.badge {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+}
+
+.available {
+  color: var(--color-ink-soft);
+}
+
+.reserved {
+  color: var(--color-ink-muted);
+}
+
+.sold,
+.not-for-sale {
+  color: var(--color-ink-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: var(--border-hairline);
+}

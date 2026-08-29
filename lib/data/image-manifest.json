@@ -1,0 +1,77 @@
+{
+  "artichokes": {
+    "src": "/paintings/artichokes.jpg",
+    "width": 1600,
+    "height": 1560
+  },
+  "autumn-tree-by-water": {
+    "src": "/paintings/autumn-tree-by-water.jpg",
+    "width": 1166,
+    "height": 1600
+  },
+  "avocado": {
+    "src": "/paintings/avocado.jpg",
+    "width": 570,
+    "height": 778
+  },
+  "cabin-by-the-lake": {
+    "src": "/paintings/cabin-by-the-lake.jpg",
+    "width": 985,
+    "height": 1600
+  },
+  "garden-door": {
+    "src": "/paintings/garden-door.jpg",
+    "width": 1068,
+    "height": 1600
+  },
+  "lemons": {
+    "src": "/paintings/lemons.jpg",
+    "width": 1114,
+    "height": 1599
+  },
+  "marsh-at-sunset": {
+    "src": "/paintings/marsh-at-sunset.jpg",
+    "width": 1569,
+    "height": 1600
+  },
+  "pink-roses": {
+    "src": "/paintings/pink-roses.jpg",
+    "width": 1101,
+    "height": 1600
+  },
+  "poplar-path": {
+    "src": "/paintings/poplar-path.jpg",
+    "width": 842,
+    "height": 1071
+  },
+  "tree-grove": {
+    "src": "/paintings/tree-grove.jpg",
+    "width": 1521,
+    "height": 1600
+  },
+  "tuscan-house": {
+    "src": "/paintings/tuscan-house.jpg",
+    "width": 1600,
+    "height": 1600
+  },
+  "two-pears": {
+    "src": "/paintings/two-pears.jpg",
+    "width": 1582,
+    "height": 1600
+  },
+  "watermelon-and-jug": {
+    "src": "/paintings/watermelon-and-jug.jpg",
+    "width": 1600,
+    "height": 1087
+  },
+  "whiskey-and-glass": {
+    "src": "/paintings/whiskey-and-glass.jpg",
+    "width": 1085,
+    "height": 1600
+  },
+  "wine-and-grapes": {
+    "src": "/paintings/wine-and-grapes.jpg",
+    "width": 1043,
+    "height": 1600
+  }
+}

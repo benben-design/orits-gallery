@@ -1,0 +1,24 @@
+.section {
+  padding-block: var(--section-gap);
+}
+
+.wall {
+  background-color: var(--color-wall);
+}
+
+/* One shade back. The only banding in the design, and still a warm neutral. */
+.sunk {
+  background-color: var(--color-wall-sunk);
+}
+
+.default {
+  padding-block: var(--section-gap);
+}
+
+.tight {
+  padding-block: var(--space-9);
+}
+
+.flush {
+  padding-block: 0;
+}

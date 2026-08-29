@@ -1,0 +1,15 @@
+# Normalize line endings to LF in the repository.
+# Vercel builds on Linux; keeping the stored form unambiguous from the first
+# commit avoids a later renormalization commit touching every file.
+* text=auto eol=lf
+
+# Binary assets — never normalized, never diffed as text.
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

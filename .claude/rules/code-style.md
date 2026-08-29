@@ -1,0 +1,33 @@
+# Code Style
+
+- ES modules everywhere — `"type": "module"` in `package.json`
+- JavaScript, not TypeScript. Use JSDoc on exported functions where the shape is
+  not obvious, as the repository and format modules already do
+- Import from the project root with the `@/` alias, configured in `jsconfig.json`
+- Use clear section-divider comments to separate logical blocks in longer files
+- Cross-component callbacks follow the `on<Event>` naming convention
+- No state management library — local React state, lifted to the nearest common
+  ancestor
+- Comment the *why*, not the *what*. The existing files in `lib/` set the
+  standard: they explain the rule a future reader would otherwise break
+- Exported constants over repeated string literals — `WORK_STATUSES`,
+  `WORK_CATEGORIES`, `IMAGE_TYPES` exist for this reason
+- Keep dependencies minimal. Prefer a platform feature or twenty lines over a
+  package. `scripts/generate-image-manifest.mjs` reads JPEG headers by hand
+  rather than pulling in an image library — that is the house style
+
+## What the linter enforces
+
+`npm run lint` (setup.md) mechanically checks a handful of conventions that are
+otherwise easy to carry over wrongly from plain React:
+
+- `next/image` rather than a bare `<img>` — see images.md
+- `next/link` rather than an `<a>` for internal navigation — see frontend/next.md
+- an `alt` on every image — alt text is bilingual content, see images.md
+- no synchronous scripts, no manual `<head>` tags, no server-only code reaching a
+  client component
+
+Those rules are stated where they belong, in the files above; the linter is
+enforcement, not the source of truth. It is advisory tooling — it does not run in
+the build and cannot block a deploy — so a clean `npm run lint` is a signal, not
+a gate.

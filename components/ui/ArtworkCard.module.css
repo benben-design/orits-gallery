@@ -1,0 +1,39 @@
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: start;
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+  color: var(--color-ink);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+
+/* A hairline tick between price and status, rather than a bullet or a pipe. */
+.separator {
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--color-rule-strong);
+  flex: none;
+}

@@ -1,0 +1,178 @@
+{
+  "site": {
+    "artistName": "Orit Bar Shai",
+    "title": "Orit Bar Shai — Paintings",
+    "description": "[PLACEHOLDER] Site description not written yet.",
+    "skipToContent": "Skip to main content"
+  },
+  "nav": {
+    "home": "Home",
+    "gallery": "Gallery",
+    "about": "About",
+    "contact": "Contact",
+    "cart": "Cart",
+    "primaryLabel": "Primary navigation",
+    "languageLabel": "Choose language",
+    "switchTo": "Switch to {language}"
+  },
+  "home": {
+    "hero": {
+      "positioning": "[PLACEHOLDER POSITIONING LINE — real copy not written yet]",
+      "imageAlt": "{title} — painting by {artist}"
+    },
+    "works": {
+      "heading": "[PLACEHOLDER HEADING] Selected works",
+      "intro": "[PLACEHOLDER] A short introduction to the works grid goes here.",
+      "viewAll": "View the full gallery"
+    },
+    "promises": {
+      "label": "[PLACEHOLDER HEADING] Our promises",
+      "items": [
+        {
+          "title": "[PLACEHOLDER] First promise",
+          "body": "[PLACEHOLDER] One short supporting line."
+        },
+        {
+          "title": "[PLACEHOLDER] Second promise",
+          "body": "[PLACEHOLDER] One short supporting line."
+        },
+        {
+          "title": "[PLACEHOLDER] Third promise",
+          "body": "[PLACEHOLDER] One short supporting line."
+        },
+        {
+          "title": "[PLACEHOLDER] Fourth promise",
+          "body": "[PLACEHOLDER] One short supporting line."
+        }
+      ]
+    },
+    "story": {
+      "heading": "[PLACEHOLDER HEADING] About the artist",
+      "body": "[PLACEHOLDER] A short paragraph about Orit and her work goes here. This text is a stand-in and has not been written yet.",
+      "link": "More about the artist",
+      "portraitPlaceholder": "[PLACEHOLDER] Artist photograph not supplied yet"
+    }
+  },
+  "gallery": {
+    "title": "Gallery",
+    "body": "[PLACEHOLDER] The gallery page has not been built yet. All works will be shown here.",
+    "empty": "[PLACEHOLDER] No works to show."
+  },
+  "artwork": {
+    "title": "Work",
+    "body": "[PLACEHOLDER] The single artwork page has not been built yet.",
+    "slugLabel": "URL slug",
+    "medium": "Medium",
+    "dimensions": "Dimensions",
+    "year": "Year",
+    "price": "Price",
+    "status": "Status",
+    "category": "Category",
+    "imageAlt": "{title} — painting by {artist}",
+    "notFound": "[PLACEHOLDER] The requested work was not found."
+  },
+  "about": {
+    "title": "About",
+    "body": "[PLACEHOLDER] The about page has not been written yet."
+  },
+  "contact": {
+    "title": "Contact",
+    "body": "[PLACEHOLDER] The contact page has not been built yet."
+  },
+  "cart": {
+    "title": "Cart",
+    "body": "[PLACEHOLDER] The cart has not been built yet.",
+    "itemCount": "Items in cart: {count}"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "body": "[PLACEHOLDER] Checkout has not been built yet."
+  },
+  "orderConfirmation": {
+    "title": "Order confirmation",
+    "body": "[PLACEHOLDER] The order confirmation page has not been built yet."
+  },
+  "legal": {
+    "label": "Legal",
+    "terms": {
+      "title": "Terms of use",
+      "body": "[PLACEHOLDER] Terms of use have not been written yet."
+    },
+    "shipping": {
+      "title": "Shipping and returns",
+      "body": "[PLACEHOLDER] The shipping and returns policy has not been written yet."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "body": "[PLACEHOLDER] The privacy policy has not been written yet."
+    },
+    "accessibility": {
+      "title": "Accessibility statement",
+      "body": "[PLACEHOLDER] The accessibility statement has not been written yet."
+    }
+  },
+  "footer": {
+    "followLabel": "Follow",
+    "contactLabel": "Contact",
+    "legalLabel": "Legal",
+    "emailPlaceholder": "[PLACEHOLDER] name@example.invalid",
+    "phonePlaceholder": "[PLACEHOLDER] 000-0000000",
+    "social": {
+      "instagram": "Instagram",
+      "facebook": "Facebook"
+    },
+    "rights": "© {year} {artist}. [PLACEHOLDER] All rights reserved."
+  },
+  "status": {
+    "available": "Available",
+    "reserved": "Reserved",
+    "sold": "Sold",
+    "not-for-sale": "Not for sale"
+  },
+  "category": {
+    "landscape": "Landscape",
+    "still-life": "Still life"
+  },
+  "price": {
+    "placeholderNotice": "sample price"
+  },
+  "placeholder": {
+    "notice": "[PLACEHOLDER] Every number and description on this page is dummy data and is not real."
+  },
+  "admin": {
+    "shellLabel": "Admin area",
+    "nav": {
+      "dashboard": "Dashboard",
+      "works": "Works",
+      "newWork": "New work",
+      "orders": "Orders",
+      "login": "Log in"
+    },
+    "login": {
+      "title": "Admin login",
+      "body": "[PLACEHOLDER] The login screen has not been built. There is no auth mechanism here."
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "body": "[PLACEHOLDER] The dashboard has not been built yet."
+    },
+    "newWork": {
+      "title": "Add a work",
+      "body": "[PLACEHOLDER] The new-work form has not been built yet."
+    },
+    "editWork": {
+      "title": "Edit work",
+      "body": "[PLACEHOLDER] The edit-work form has not been built yet.",
+      "idLabel": "Work id"
+    },
+    "orders": {
+      "title": "Orders",
+      "body": "[PLACEHOLDER] The orders list has not been built yet."
+    },
+    "order": {
+      "title": "Order",
+      "body": "[PLACEHOLDER] The single order page has not been built yet.",
+      "idLabel": "Order id"
+    }
+  }
+}

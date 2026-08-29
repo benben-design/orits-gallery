@@ -1,0 +1,50 @@
+/**
+ * The admin is a workbench, not a gallery: denser, plainer, and visually
+ * unmistakable from the public site so there is no doubt which one is open.
+ */
+.shell {
+  min-block-size: 100dvh;
+  background-color: var(--color-surface);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  border-block-end: var(--border-hairline) solid var(--color-rule-strong);
+  background-color: var(--color-wall-sunk);
+}
+
+.badge {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  border: var(--border-hairline) solid var(--color-rule-strong);
+  padding: var(--space-1) var(--space-3);
+}
+
+.navList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.navLink {
+  color: var(--color-ink-soft);
+}
+
+.main {
+  padding: var(--space-8) var(--space-5);
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+@media (hover: hover) {
+  .navLink:hover {
+    color: var(--color-ink);
+  }
+}

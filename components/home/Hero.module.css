@@ -1,0 +1,42 @@
+.hero {
+  padding-block: var(--space-8) var(--space-10);
+}
+
+.frame {
+  margin-inline: auto;
+  max-width: 72rem;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-start: var(--space-7);
+  text-align: center;
+}
+
+/* The single positioning line. Large, light, quiet. */
+.positioning {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-snug);
+  color: var(--color-ink);
+  max-width: 42rem;
+  text-wrap: balance;
+}
+
+/* The name of the work on the wall, the way a gallery labels it. */
+.caption {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+@media (min-width: 48rem) {
+  .hero {
+    padding-block: var(--space-10) var(--space-11);
+  }
+}

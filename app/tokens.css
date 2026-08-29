@@ -1,0 +1,116 @@
+/**
+ * Design tokens — the single place where colour, spacing and typography are
+ * decided. Components reference these variables and never hard-code a value,
+ * so the whole look can be re-pitched by editing this one file.
+ *
+ * The brief: a gallery wall. Orit's paintings are highly saturated, so the
+ * site carries no colour of its own — there is deliberately no brand colour
+ * and no accent hue anywhere below. Every chroma on the page comes from the
+ * work hanging on it.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- *
+   * Colour — warm neutrals only.
+   * ---------------------------------------------------------------- */
+  --color-wall: #faf8f4;        /* the wall itself: warm white */
+  --color-wall-sunk: #f4f1ea;   /* a shade back, for quiet banding */
+  --color-surface: #ffffff;     /* the card a painting hangs on */
+  --color-ink: #191713;         /* body text, headings */
+  --color-ink-soft: #4b463e;    /* secondary text */
+  --color-ink-muted: #7e786d;   /* captions, metadata, disabled */
+  --color-rule: #e5e0d6;        /* hairlines — used sparingly */
+  --color-rule-strong: #cfc8ba; /* only where a rule must actually read */
+  --color-focus: #191713;       /* focus ring; matches ink, never a hue */
+
+  /* ---------------------------------------------------------------- *
+   * Typography
+   *
+   * The two faces are loaded and self-hosted by next/font in app/fonts.js and
+   * arrive here as CSS variables. The fallbacks after each are what renders if
+   * a face somehow fails to load.
+   * ---------------------------------------------------------------- */
+  --font-display: var(--font-display-loaded), Georgia, 'Times New Roman', serif;
+  --font-body: var(--font-body-loaded), 'Segoe UI', system-ui, -apple-system,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: clamp(1.125rem, 0.95rem + 0.7vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.1rem + 1.7vw, 2.25rem);
+  --text-2xl: clamp(2rem, 1.2rem + 3.4vw, 3.75rem);
+
+  --weight-light: 300;
+  --weight-normal: 400;
+  --weight-medium: 500;
+
+  --leading-tight: 1.18;
+  --leading-snug: 1.35;
+  --leading-normal: 1.65;
+
+  /**
+   * Tracking is a Latin typographic device. Hebrew must never be letter-spaced
+   * — it breaks the shapes of the letters — so the RTL override below zeroes
+   * these out rather than every component having to know about it.
+   */
+  --tracking-wide: 0.08em;
+  --tracking-slight: 0.015em;
+
+  /* ---------------------------------------------------------------- *
+   * Spacing — 4px base. Generous by default; this is a gallery.
+   * ---------------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5rem;
+  --space-11: 6.5rem;
+  --space-12: 8rem;
+
+  /* ---------------------------------------------------------------- *
+   * Layout
+   * ---------------------------------------------------------------- */
+  --page-max: 80rem;
+  --measure: 34rem;              /* comfortable reading width */
+  --page-gutter: var(--space-5);
+  --section-gap: var(--space-11);
+
+  /* ---------------------------------------------------------------- *
+   * The frame
+   *
+   * Every painting in the grid hangs inside a fixed-size box at this aspect
+   * ratio, sized once here. Cards therefore all match, whatever shape the
+   * painting inside them is. See components/ui/ArtworkFrame.
+   * ---------------------------------------------------------------- */
+  --frame-ratio: 4 / 5;
+  --frame-inset: clamp(var(--space-4), 2.2vw, var(--space-7));
+  --frame-grid-min: 15rem;
+
+  /* ---------------------------------------------------------------- *
+   * Lines, edges, motion
+   * ---------------------------------------------------------------- */
+  --border-hairline: 1px;
+  --radius: 0;                   /* square edges — nothing here is a widget */
+  /* Just enough to lift a canvas off the wall. Neutral, never a coloured glow. */
+  --shadow-frame: 0 1px 2px rgb(25 23 19 / 6%), 0 8px 24px rgb(25 23 19 / 7%);
+  --duration-slow: 420ms;
+  --duration: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0.1, 1);
+}
+
+/**
+ * Hebrew renders right-to-left and takes no Latin tracking. Direction itself
+ * is set on <html> by the locale layout; this block only adjusts the tokens
+ * that are wrong for RTL.
+ */
+[dir='rtl'] {
+  --tracking-wide: 0;
+  --tracking-slight: 0;
+}
