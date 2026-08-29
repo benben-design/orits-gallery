@@ -8,17 +8,56 @@ npm install
 npm run dev        # Next dev server
 npm run build      # production build; runs the image manifest first
 npm run start      # serve the production build locally
-npm run lint       # ESLint over the whole project
+npm run lint       # ESLint over the whole project, then the contrast guard
 
 npm run images:manifest   # regenerate lib/data/image-manifest.json
+npm run dev:placeholders  # regenerate the /dev placeholder images
+npm run check:contrast    # WCAG check over every permitted colour pairing
 ```
 
 There is one app and one dev server. No separate API process.
 
+## The design system at `/dev`
+
+`http://localhost:3000/dev` renders the whole design system: every colour on the
+surface it is meant to be used on, the spacing and radius scales, the
+interactive states, and the real artwork component across all three
+orientations and all four statuses.
+
+It needs no database and no real content, so it stays reviewable however little
+of the site is built — and it is the fastest way to see whether a token change
+broke something. It is a permanent developer tool, not a scratch page.
+
+It is reachable in production builds and on Vercel previews, deliberately: a
+preview URL is where a design change is easiest to review on a real device. It
+is kept out of search results three ways — `noindex` metadata on its own root
+layout, a disallow in `app/robots.js`, and an `X-Robots-Tag` header in
+`vercel.json` — and it is unreachable from any navigation because it sits
+outside `app/(site)/[locale]` entirely.
+
+To make it developer-only instead, add an `export const dynamic` guard or a
+`notFound()` on `process.env.NODE_ENV === 'production'` in its page. That also
+removes it from previews, which is the trade.
+
 ## Linting
 
-`npm run lint` runs `eslint .` over the project — all 51 JS/MJS files, including
-`proxy.js`, the config files and `scripts/`.
+`npm run lint` does two things: `eslint .` over every JS/MJS file in the
+project — including `proxy.js`, the config files and `scripts/` — and then
+`scripts/check-contrast.mjs`, the palette guard.
+
+## The palette guard
+
+`npm run check:contrast` computes WCAG 2.1 contrast for every foreground /
+background pairing the design rules permit, and fails if one drops below AA for
+normal text. It also asserts the **forbidden** pairings — chiefly `--text-muted`
+on `--surface-tint`, which misses AA by four hundredths. If someone later
+"fixes" that by nudging a colour, the guard fails and says which rule was
+erased. It prints a table either way; the values come from `app/tokens.css`, so
+it cannot drift from what it guards.
+
+Run it after touching a colour. Exit codes: `0` all as specified, `1` a pairing
+is wrong, `2` a token it needs is missing from `app/tokens.css` — which means a
+rename needs mirroring into the guard.
 
 Config is `eslint.config.mjs` at the repo root, in ESLint's **flat config**
 format, which is the only format Next 16 supports. It extends

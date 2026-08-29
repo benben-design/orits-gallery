@@ -1,0 +1,336 @@
+/**
+ * Styles for the design-system page.
+ *
+ * These are tool chrome, not site styles — nothing here is reused by the
+ * product. Every value still comes from a token, because a design-system page
+ * that invented its own spacing would be lying about the system it documents.
+ *
+ * Two rules here mirror declarations that live elsewhere, and must be kept in
+ * step with them: .buttonHovered mirrors ButtonLink.module.css's .outline:hover,
+ * and .buttonFocused mirrors the :focus-visible ring in app/globals.css. They
+ * are duplicated on purpose so both states can be seen at rest, side by side,
+ * without hovering or tabbing.
+ */
+
+.page {
+  max-inline-size: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+  padding-block: var(--space-9) var(--space-12);
+}
+
+/* ---- masthead ----------------------------------------------------- */
+.masthead {
+  padding-block-end: var(--space-7);
+  border-block-end: var(--border-hairline) solid var(--line);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.h1 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
+}
+
+.lede {
+  margin: 0;
+  max-inline-size: var(--measure);
+  color: var(--text-muted);
+}
+
+/* ---- sections ----------------------------------------------------- */
+.section {
+  margin-block-start: var(--space-10);
+}
+
+.h2 {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
+}
+
+.h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.group {
+  margin-block-start: var(--space-7);
+}
+
+.note {
+  margin: 0 0 var(--space-4);
+  max-inline-size: var(--measure);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.token,
+.value {
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  font-size: var(--text-xs);
+}
+
+.token {
+  color: var(--text-primary);
+}
+
+.value {
+  color: var(--text-muted);
+}
+
+.role {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ---- swatches ------------------------------------------------------ */
+
+/**
+ * Each group is shown standing on the surface its colours are meant to be used
+ * on, so a swatch is never judged against a ground it will never meet.
+ */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-5);
+  list-style: none;
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius);
+}
+
+.onWall {
+  background-color: var(--surface-wall);
+}
+
+.onMat {
+  background-color: var(--surface-mat);
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.chip {
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  flex: none;
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+/* A line token shown at its real weight rather than as a filled block. */
+.chipLine {
+  inline-size: 3.5rem;
+  block-size: var(--border-hairline);
+  flex: none;
+  align-self: center;
+}
+
+/* An ink token shown as type, in both scripts, because that is its only use. */
+.chipInk {
+  inline-size: 3.5rem;
+  flex: none;
+  font-size: var(--text-md);
+  text-align: center;
+}
+
+.chipOnAccent {
+  inline-size: 3.5rem;
+  flex: none;
+  padding-block: var(--space-2);
+  font-size: var(--text-sm);
+  text-align: center;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  border-radius: var(--radius);
+}
+
+.chipBadge {
+  flex: none;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-2);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  background-color: var(--status-sold-bg);
+  color: var(--status-sold-text);
+  border-radius: var(--radius-sm);
+}
+
+.swatchMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+/* ---- spacing scale -------------------------------------------------- */
+.scale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scaleRow {
+  display: grid;
+  grid-template-columns: 7rem 5rem 4rem 1fr;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.bar {
+  block-size: var(--space-4);
+  background-color: var(--surface-tint);
+  border-inline-start: var(--border-hairline) solid var(--line-strong);
+}
+
+/* ---- radius scale --------------------------------------------------- */
+.radii {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.radiusItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-inline-size: 14rem;
+}
+
+.radiusBox {
+  inline-size: 4rem;
+  block-size: 4rem;
+  margin-block-end: var(--space-2);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line-strong);
+}
+
+/* ---- interactive states --------------------------------------------- */
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-7);
+  padding: var(--space-6);
+  background-color: var(--surface-wall);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius);
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.stateLabel {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * Mirrors ButtonLink .outline plus its :hover. Kept in sync by hand — see the
+ * note at the top of this file.
+ */
+.buttonHovered,
+.buttonFocused {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 3rem;
+  padding-inline: var(--space-7);
+  padding-block: var(--space-3);
+  border: var(--border-hairline) solid var(--text-primary);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.buttonHovered {
+  background-color: var(--text-primary);
+  color: var(--surface-wall);
+}
+
+/* Mirrors the :focus-visible ring in app/globals.css. */
+.buttonFocused {
+  color: var(--text-primary);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.link:hover {
+  color: var(--accent-hover);
+}
+
+/* ---- component specimens --------------------------------------------- */
+
+/**
+ * A specimen stands on the wall, inside a marked boundary, so it is obvious
+ * where the tool's chrome ends and the product begins. These carry their own
+ * dir/lang — the one place on the site where that is correct.
+ */
+.specimen {
+  padding: var(--space-6);
+  background-color: var(--surface-wall);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* Copied from WorksGrid.module.css so the specimen is the real grid. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--frame-grid-min), 1fr));
+  gap: var(--space-8) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.cell > :last-child {
+  inline-size: 100%;
+}
+
+.statusCaption {
+  margin: 0 0 var(--space-2);
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: start;
+}

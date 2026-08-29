@@ -6,12 +6,50 @@ Neutral warm white. Generous white space. Quiet typography. Minimal borders and
 rules. The paintings are highly saturated and colourful; the site must not
 compete with them.
 
-**Do not invent a brand colour and do not add decorative colour accents.** If a
-warm accent sits next to one of these paintings, they fight, and the painting
-loses. Colour on this site comes from the art.
+**There is exactly one accent, and it is already chosen: `--accent`, a deep
+terracotta.** It is reserved for interactive things — links, buttons, active
+state — and for nothing else. Do not add a second accent, and do not use the
+accent decoratively: a hue used as ornament next to one of these paintings
+fights it, and the painting loses. Everything that is not interactive draws
+from the surface, text and line tokens, which are warm neutrals.
+
+`--surface-tint` is the one non-neutral surface. It is a background only, never
+a text colour — see the measured note in `app/tokens.css`.
 
 The visual reference is gitahomedesign.co.il — the artist's own store — with two
 deliberate departures noted in project.md.
+
+## The palette
+
+Defined in `app/tokens.css`. One light theme; no dark mode, no `data-theme`.
+
+| Token | Value | Role |
+|---|---|---|
+| `--surface-wall` | `#F1ECE4` | The page. The wall |
+| `--surface-mat` | `#FBFAF7` | Cards, artwork mats, panels |
+| `--surface-sunk` | `#E8E1D6` | Inset areas: footer, filter bar |
+| `--surface-tint` | `#EBD9CE` | Clay tint. Background only |
+| `--text-primary` | `#2C2723` | Body and headings. Warm near-black — never `#000` |
+| `--text-muted` | `#6B6058` | Medium, dimensions, captions |
+| `--text-on-accent` | `#FBF7F3` | Text on the accent |
+| `--line` | `#DED5C9` | Hairlines, dividers |
+| `--line-strong` | `#C9BCA9` | Emphasised borders, input outlines |
+| `--accent` | `#8C4A33` | Deep terracotta. Links, buttons, active state |
+| `--accent-hover` | `#743C29` | Hover and pressed |
+| `--status-sold-bg` / `--status-sold-text` | `#EBD9CE` / `#6B3A28` | The sold badge |
+
+### The three rules that get broken
+
+1. **Only `--accent` may carry terracotta text.** Never introduce a softer one
+   for type, however much better it looks alone — the hue runs out of contrast
+   almost immediately, and a soft terracotta on the wall fails AA.
+2. **On `--surface-tint`, text is `--text-primary` or `--status-sold-text`.**
+   Nothing else. `--text-muted` there is 4.46:1 and is forbidden.
+3. **A painting is never cropped.** Fixed container, painting fitted inside at
+   its own ratio, centred. `object-fit: cover` on a work is a bug. See images.md.
+
+`npm run check:contrast` enforces 1 and 2 — every permitted pairing must clear
+AA, and the forbidden ones must keep failing. Run it after touching a colour.
 
 ## Tokens
 

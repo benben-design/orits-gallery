@@ -2,9 +2,9 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 20;
-  background-color: color-mix(in srgb, var(--color-wall) 88%, transparent);
+  background-color: color-mix(in srgb, var(--surface-wall) 88%, transparent);
   backdrop-filter: saturate(1.1) blur(10px);
-  border-block-end: var(--border-hairline) solid var(--color-rule);
+  border-block-end: var(--border-hairline) solid var(--line);
 }
 
 .inner {
@@ -36,7 +36,7 @@
   font-size: var(--text-sm);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
   transition: color var(--duration) var(--ease);
 }
 
@@ -48,7 +48,7 @@
 
 @media (hover: hover) {
   .navLink:hover {
-    color: var(--color-ink);
+    color: var(--text-primary);
   }
 }
 

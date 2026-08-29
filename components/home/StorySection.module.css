@@ -12,15 +12,15 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  background-color: var(--color-wall-sunk);
-  border: var(--border-hairline) dashed var(--color-rule-strong);
+  background-color: var(--surface-sunk);
+  border: var(--border-hairline) dashed var(--line-strong);
 }
 
 .portraitLabel {
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wide);
   text-align: center;
-  color: var(--color-ink-muted);
+  color: var(--text-muted);
 }
 
 .text {
@@ -37,7 +37,7 @@
 }
 
 .body {
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
 }
 
 @media (min-width: 48rem) {

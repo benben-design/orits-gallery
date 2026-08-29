@@ -19,21 +19,36 @@
 .title {
   font-size: var(--text-md);
   font-weight: var(--weight-normal);
-  color: var(--color-ink);
+  color: var(--text-primary);
+}
+
+/**
+ * Medium and size. Same secondary ink and scale as the price row below, so the
+ * caption reads as one block rather than three competing lines. It wraps
+ * because a real medium string is far longer than today's placeholder.
+ */
+.spec {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 .meta {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-wrap: wrap;
   font-size: var(--text-sm);
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
 }
 
 /* A hairline tick between price and status, rather than a bullet or a pipe. */
 .separator {
   inline-size: var(--space-3);
   block-size: var(--border-hairline);
-  background-color: var(--color-rule-strong);
+  background-color: var(--line-strong);
   flex: none;
 }

@@ -3,12 +3,12 @@
 }
 
 .wall {
-  background-color: var(--color-wall);
+  background-color: var(--surface-wall);
 }
 
 /* One shade back. The only banding in the design, and still a warm neutral. */
 .sunk {
-  background-color: var(--color-wall-sunk);
+  background-color: var(--surface-sunk);
 }
 
 .default {

@@ -8,8 +8,10 @@
     "prebuild": "node scripts/generate-image-manifest.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "images:manifest": "node scripts/generate-image-manifest.mjs"
+    "lint": "eslint . && node scripts/check-contrast.mjs",
+    "images:manifest": "node scripts/generate-image-manifest.mjs",
+    "dev:placeholders": "node scripts/generate-dev-placeholders.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "next": "^16.3.3",

@@ -22,7 +22,7 @@
   font-size: var(--text-lg);
   font-weight: var(--weight-light);
   line-height: var(--leading-snug);
-  color: var(--color-ink);
+  color: var(--text-primary);
   max-width: 42rem;
   text-wrap: balance;
 }
@@ -32,7 +32,7 @@
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: var(--text-muted);
 }
 
 @media (min-width: 48rem) {

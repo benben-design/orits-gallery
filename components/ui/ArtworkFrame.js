@@ -24,7 +24,22 @@ export default function ArtworkFrame({
   sizes,
   priority = false,
   ratio,
-  /** "surface" hangs the work on a white card; "bare" hangs it straight on the wall. */
+  /**
+   * "surface" mounts the work on a near-white board; "bare" hangs it straight
+   * on the wall.
+   *
+   * The rule the mount serves is not "every painting has a mount" — it is that
+   * a painting must never meet the warm wall at small scale without
+   * separation. Many small works in a grid are warm on warm and each needs its
+   * own edge, which the mount gives them. One large work alone holds the wall
+   * by itself and its edges sit far enough apart that the ground barely
+   * touches it; a mount there would read as a card, and a card reads as
+   * commerce rather than gallery.
+   *
+   * So "bare" is a described exception, not an inconsistency, and it is
+   * conditional: with no mount the shadow does the separating, which is why
+   * the bare tone carries --shadow-frame-bare. See images.md.
+   */
   tone = 'surface',
   className = '',
 }) {

@@ -21,8 +21,8 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--color-wall);
-  color: var(--color-ink);
+  background-color: var(--surface-wall);
+  color: var(--text-primary);
   font-family: var(--font-body);
   font-size: var(--text-base);
   font-weight: var(--weight-normal);
@@ -79,7 +79,7 @@ address {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -90,8 +90,8 @@ address {
   inset-inline-start: var(--space-2);
   z-index: 100;
   padding: var(--space-3) var(--space-4);
-  background-color: var(--color-surface);
-  border: var(--border-hairline) solid var(--color-ink);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--text-primary);
   transform: translateY(-200%);
 }
 

@@ -4,7 +4,7 @@
  */
 .shell {
   min-block-size: 100dvh;
-  background-color: var(--color-surface);
+  background-color: var(--surface-mat);
 }
 
 .bar {
@@ -13,16 +13,16 @@
   gap: var(--space-6);
   flex-wrap: wrap;
   padding: var(--space-4) var(--space-5);
-  border-block-end: var(--border-hairline) solid var(--color-rule-strong);
-  background-color: var(--color-wall-sunk);
+  border-block-end: var(--border-hairline) solid var(--line-strong);
+  background-color: var(--surface-sunk);
 }
 
 .badge {
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-muted);
-  border: var(--border-hairline) solid var(--color-rule-strong);
+  color: var(--text-muted);
+  border: var(--border-hairline) solid var(--line-strong);
   padding: var(--space-1) var(--space-3);
 }
 
@@ -34,7 +34,7 @@
 }
 
 .navLink {
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
 }
 
 .main {
@@ -45,6 +45,6 @@
 
 @media (hover: hover) {
   .navLink:hover {
-    color: var(--color-ink);
+    color: var(--text-primary);
   }
 }

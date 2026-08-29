@@ -6,7 +6,7 @@
 
 .amount {
   font-variant-numeric: tabular-nums;
-  color: var(--color-ink);
+  color: var(--text-primary);
 }
 
 /* Keeps a dummy figure from ever reading as a real one. */
@@ -14,5 +14,26 @@
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: var(--text-muted);
+}
+
+/**
+ * A sold work keeps its price, struck through: the work stays on display as
+ * part of the body of work, and the struck figure is what tells you the sale
+ * already happened. This strike is also what distinguishes sold from reserved
+ * without relying on the badge colour — see statusPresentation.js.
+ */
+.struck {
+  text-decoration: line-through;
+  text-decoration-thickness: var(--border-hairline);
+  color: var(--text-muted);
+}
+
+/**
+ * A work the artist is keeping has no price at all. The words stand where the
+ * amount would, in the secondary ink, with no badge anywhere on the card — the
+ * absence of a transaction, not a stage of one.
+ */
+.unavailable {
+  color: var(--text-muted);
 }

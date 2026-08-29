@@ -22,8 +22,9 @@ drives most of the non-obvious rules in this repo.
    edge case. Fit inside a fixed container; never fill it. → images.md
 4. **Status is not a boolean.** `available | reserved | sold | not-for-sale`,
    plus the channel it sold through. → commerce.md
-5. **The site chrome must not compete with the art.** Neutral warm white. No
-   invented brand colour, no decorative accents. → frontend/styles.md
+5. **The site chrome must not compete with the art.** Warm neutral surfaces,
+   plus exactly one accent — a deep terracotta, used only for interactive
+   things. No second accent, no decorative colour. → frontend/styles.md
 
 ## What this is
 
@@ -191,7 +192,13 @@ face.
   without a migration because the category is already a field.
 - **Status is a four-value field, never a boolean.** See commerce.md.
 - **The chrome must not compete with the art.** The paintings are highly
-  saturated. Neutral warm white, no invented brand colour.
+  saturated, so the surfaces are warm neutrals. A single deep-terracotta accent
+  carries interaction only — it is drawn from the same family as the work
+  rather than invented against it, and it never appears as ornament.
+- **Typography is decided: Frank Ruhl Libre for display, Assistant for body.**
+  Chosen because the two scripts carry matched optical weight — the test a
+  Latin-only shortlist never runs, and the one that matters when most visitors
+  read Hebrew.
 - **The current photographs are low-resolution stand-ins** (capped at 1600px by
   WhatsApp compression, two of them far smaller). They are fine for development.
   Replacing them with proper photography is a **launch blocker**. Do not design

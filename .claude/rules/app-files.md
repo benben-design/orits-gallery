@@ -12,10 +12,10 @@ first thing read at the start of a session.
 |---|---|
 | `CLAUDE.md` | **Intentionally empty. Leave it that way.** The rules in `.claude/rules/` are picked up on their own; anything written here is also read by the separate planning session, which must keep its own role. See workflow.md |
 | `next.config.mjs` | Image pipeline sizes, tuned for the future sharp scans rather than today's stand-ins |
-| `vercel.json` | Framework, region `fra1`, and the `X-Robots-Tag` noindex header on `/admin/*` |
+| `vercel.json` | Framework, region `fra1`, and the `X-Robots-Tag` noindex headers on `/admin/*` and `/dev` |
 | `jsconfig.json` | The `@/*` path alias |
 | `eslint.config.mjs` | ESLint flat config — `eslint-config-next/core-web-vitals` plus ignores. Not wired into the build |
-| `package.json` | Scripts. `prebuild` regenerates the image manifest |
+| `package.json` | Scripts. `prebuild` regenerates the image manifest; `lint` runs ESLint then the contrast guard; `dev:placeholders` regenerates the `/dev` placeholder images |
 | `.gitattributes` | Stores every text file as LF regardless of the checkout platform, and marks image/font binaries. Landed in the first commit precisely so it never has to renormalize the tree later |
 
 ## i18n — `lib/i18n/`
@@ -54,20 +54,24 @@ first thing read at the start of a session.
 | File | Role |
 |---|---|
 | `scripts/generate-image-manifest.mjs` | Reads JPEG/PNG headers in `public/paintings/` and writes the manifest. No dependencies. Wired into `prebuild` |
+| `scripts/check-contrast.mjs` | **The palette guard.** Computes WCAG contrast for every permitted pairing and asserts the forbidden ones stay forbidden. Reads values from `app/tokens.css`. Runs with `npm run lint` and on its own as `npm run check:contrast`. Not in the build |
+| `scripts/generate-dev-placeholders.mjs` | Writes the three placeholder paintings for `/dev`. Encodes PNG by hand and reads its two colours out of `app/tokens.css`, so the files can never drift from the palette. No dependencies. **Not** wired into `prebuild` — the output is committed |
 
 ## Assets
 
 | Path | Role |
 |---|---|
+| `public/dev/` | Generated placeholder paintings for `/dev`, in the three orientations. Regenerate with `npm run dev:placeholders`; never hand-edit |
 | `public/paintings/` | The 15 paintings. Filename stem is the work's `id` and English slug. Low-resolution stand-ins — see images.md |
 
 ## Routes — `app/`
 
-Two root layouts in two route groups, and therefore no top-level `app/layout.js`.
+Three root layouts in three route groups — public, admin and `/dev` — and
+therefore no top-level `app/layout.js`.
 
 | File | Role |
 |---|---|
-| `proxy.js` | Locale gate at the repo root. Redirects any path without a locale prefix to the default language, so `/` lands on `/he`. Skips `/admin`, `/api`, `/paintings` and anything with a file extension |
+| `proxy.js` | Locale gate at the repo root. Redirects any path without a locale prefix to the default language, so `/` lands on `/he`. Skips `/admin`, `/dev`, `/api`, `/paintings` and anything with a file extension. **A route added outside `[locale]` must be added here too, or it redirects into the locale tree and 404s** |
 | `app/(site)/[locale]/layout.js` | Public root layout. **The only place `<html lang dir>` is set.** Owns the header, footer and skip link |
 | `app/(site)/[locale]/page.js` | Home — the built prototype. Reads the featured work and the twelve most recent from the repository |
 | `app/(site)/[locale]/art/[slug]/page.js` | One painting. Stub body, but real routing: pre-generates every (locale, slug) pair and redirects a slug given in the other language to the canonical one |
@@ -75,8 +79,11 @@ Two root layouts in two route groups, and therefore no top-level `app/layout.js`
 | `app/(admin)/admin/layout.js` | Admin root layout. Hebrew pinned via `adminLocale`, `noindex` metadata, its own shell |
 | `app/(admin)/admin/page.js` | The dashboard. Stub |
 | `app/(admin)/admin/login`, `/works/new`, `/works/[id]`, `/orders`, `/orders/[id]` | Stubs. `/works/[id]` does a real repository lookup by id |
+| `app/(dev)/dev/layout.js` | **Third root layout.** English, LTR, `noindex`. Exists so `/dev` sits outside the locale structure and cannot inherit the public shell |
+| `app/(dev)/dev/page.js` | **The design system, rendered** — every colour on the surface it is used on, the spacing and radius scales, the interactive states, and the real artwork component across all three orientations and all four statuses. Needs no database and no real content. A permanent developer tool |
+| `app/(dev)/dev/page.module.css` | Chrome for the above. `.buttonHovered` and `.buttonFocused` mirror declarations in `ButtonLink.module.css` and `globals.css` so both states can be seen at rest — keep them in step |
 | `app/api/health/route.js` | Liveness check; also proves the repository is reachable from a route handler |
-| `app/robots.js` | Disallows `/admin` and `/api/` |
+| `app/robots.js` | Disallows `/admin`, `/dev` and `/api/` |
 | `app/fonts.js` | The two faces, loaded once via `next/font` and exposed as CSS variables |
 
 ## Components — `components/`
@@ -92,10 +99,11 @@ Two root layouts in two route groups, and therefore no top-level `app/layout.js`
 | `home/WorksGrid.js` | Section 2 — twelve works plus the link to the gallery |
 | `home/PromisesRow.js` | Section 3 — the four promises, read as an array from the dictionary |
 | `home/StorySection.js` | Section 4 — artist photo slot (a labelled empty frame until one is supplied), paragraph, link to About |
-| `ui/ArtworkFrame.js` | **Owns the never-crop rule.** Fixed-size frame, painting fitted inside an absolutely-positioned mat |
-| `ui/ArtworkCard.js` | A framed work plus title, price and status |
-| `ui/StatusBadge.js` | The four-value status. Colourless — weight and strikethrough only |
-| `ui/Price.js` | Formatted amount plus the visible "sample price" marker while data is placeholder |
+| `ui/ArtworkFrame.js` | **Owns the never-crop rule.** Fixed-size frame, painting fitted inside an absolutely-positioned mat. Two tones: mounted, and `bare` for the hero, which takes a deeper shadow because nothing else holds its edge |
+| `ui/ArtworkCard.js` | A framed work plus title, medium and dimensions, price and status. Draws the price/status separator only when a badge actually renders |
+| `ui/StatusBadge.js` | Renders a badge for **two** of the four statuses — reserved and sold, both on the clay tint. Available and not-for-sale return `null` |
+| `ui/statusPresentation.js` | **The four-state table**, read by both `StatusBadge` and `Price` so the badge and the price treatment cannot disagree. Add a status here, never in a component |
+| `ui/Price.js` | Formatted amount plus the visible "sample price" marker while data is placeholder. Also carries the half of status the price expresses: struck through when sold, replaced by words when not for sale |
 | `ui/Container.js`, `ui/Section.js`, `ui/SectionHeading.js`, `ui/ButtonLink.js` | Layout and text primitives |
 | `ui/StubPage.js` | The shared body of every not-yet-built page |
 
@@ -104,3 +112,7 @@ Two root layouts in two route groups, and therefore no top-level `app/layout.js`
 The database layer, admin auth, cart and checkout logic, gallery filters and
 pagination, the artwork page body, Cloudinary, sitemap, OG images and hreflang
 tags. Add them here as they land.
+
+When the sitemap lands it needs no `/dev` exclusion: generated from the locale
+list and the works repository, as seo.md requires, it cannot emit a URL outside
+`app/(site)/[locale]`.

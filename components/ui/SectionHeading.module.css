@@ -20,7 +20,7 @@
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: var(--text-muted);
 }
 
 .heading {
@@ -30,5 +30,5 @@
 
 .intro {
   font-size: var(--text-base);
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
 }

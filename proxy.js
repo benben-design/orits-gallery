@@ -29,9 +29,13 @@ export function proxy(request) {
 
 export const config = {
   /**
-   * Everything except: Next internals, the admin area (which sits outside the
-   * locale structure by design), API routes, the painting files, and anything
-   * else with a file extension.
+   * Everything except: Next internals, the admin area and the design-system
+   * page (both of which sit outside the locale structure by design), API
+   * routes, the painting files, and anything else with a file extension.
+   *
+   * Leaving /dev out of this list does not make it unreachable in an obvious
+   * way — it makes it redirect to /he/dev, which then 404s. If /dev ever stops
+   * resolving, check here first.
    */
-  matcher: ['/((?!_next/|admin|api/|paintings/|.*\\.[\\w]+$).*)'],
+  matcher: ['/((?!_next/|admin|dev|api/|paintings/|.*\\.[\\w]+$).*)'],
 };

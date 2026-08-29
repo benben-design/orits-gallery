@@ -14,7 +14,7 @@
 
 /* Hung on a white card. */
 .surface {
-  background-color: var(--color-surface);
+  background-color: var(--surface-mat);
 }
 
 /* Hung straight on the wall — used by the hero. */
@@ -60,4 +60,17 @@
   a:hover .painting {
     transform: scale(1.012);
   }
+}
+
+/**
+ * A bare work has no mount, so its shadow is the only thing separating it from
+ * the warm wall. It therefore carries a deeper one than a mounted work — still
+ * subtle, still a canvas hanging rather than a card floating, but enough that
+ * the edge is never ambiguous against the beige.
+ *
+ * This is the whole reason the bare tone is allowed to exist. Removing it would
+ * leave the hero meeting the wall with nothing in between.
+ */
+.bare .painting {
+  box-shadow: var(--shadow-frame-bare);
 }

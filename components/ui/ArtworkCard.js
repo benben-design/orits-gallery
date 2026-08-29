@@ -2,8 +2,10 @@ import Link from 'next/link';
 import ArtworkFrame from './ArtworkFrame';
 import StatusBadge from './StatusBadge';
 import Price from './Price';
+import { getStatusPresentation } from './statusPresentation';
 import { localeHref } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
+import { formatDimensions } from '@/lib/format';
 import styles from './ArtworkCard.module.css';
 
 /**
@@ -31,15 +33,48 @@ export default function ArtworkCard({ work, locale, dictionary, sizes, priority 
         />
         <div className={styles.caption}>
           <h3 className={styles.title}>{title}</h3>
+
+          {/*
+            Medium and size, in the secondary ink. Both are placeholder values
+            on every record today — deliberately absurd ones — so this line is
+            where "999 × 999 cm" becomes visible. That is the intent: see
+            data-layer.md.
+
+            The dimensions are wrapped in <bdi> because they are a Latin-and-
+            digits run inside a right-to-left paragraph. Without isolation the
+            trailing unit reorders against the numbers in Hebrew.
+          */}
+          <p className={styles.spec}>
+            <span>{work.medium[locale]}</span>
+            <span aria-hidden="true" className={styles.separator} />
+            <bdi>{formatDimensions(work.dimensions)}</bdi>
+          </p>
+
+          {/*
+            Price and status share a row. Status is commercial metadata about
+            the work, not part of the picture, and is deliberately never
+            overlaid on the mount: a label floating over a painting is a shop
+            convention that cheapens the work.
+
+            Only two statuses draw a badge, so the separator is conditional —
+            otherwise an available work gets a hairline rule pointing at
+            nothing. Both halves read the same table, so the price treatment and
+            the badge can never disagree about a state.
+          */}
           <p className={styles.meta}>
             <Price
               price={work.price}
               locale={locale}
               dictionary={dictionary}
               isPlaceholder={work.hasPlaceholderData}
+              status={work.status}
             />
-            <span aria-hidden="true" className={styles.separator} />
-            <StatusBadge status={work.status} dictionary={dictionary} />
+            {getStatusPresentation(work.status).badge ? (
+              <>
+                <span aria-hidden="true" className={styles.separator} />
+                <StatusBadge status={work.status} dictionary={dictionary} />
+              </>
+            ) : null}
           </p>
         </div>
       </Link>

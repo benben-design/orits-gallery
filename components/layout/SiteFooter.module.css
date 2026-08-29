@@ -1,8 +1,8 @@
 .footer {
   margin-block-start: var(--section-gap);
   padding-block: var(--space-9) var(--space-7);
-  border-block-start: var(--border-hairline) solid var(--color-rule);
-  background-color: var(--color-wall);
+  border-block-start: var(--border-hairline) solid var(--line);
+  background-color: var(--surface-wall);
 }
 
 .columns {
@@ -23,7 +23,7 @@
   font-weight: var(--weight-medium);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: var(--text-muted);
 }
 
 .list {
@@ -31,7 +31,7 @@
   flex-direction: column;
   gap: var(--space-2);
   font-size: var(--text-sm);
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
 }
 
 .link {
@@ -41,14 +41,14 @@
 .rights {
   margin-block-start: var(--space-9);
   padding-block-start: var(--space-5);
-  border-block-start: var(--border-hairline) solid var(--color-rule);
+  border-block-start: var(--border-hairline) solid var(--line);
   font-size: var(--text-xs);
-  color: var(--color-ink-muted);
+  color: var(--text-muted);
 }
 
 @media (hover: hover) {
   .link:hover {
-    color: var(--color-ink);
+    color: var(--text-primary);
   }
 }
 

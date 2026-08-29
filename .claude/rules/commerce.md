@@ -20,6 +20,36 @@ Alongside it, a work records **which channel it sold through** — this site,
 under1000, or elsewhere. The artist sells in parallel on other platforms, so the
 site is not the only thing that can consume a painting.
 
+### The four presentations (decided)
+
+Each state gets its own treatment, and **none of them is carried by colour
+alone.** The palette has one accent and one secondary ink, so every distinction
+lives in form — whether a badge is present, which badge it is, and what happens
+to the price. That is what keeps status legible for a colour-blind buyer, and
+in a screenshot.
+
+| Status | Badge | Price |
+|---|---|---|
+| `available` | none | plain amount |
+| `reserved` | badge on the clay tint | plain amount |
+| `sold` | badge on the sold tokens | **struck through** |
+| `not-for-sale` | none | **replaced by the words for it** |
+
+- **Available needs no label.** It is the default, and a badge on every card is
+  noise. The visible price is itself the signal that the work can be bought.
+- **Reserved is the state a buyer acts on** — someone else is mid-purchase — so
+  it must be unmistakable at a glance without being alarming.
+- **Sold keeps its price, struck.** The work stays on display: it is part of the
+  body of work and evidence of demand, not something to hide. The strike is also
+  what separates sold from reserved without relying on the badge's hue.
+- **Not-for-sale is the absence of a transaction, not a stage of one**, so it
+  does not borrow the visual language of the other three. No badge; the price is
+  replaced.
+
+The table lives in code at `components/ui/statusPresentation.js`, read by both
+`StatusBadge` and `Price` so the two halves of a state cannot drift apart. Add a
+status there and in both locale files, never in a component.
+
 ## The double-sale problem
 
 Because the artist also sells on under1000, a painting can be sold out from under

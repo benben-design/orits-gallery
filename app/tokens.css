@@ -1,38 +1,119 @@
 /**
- * Design tokens — the single place where colour, spacing and typography are
- * decided. Components reference these variables and never hard-code a value,
- * so the whole look can be re-pitched by editing this one file.
+ * Design tokens — the single source of truth for every colour, space, radius
+ * and type value on this site. Components reference these variables through
+ * their own CSS Modules and never hard-code a value, so the whole look can be
+ * re-pitched by editing this one file.
  *
- * The brief: a gallery wall. Orit's paintings are highly saturated, so the
- * site carries no colour of its own — there is deliberately no brand colour
- * and no accent hue anywhere below. Every chroma on the page comes from the
- * work hanging on it.
+ * Imported once, via app/globals.css, which each root layout imports. There is
+ * no second token file and there must not be one.
+ *
+ * SINGLE LIGHT THEME. There is deliberately no dark theme, no
+ * prefers-color-scheme block and no data-theme mechanism here. The token names
+ * are semantic rather than literal (--surface-wall, not --beige) precisely so
+ * that a theme could be added later by redefining values, without renaming
+ * anything or touching a single component.
  */
 
 :root {
-  /* ---------------------------------------------------------------- *
-   * Colour — warm neutrals only.
-   * ---------------------------------------------------------------- */
-  --color-wall: #faf8f4;        /* the wall itself: warm white */
-  --color-wall-sunk: #f4f1ea;   /* a shade back, for quiet banding */
-  --color-surface: #ffffff;     /* the card a painting hangs on */
-  --color-ink: #191713;         /* body text, headings */
-  --color-ink-soft: #4b463e;    /* secondary text */
-  --color-ink-muted: #7e786d;   /* captions, metadata, disabled */
-  --color-rule: #e5e0d6;        /* hairlines — used sparingly */
-  --color-rule-strong: #cfc8ba; /* only where a rule must actually read */
-  --color-focus: #191713;       /* focus ring; matches ink, never a hue */
-
-  /* ---------------------------------------------------------------- *
-   * Typography
+  /* ================================================================ *
+   * SURFACES
    *
-   * The two faces are loaded and self-hosted by next/font in app/fonts.js and
-   * arrive here as CSS variables. The fallbacks after each are what renders if
-   * a face somehow fails to load.
-   * ---------------------------------------------------------------- */
-  --font-display: var(--font-display-loaded), Georgia, 'Times New Roman', serif;
-  --font-body: var(--font-body-loaded), 'Segoe UI', system-ui, -apple-system,
-    'Helvetica Neue', Arial, sans-serif;
+   * The page is a gallery wall; a work hangs on a mat; sunk areas step
+   * back from the wall rather than forward off it.
+   * ================================================================ */
+  --surface-wall: #F1ECE4;   /* page background — the wall itself */
+  --surface-mat: #FBFAF7;    /* cards, artwork mats, panels, modals */
+  --surface-sunk: #E8E1D6;   /* inset areas: footer, filter bar */
+
+  /**
+   * Clay tint. BACKGROUND ONLY — never a text colour.
+   *
+   * TWO RULES LIVE HERE. Both are about terracotta, and both get broken by
+   * someone acting in good taste rather than in bad faith.
+   *
+   * 1. --accent (#8C4A33) IS THE ONLY TERRACOTTA THAT MAY CARRY TEXT.
+   *    Do not introduce a softer, prettier terracotta for type, however much
+   *    better it looks on its own. Lightening this hue runs out of contrast
+   *    fast: measured on --surface-wall, the accent clears AA at 5.68:1, but
+   *    the same hue passes below the 4.5:1 floor by #A4573C (4.46:1), and the
+   *    soft shade that prompted this rule sits at roughly #B76143 — about
+   *    3.7:1, a clear AA failure. There is no room between "soft" and
+   *    "illegible" here, which is why the accent is a fixed value and not a
+   *    starting point.
+   *
+   * 2. ON A --surface-tint BACKGROUND, TEXT IS --text-primary (10.80:1) OR
+   *    --status-sold-text (6.79:1). Nothing else.
+   *    --text-muted on this tint measures 4.46:1 and is not allowed — it
+   *    misses AA by a hair, which is exactly the kind of miss that survives
+   *    a design review because it looks fine.
+   *
+   * The tint itself sits 1.16:1 against --surface-wall. It is a wash, not a
+   * boundary: never rely on it alone to separate two regions.
+   */
+  --surface-tint: #EBD9CE;
+
+  /* ================================================================ *
+   * TEXT
+   *
+   * NEVER USE PURE BLACK. The ink on this site is a warm dark brown by
+   * design — #000 against these warm surfaces reads as a hole, and it is
+   * the easiest rule in this file to break by reflex.
+   * ================================================================ */
+  --text-primary: #2C2723;    /* body and headings — warm near-black */
+  --text-muted: #6B6058;      /* dimensions, medium, captions */
+  --text-on-accent: #FBF7F3;  /* text sitting on top of --accent */
+
+  /* ================================================================ *
+   * LINES
+   * ================================================================ */
+  --line: #DED5C9;         /* hairlines, dividers, card borders */
+  --line-strong: #C9BCA9;  /* emphasised borders, input outlines */
+
+  /* ================================================================ *
+   * ACCENT — deep terracotta
+   *
+   * Links, buttons, active state. Verified as link text: 5.68:1 on the
+   * wall, 6.40:1 on a mat, 5.15:1 on sunk, 4.88:1 on the tint — it clears
+   * AA on every surface defined in this file.
+   * ================================================================ */
+  --accent: #8C4A33;
+  --accent-hover: #743C29;  /* hover and pressed */
+
+  /* ================================================================ *
+   * STATUS
+   *
+   * Every painting is a one-off, so status is a field with several values,
+   * never a boolean. Sold is the pairing defined here; the remaining states
+   * are carried by weight and wording until they are specified.
+   * ================================================================ */
+  --status-sold-bg: #EBD9CE;
+  --status-sold-text: #6B3A28;  /* 6.79:1 on its own background */
+
+  /* ================================================================ *
+   * TYPOGRAPHY — DECIDED
+   *
+   *   Frank Ruhl Libre — display and headings. A serif drawn as a Hebrew
+   *                      family first, with Latin designed alongside it.
+   *   Assistant        — body and UI. Quiet and neutral in both scripts.
+   *
+   * Chosen because a bilingual site needs one thing a Latin-only shortlist
+   * never tests for: the two scripts must carry the same optical weight. A
+   * face that is elegant in Latin and thin, cramped or mismatched in Hebrew
+   * makes the Hebrew page — the one most visitors see — read as the
+   * afterthought. These two hold their weight across both, so a heading set
+   * in Hebrew and the same heading in English look like the same design.
+   *
+   * The faces are loaded and self-hosted once by next/font in app/fonts.js
+   * and arrive here as --font-*-loaded. They are consumed only through the
+   * two tokens below, never imported into a component. A system stack sits
+   * behind each so the page still renders correctly if a face fails to load.
+   * ================================================================ */
+  --font-fallback-serif: Georgia, 'Times New Roman', 'Noto Serif Hebrew', serif;
+  --font-fallback-sans: system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans Hebrew', sans-serif;
+
+  --font-display: var(--font-display-loaded), var(--font-fallback-serif);
+  --font-body: var(--font-body-loaded), var(--font-fallback-sans);
 
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
@@ -52,54 +133,73 @@
 
   /**
    * Tracking is a Latin typographic device. Hebrew must never be letter-spaced
-   * — it breaks the shapes of the letters — so the RTL override below zeroes
-   * these out rather than every component having to know about it.
+   * — it breaks the shapes of the letters — so the RTL override at the bottom
+   * of this file zeroes these out rather than every component having to know.
    */
   --tracking-wide: 0.08em;
   --tracking-slight: 0.015em;
 
-  /* ---------------------------------------------------------------- *
-   * Spacing — 4px base. Generous by default; this is a gallery.
-   * ---------------------------------------------------------------- */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-7: 2.5rem;
-  --space-8: 3rem;
-  --space-9: 4rem;
-  --space-10: 5rem;
-  --space-11: 6.5rem;
-  --space-12: 8rem;
+  /* ================================================================ *
+   * SPACING — 4px base, generous by default. This is a gallery.
+   * ================================================================ */
+  --space-1: 0.25rem;   /*   4px */
+  --space-2: 0.5rem;    /*   8px */
+  --space-3: 0.75rem;   /*  12px */
+  --space-4: 1rem;      /*  16px */
+  --space-5: 1.5rem;    /*  24px */
+  --space-6: 2rem;      /*  32px */
+  --space-7: 2.5rem;    /*  40px */
+  --space-8: 3rem;      /*  48px */
+  --space-9: 4rem;      /*  64px */
+  --space-10: 5rem;     /*  80px */
+  --space-11: 6.5rem;   /* 104px */
+  --space-12: 8rem;     /* 128px */
 
-  /* ---------------------------------------------------------------- *
-   * Layout
-   * ---------------------------------------------------------------- */
+  /* ================================================================ *
+   * RADIUS — this design is low-radius on purpose.
+   *
+   * 2px is the working default. NOTHING on this site is rounder than 4px:
+   * a soft corner reads as a widget, and the things on these pages are
+   * paintings, not controls. There is no large or pill token, and adding
+   * one is a design change rather than a convenience.
+   * ================================================================ */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;      /* the ceiling */
+  --radius: var(--radius-sm);
+
+  /* ================================================================ *
+   * LAYOUT
+   * ================================================================ */
   --page-max: 80rem;
-  --measure: 34rem;              /* comfortable reading width */
+  --measure: 34rem;      /* comfortable reading width */
   --page-gutter: var(--space-5);
   --section-gap: var(--space-11);
 
-  /* ---------------------------------------------------------------- *
-   * The frame
+  /* ================================================================ *
+   * THE FRAME
    *
    * Every painting in the grid hangs inside a fixed-size box at this aspect
-   * ratio, sized once here. Cards therefore all match, whatever shape the
-   * painting inside them is. See components/ui/ArtworkFrame.
-   * ---------------------------------------------------------------- */
+   * ratio, sized once here, so cards match whatever shape the painting
+   * inside them is. See components/ui/ArtworkFrame.
+   * ================================================================ */
   --frame-ratio: 4 / 5;
   --frame-inset: clamp(var(--space-4), 2.2vw, var(--space-7));
   --frame-grid-min: 15rem;
 
-  /* ---------------------------------------------------------------- *
-   * Lines, edges, motion
-   * ---------------------------------------------------------------- */
+  /* ================================================================ *
+   * EDGES AND MOTION
+   * ================================================================ */
   --border-hairline: 1px;
-  --radius: 0;                   /* square edges — nothing here is a widget */
   /* Just enough to lift a canvas off the wall. Neutral, never a coloured glow. */
-  --shadow-frame: 0 1px 2px rgb(25 23 19 / 6%), 0 8px 24px rgb(25 23 19 / 7%);
+  --shadow-frame: 0 1px 2px rgb(44 39 35 / 6%), 0 8px 24px rgb(44 39 35 / 7%);
+  /**
+   * For a work hung with no mount, where the shadow is the only thing holding
+   * the edge against the warm wall. Same ink at the same neutrality — a step
+   * up in weight, not a different effect, and still a canvas rather than a
+   * floating card. Used by ArtworkFrame's "bare" tone; see images.md.
+   */
+  --shadow-frame-bare: 0 2px 4px rgb(44 39 35 / 9%), 0 16px 44px rgb(44 39 35 / 12%);
   --duration-slow: 420ms;
   --duration: 200ms;
   --ease: cubic-bezier(0.2, 0, 0.1, 1);

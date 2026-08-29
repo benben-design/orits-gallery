@@ -14,23 +14,23 @@
 }
 
 .outline {
-  border: var(--border-hairline) solid var(--color-ink);
-  color: var(--color-ink);
+  border: var(--border-hairline) solid var(--text-primary);
+  color: var(--text-primary);
 }
 
 .quiet {
   border: var(--border-hairline) solid transparent;
-  color: var(--color-ink-soft);
+  color: var(--text-muted);
   padding-inline: 0;
 }
 
 @media (hover: hover) {
   .outline:hover {
-    background-color: var(--color-ink);
-    color: var(--color-wall);
+    background-color: var(--text-primary);
+    color: var(--surface-wall);
   }
 
   .quiet:hover {
-    color: var(--color-ink);
+    color: var(--text-primary);
   }
 }

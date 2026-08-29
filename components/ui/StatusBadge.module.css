@@ -1,27 +1,37 @@
 /**
- * Colourless by design. Availability is carried by weight and opacity only —
- * introducing a green/red status colour would put the first non-neutral hue on
- * the page and start competing with the paintings.
+ * Two badges, not four. Available and not-for-sale render nothing at all — see
+ * StatusBadge.js and statusPresentation.js for why.
+ *
+ * The two that do render sit on the clay tint. That tint is a background only:
+ * text on it must be --text-primary or --status-sold-text, never --text-muted,
+ * which measures 4.46:1 and misses AA. Both pairings below are verified —
+ * 10.80:1 for reserved, 6.79:1 for sold.
+ *
+ * Neither badge is distinguished from the other by colour alone. Sold also
+ * strikes through the price; reserved leaves it intact. Remove that and the
+ * two states become a hue difference, which is exactly what this design does
+ * not rely on.
  */
 .badge {
+  display: inline-flex;
+  align-items: center;
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-ink-muted);
   white-space: nowrap;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
 }
 
-.available {
-  color: var(--color-ink-soft);
-}
-
+/* Someone else is mid-purchase. Must read at a glance, without alarming. */
 .reserved {
-  color: var(--color-ink-muted);
+  background-color: var(--surface-tint);
+  color: var(--text-primary);
 }
 
-.sold,
-.not-for-sale {
-  color: var(--color-ink-muted);
-  text-decoration: line-through;
-  text-decoration-thickness: var(--border-hairline);
+/* Sold works stay on display — evidence of demand, not something to hide. */
+.sold {
+  background-color: var(--status-sold-bg);
+  color: var(--status-sold-text);
 }
