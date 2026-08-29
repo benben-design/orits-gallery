@@ -16,6 +16,7 @@ first thing read at the start of a session.
 | `jsconfig.json` | The `@/*` path alias |
 | `eslint.config.mjs` | ESLint flat config — `eslint-config-next/core-web-vitals` plus ignores. Not wired into the build |
 | `package.json` | Scripts. `prebuild` regenerates the image manifest |
+| `.gitattributes` | Stores every text file as LF regardless of the checkout platform, and marks image/font binaries. Landed in the first commit precisely so it never has to renormalize the tree later |
 
 ## i18n — `lib/i18n/`
 
