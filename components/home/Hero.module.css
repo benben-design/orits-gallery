@@ -1,25 +1,101 @@
+/**
+ * The hero's padding-bottom is deliberately 0.
+ *
+ * The works grid below is a <Section>, which carries padding-block of
+ * --section-gap (104px) already. A matching 104px here stacked on top of it,
+ * putting 208px of empty wall between the positioning line and the grid — two
+ * paddings doing one job, and over a fifth of a laptop viewport spent on
+ * nothing. The section below owns that gap now.
+ */
 .hero {
-  padding-block: var(--space-8) var(--space-10);
+  padding-block: var(--space-5) 0;
 }
 
+/**
+ * The frame is a cropping window, not a fitted box — see the note in
+ * HeroVideo.module.css for why cropping is correct for footage and wrong for
+ * a painting.
+ *
+ * Its ratio changes with the viewport, art-directing one source file:
+ *
+ *   - Phone: 4/3, which is the source's own ratio — so the footage plays
+ *     essentially uncropped on the screen most visitors arrive on, at 1080px
+ *     wide against a ~390px viewport. A cinematic band would be barely 150px
+ *     tall there, which is a stripe rather than a hero.
+ *   - Desktop: 2.35/1. At 64rem this is 436px instead of 16/9's 576px — 140px
+ *     cheaper, which is what lets the first row of paintings reach the fold on
+ *     a laptop, and it reads as film rather than as a framed picture.
+ *
+ * Cropping wider costs no resolution: the source is 1080px wide either way,
+ * and only height is trimmed.
+ */
+/**
+ * No max-width: the frame fills its Container, which is the same Container the
+ * works grid below uses.
+ *
+ * That is deliberate and it fixes a hierarchy inversion. The hero was capped at
+ * 64rem while the grid runs to --page-max (80rem), so the most important
+ * element on the page was the narrowest one, sitting between two bands of bare
+ * wall while the content beneath it ran wider. Matching the grid is also
+ * self-maintaining — change --page-max and the hero follows instead of drifting
+ * out of step.
+ */
 .frame {
-  margin-inline: auto;
-  max-width: 72rem;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  /* Visible only until the poster loads, and behind letterboxing if a source
+     is ever narrower than the frame. A wall tone, never black. */
+  background-color: var(--surface-sunk);
 }
 
+.poster {
+  object-fit: cover;
+  object-position: center;
+}
+
+/**
+ * A wall label, not a caption.
+ *
+ * A gallery labels a piece with the artist's name in small tracked capitals and
+ * the work beneath it, and this site's whole premise is a gallery wall — so the
+ * hero's text borrows that hierarchy rather than a landing-page headline stack.
+ * It also does a job nothing else on this screen was doing: telling a stranger
+ * arriving from Instagram whose work they are looking at. The wordmark in the
+ * header is 17px and reads as navigation, not as authorship.
+ */
 .text {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  margin-block-start: var(--space-7);
+  margin-block-start: var(--space-6);
   text-align: center;
 }
 
-/* The single positioning line. Large, light, quiet. */
+/**
+ * The name. Tracking is a Latin device — the RTL override in tokens.css zeroes
+ * --tracking-wide for Hebrew, and text-transform is inert there anyway, so this
+ * degrades correctly in both scripts without the component knowing.
+ */
+.eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * The positioning line, at --text-xl rather than --text-lg.
+ *
+ * It is the only sentence on the first screen and it was set at 24px against
+ * 15px body — a 1.6:1 ratio, barely above body copy, for the line carrying the
+ * entire verbal argument of the page. 36px puts it at 2.4:1: still restrained
+ * for a gallery, but no longer apologising.
+ */
 .positioning {
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-weight: var(--weight-light);
   line-height: var(--leading-snug);
   color: var(--text-primary);
@@ -27,16 +103,21 @@
   text-wrap: balance;
 }
 
-/* The name of the work on the wall, the way a gallery labels it. */
-.caption {
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
 @media (min-width: 48rem) {
   .hero {
-    padding-block: var(--space-10) var(--space-11);
+    padding-block: var(--space-8) 0;
+  }
+
+  /**
+   * 2.5/1 rather than 2.35/1. Filling the Container made the frame wider, and a
+   * wider frame at the same ratio is a taller frame — this pays most of that
+   * height back so the first row of paintings stays near the fold.
+   */
+  .frame {
+    aspect-ratio: 2.5 / 1;
+  }
+
+  .text {
+    margin-block-start: var(--space-7);
   }
 }

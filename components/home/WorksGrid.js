@@ -11,7 +11,7 @@ import styles from './WorksGrid.module.css';
  * way through to the full gallery.
  *
  * The grid is uniform: every cell is the same fixed frame, so the nine
- * portraits, five near-squares and one landscape in the collection all sit in
+ * portraits, five near-squares and two landscapes in the collection all sit in
  * identical boxes and every row lines up. The paintings themselves are scaled
  * to fit inside those boxes rather than filling them, so none is cropped. That
  * rule lives in components/ui/ArtworkFrame.

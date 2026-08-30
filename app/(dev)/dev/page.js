@@ -45,9 +45,9 @@ const PALETTE = [
     note: 'The wall is the page. Everything else sits on it.',
     on: 'wall',
     swatches: [
-      { token: '--surface-wall', value: '#F1ECE4', role: 'Page background — the wall' },
+      { token: '--surface-wall', value: '#F0E7D2', role: 'Page background — the wall' },
       { token: '--surface-mat', value: '#FBFAF7', role: 'Cards, mats, panels, modals' },
-      { token: '--surface-sunk', value: '#E8E1D6', role: 'Inset areas: footer, filter bar' },
+      { token: '--surface-sunk', value: '#EBDFC1', role: 'Inset areas: footer, filter bar' },
       { token: '--surface-tint', value: '#EBD9CE', role: 'Clay tint — background only, never text' },
     ],
   },
@@ -209,7 +209,7 @@ export default async function DesignSystemPage() {
               <span className={styles.swatchMeta}>
                 <code className={styles.token}>--accent</code>
                 <code className={styles.value}>#8C4A33</code>
-                <span className={styles.role}>Links, buttons, active state — 5.68:1 on the wall</span>
+                <span className={styles.role}>Links, buttons, active state — 5.43:1 on the wall</span>
               </span>
             </li>
             <li className={styles.swatch}>

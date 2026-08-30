@@ -25,9 +25,9 @@ Defined in `app/tokens.css`. One light theme; no dark mode, no `data-theme`.
 
 | Token | Value | Role |
 |---|---|---|
-| `--surface-wall` | `#F1ECE4` | The page. The wall |
+| `--surface-wall` | `#F0E7D2` | The page. The wall |
 | `--surface-mat` | `#FBFAF7` | Cards, artwork mats, panels |
-| `--surface-sunk` | `#E8E1D6` | Inset areas: footer, filter bar |
+| `--surface-sunk` | `#EBDFC1` | Inset areas: footer, filter bar |
 | `--surface-tint` | `#EBD9CE` | Clay tint. Background only |
 | `--text-primary` | `#2C2723` | Body and headings. Warm near-black — never `#000` |
 | `--text-muted` | `#6B6058` | Medium, dimensions, captions |

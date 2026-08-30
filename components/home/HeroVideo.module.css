@@ -1,0 +1,43 @@
+/**
+ * The loop sits exactly on top of the poster and fades in once it can play, so
+ * there is never a flash of empty frame between the two.
+ */
+.video {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+
+  /**
+   * object-fit: cover — CROPPING IS CORRECT HERE, and only here.
+   *
+   * The never-crop rule protects *paintings*: a work for sale must always be
+   * shown whole, which is what ArtworkFrame enforces. This is documentary
+   * footage of the artist working, not a work for sale, so it may be framed
+   * like film. That is what lets the hero be a wide cinematic band rather than
+   * a tall 16/9 block, and it is why the frame's ratio can change between
+   * breakpoints from a single source file.
+   *
+   * Do not copy this line into anything that displays a painting.
+   */
+  object-fit: cover;
+  object-position: center;
+
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease);
+}
+
+.visible {
+  opacity: 1;
+}
+
+/**
+ * Belt and braces. The component already refuses to mount under
+ * prefers-reduced-motion, but if it is ever rendered another way the fade must
+ * not run.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .video {
+    transition: none;
+  }
+}

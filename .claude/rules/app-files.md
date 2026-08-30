@@ -62,7 +62,8 @@ first thing read at the start of a session.
 | Path | Role |
 |---|---|
 | `public/dev/` | Generated placeholder paintings for `/dev`, in the three orientations. Regenerate with `npm run dev:placeholders`; never hand-edit |
-| `public/paintings/` | The 15 paintings. Filename stem is the work's `id` and English slug. Low-resolution stand-ins — see images.md |
+| `public/paintings/` | The 16 paintings. Filename stem is the work's `id` and English slug. Low-resolution stand-ins — see images.md |
+| `public/video/` | Studio footage. `wide-4x3-slow50.mp4` is the homepage hero — 1080×810, slowed, silent; `story-roses-loop.mp4` is staged for the story section. Genuine iPhone originals shot **vertically**, so every crop caps at 1080px wide whatever its ratio — that is the ceiling on hero sharpness until a still photograph exists, and the reason a full-bleed hero was rejected. Working export name; rename when the subject is confirmed |
 
 ## Routes — `app/`
 
@@ -95,7 +96,8 @@ therefore no top-level `app/layout.js`.
 | `layout/LanguageSwitcher.js` | **The only client component.** Needs `usePathname()` to rewrite the current URL |
 | `layout/CartLink.js` | Header cart entry point. Inline SVG, no cart state yet |
 | `layout/AdminShell.js` | Admin chrome. No header, footer, switcher or cart |
-| `home/Hero.js` | Section 1 — the featured landscape-format work and one positioning line. Static, never a carousel |
+| `home/Hero.js` | Section 1 — **studio footage of the artist**, not a painting, plus one positioning line. Server-renders the poster still as the LCP element; the loop is layered over it by `HeroVideo`. Frame is a cropping window: 16/9 on a phone, 2.35/1 from 48rem. `padding-bottom: 0` on purpose — the grid `<Section>` below already owns that gap |
+| `home/HeroVideo.js` | **The second client component**, and the only one above the fold. Renders the `<video>` alone, deferred until the page is quiet, skipped under reduced-motion or Save-Data. The poster never depends on it |
 | `home/WorksGrid.js` | Section 2 — twelve works plus the link to the gallery |
 | `home/PromisesRow.js` | Section 3 — the four promises, read as an array from the dictionary |
 | `home/StorySection.js` | Section 4 — artist photo slot (a labelled empty frame until one is supplied), paragraph, link to About |

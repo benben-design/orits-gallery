@@ -7,8 +7,8 @@ The paintings are the product. Everything here is a functional requirement.
 This is the single hardest rule in the repo.
 
 The works come in wildly mixed aspect ratios — currently nine portrait between
-0.62 and 0.79, five near-square between 0.95 and 1.03, and one landscape at 1.47.
-That mix is normal for a painter and will get wider, not narrower.
+0.62 and 0.79, five near-square between 0.95 and 1.03, and two landscape at 1.47
+and 1.51. That mix is normal for a painter and will get wider, not narrower.
 
 Therefore:
 - Every grid card is a **fixed-size container**, and the painting is **fitted**
@@ -39,19 +39,47 @@ The rule is **not** "every painting has a mount". It is:
 The mount solves a problem of repetition and scale. Many small works in a grid
 are warm on warm, and each one needs its own edge; the near-white mount board
 (`--surface-mat` against `--surface-wall`) gives it to them. That separation is
-deliberately slight — 1.127:1, about 4.7 L\* — so the mount alone is not what
+deliberately slight — 1.179:1, about 6.4 L\* — so the mount alone is not what
 holds the edge. `--shadow-frame` on the painting does the rest.
 
-**The hero is a described exception, not a contradiction.** It is one large work
-alone, with enough presence to hold the wall by itself, and its edges sit far
-enough apart that the ground barely touches it. A mount around it would read as
-a card, and a card reads as commerce rather than gallery.
+**`ArtworkFrame`'s `bare` tone is currently unused, and that is not an
+oversight.** It exists for a single large work hanging straight on the wall —
+enough presence to hold the ground by itself, where a mount would read as a
+card, and a card reads as commerce rather than gallery. The homepage hero was
+that work until the hero became studio footage, so nothing passes `tone="bare"`
+today.
 
-That exception is conditional. With no mount, the shadow is the *only* thing
-separating the work from the beige, so the bare tone carries
-`--shadow-frame-bare` — a step up in weight at the same ink and the same
-neutrality. Still a canvas on a wall, never a floating card. Remove that token
-and the hero meets the wall with nothing in between.
+Keep the tone and keep `--shadow-frame-bare`. The artwork page's main image is
+the obvious next place for it, and the pairing is load-bearing when it is used:
+with no mount the shadow is the *only* thing separating the work from the
+beige, so `bare` carries a heavier shadow at the same ink and the same
+neutrality. Still a canvas on a wall, never a floating card. If `bare` is ever
+used again without that token, the work meets the wall with nothing in between.
+
+**The hero itself is no longer governed by this section.** It is footage, not a
+painting — see the cropping note below.
+
+## Footage may be cropped. Paintings may not.
+
+The never-crop rule protects **works for sale**. It is not a general statement
+about rectangles.
+
+Studio footage — the artist painting, her hands, the palette — is documentary
+material, not a work anyone is buying. Nobody is judging its composition and
+nothing is lost by reframing it. So the homepage hero uses
+`object-fit: cover` inside a frame whose ratio changes between breakpoints:
+16/9 on a phone, 2.35/1 from 48rem up. One source file, art-directed per
+screen.
+
+That is what lets the hero be a wide cinematic band instead of a tall block —
+436px instead of 576px at 64rem, which is the difference between the first row
+of paintings reaching the fold on a laptop and not. Cropping wider costs no
+resolution: the source is 1080px wide either way and only height is trimmed.
+
+**The distinction is the work, not the medium.** If a painting is ever shown as
+video — a pan across a canvas, a turntable — it is still a work for sale and it
+is still never cropped. `object-fit: cover` belongs on footage of the artist and
+nowhere else. The rule is written at both call sites for exactly this reason.
 
 ## No badge is ever overlaid on a painting
 
@@ -61,7 +89,7 @@ commercial metadata about the work, not part of the picture.
 This was tried the other way and rejected on purpose. A badge at the mount's
 top inline-start corner lands **on** the painting for every portrait work —
 they are height-limited inside the 4/5 frame, so they touch the mat's top edge,
-and nine of the fifteen works are portrait. Avoiding that means either
+and nine of the sixteen works are portrait. Avoiding that means either
 reserving space at the top of the mat, which breaks the even margins the mount
 exists to provide, or squeezing the badge into a padding band that is only 16px
 wide at the mobile clamp floor. Neither is worth it: a label floating over a

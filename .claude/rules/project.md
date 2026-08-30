@@ -120,8 +120,13 @@ redirect to one.
 ## Homepage section order (locked)
 
 1. Minimal top navigation — gallery, about, contact, language switcher, cart
-2. Hero — **one** large landscape-format painting and a single positioning line.
-   A static image. Not a carousel: a carousel hurts LCP and cheapens the work.
+2. Hero — **studio footage of the artist painting**, and a single positioning
+   line. Not a painting: the grid immediately below shows twelve, so a
+   thirteenth above it did the grid's job worse on the most valuable screen of
+   the site. What the grid cannot say is that these are physical objects made
+   by hand, which is what a first-time buyer needs. Still not a carousel.
+   A poster still is the LCP element and a complete hero on its own; the loop
+   is deferred over it — see app-files.md.
 3. Works grid — twelve pieces with title, price and status; link to the gallery
 4. A row of four short promises — original one-off work, signed by the artist,
    insured shipping in Israel, 14-day cancellation
@@ -145,7 +150,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | i18n config, dictionary loader, `he`/`en` locale files | Done |
 | Data access layer + local records + image manifest | Done |
 | Design tokens, global styles, the two faces via `next/font` | Done |
-| The 15 painting images in `public/paintings/` | Done |
+| The 16 painting images in `public/paintings/` | Done |
 | Both root layouts, public shell, admin shell | Done |
 | Every route in the locked map above | Done — as stubs, except the homepage |
 | The four homepage sections + UI primitives | Done |
@@ -155,12 +160,14 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Sitemap, OG images, hreflang tags | Not built yet — required by seo.md |
 | Database, auth, payments, Cloudinary | Not started |
 
-Exactly **one client component** exists — the language switcher. Everything else
-is a server component. See app-files.md.
+Exactly **two client components** exist — the language switcher, and the hero's
+studio loop. Everything else is a server component. Both are leaves, and the
+hero's poster is server-rendered so nothing above the fold waits on JavaScript.
+See app-files.md.
 
 ## Placeholder data — read before touching content
 
-Titles, categories, slugs and the fifteen images are **real**.
+Titles, categories, slugs and the sixteen images are **real**.
 
 Dimensions, prices, descriptions, media and years are **not known yet**, and are
 filled with deliberately absurd stand-ins so they can never be mistaken for real

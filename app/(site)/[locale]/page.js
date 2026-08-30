@@ -3,7 +3,7 @@ import WorksGrid from '@/components/home/WorksGrid';
 import PromisesRow from '@/components/home/PromisesRow';
 import StorySection from '@/components/home/StorySection';
 import { getDictionary } from '@/lib/i18n/dictionaries';
-import { getFeaturedWork, getRecentWorks } from '@/lib/data/works-repository';
+import { getRecentWorks } from '@/lib/data/works-repository';
 
 /**
  * The homepage: hero, works grid, promises, story.
@@ -12,6 +12,12 @@ import { getFeaturedWork, getRecentWorks } from '@/lib/data/works-repository';
  * lib/data/works-repository, never from the file the works currently happen to
  * live in. When that repository is backed by a real database, this page does
  * not change.
+ *
+ * The hero is studio footage rather than a painting, so nothing is excluded
+ * from the grid any more: no work is hanging above it to be shown twice. The
+ * `featured` flag on a work is therefore unused by this page — it is kept for
+ * the homepage's Open Graph image, which seo.md specifies as the featured work
+ * and which has not been built yet.
  */
 
 /** Number of works in the homepage grid. */
@@ -21,15 +27,11 @@ export default async function HomePage({ params }) {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 
-  const featured = await getFeaturedWork();
-  const works = await getRecentWorks(GRID_SIZE, {
-    /* The hero already has this one hanging; do not show it twice. */
-    excludeIds: featured ? [featured.id] : [],
-  });
+  const works = await getRecentWorks(GRID_SIZE);
 
   return (
     <>
-      <Hero work={featured} locale={locale} dictionary={dictionary} />
+      <Hero dictionary={dictionary} />
       <WorksGrid works={works} locale={locale} dictionary={dictionary} />
       <PromisesRow dictionary={dictionary} />
       <StorySection locale={locale} dictionary={dictionary} />

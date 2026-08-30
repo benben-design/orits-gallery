@@ -21,9 +21,19 @@
    * The page is a gallery wall; a work hangs on a mat; sunk areas step
    * back from the wall rather than forward off it.
    * ================================================================ */
-  --surface-wall: #F1ECE4;   /* page background — the wall itself */
+  /**
+   * The wall is as dark as this palette allows, and that is a measured
+   * ceiling rather than a preference. Darkening the page drags --surface-sunk
+   * down with it — sunk must stay behind the wall, not in front of it — and
+   * --text-muted on sunk is the pairing with the least headroom in the file.
+   * The escape route (darken the ink) is closed by --text-muted being pinned
+   * to the clay tint below, which is in turn pinned by --accent on it. Every
+   * route out ends at a locked token, so roughly 1.7 L* is the whole range.
+   * Going further is not a nudge; it means re-deciding the accent.
+   */
+  --surface-wall: #F0E7D2;   /* page background — the wall itself */
   --surface-mat: #FBFAF7;    /* cards, artwork mats, panels, modals */
-  --surface-sunk: #E8E1D6;   /* inset areas: footer, filter bar */
+  --surface-sunk: #EBDFC1;   /* inset areas: footer, filter bar */
 
   /**
    * Clay tint. BACKGROUND ONLY — never a text colour.
@@ -34,12 +44,11 @@
    * 1. --accent (#8C4A33) IS THE ONLY TERRACOTTA THAT MAY CARRY TEXT.
    *    Do not introduce a softer, prettier terracotta for type, however much
    *    better it looks on its own. Lightening this hue runs out of contrast
-   *    fast: measured on --surface-wall, the accent clears AA at 5.68:1, but
-   *    the same hue passes below the 4.5:1 floor by #A4573C (4.46:1), and the
-   *    soft shade that prompted this rule sits at roughly #B76143 — about
-   *    3.7:1, a clear AA failure. There is no room between "soft" and
-   *    "illegible" here, which is why the accent is a fixed value and not a
-   *    starting point.
+   *    fast: measured on --surface-wall, the accent clears AA at 5.43:1, but
+   *    #A4573C already fails at 4.26:1, and the soft shade that prompted this
+   *    rule sits at roughly #B76143 — about 3.55:1, a clear AA failure. There
+   *    is no room between "soft" and "illegible" here, which is why the accent
+   *    is a fixed value and not a starting point.
    *
    * 2. ON A --surface-tint BACKGROUND, TEXT IS --text-primary (10.80:1) OR
    *    --status-sold-text (6.79:1). Nothing else.
@@ -47,7 +56,7 @@
    *    misses AA by a hair, which is exactly the kind of miss that survives
    *    a design review because it looks fine.
    *
-   * The tint itself sits 1.16:1 against --surface-wall. It is a wash, not a
+   * The tint itself sits 1.11:1 against --surface-wall. It is a wash, not a
    * boundary: never rely on it alone to separate two regions.
    */
   --surface-tint: #EBD9CE;
@@ -72,8 +81,8 @@
   /* ================================================================ *
    * ACCENT — deep terracotta
    *
-   * Links, buttons, active state. Verified as link text: 5.68:1 on the
-   * wall, 6.40:1 on a mat, 5.15:1 on sunk, 4.88:1 on the tint — it clears
+   * Links, buttons, active state. Verified as link text: 5.43:1 on the
+   * wall, 6.40:1 on a mat, 5.05:1 on sunk, 4.88:1 on the tint — it clears
    * AA on every surface defined in this file.
    * ================================================================ */
   --accent: #8C4A33;

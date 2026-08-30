@@ -18,7 +18,7 @@
   "home": {
     "hero": {
       "positioning": "[PLACEHOLDER POSITIONING LINE — real copy not written yet]",
-      "imageAlt": "{title} — painting by {artist}"
+      "posterAlt": "Orit Bar Shai painting in her studio — a loaded brush meeting wet oil paint on canvas"
     },
     "works": {
       "heading": "[PLACEHOLDER HEADING] Selected works",
