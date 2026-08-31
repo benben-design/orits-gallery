@@ -11,10 +11,12 @@
     "lint": "eslint . && node scripts/check-contrast.mjs",
     "images:manifest": "node scripts/generate-image-manifest.mjs",
     "dev:placeholders": "node scripts/generate-dev-placeholders.mjs",
+    "seed:local": "node --env-file-if-exists=.env.local scripts/seed-local-database.mjs",
     "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "next": "^16.3.3",
+    "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

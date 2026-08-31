@@ -1,0 +1,68 @@
+-- 005_add_order_buyer_locale.sql
+--
+-- Records which language the buyer was reading when they placed the order.
+--
+-- Forward-only. Once this file has been applied it is never renamed,
+-- renumbered or edited. Anything wrong here is corrected by 006.
+--
+-- Run by hand in pgAdmin, against local Postgres first and later against Neon,
+-- after 003_create_orders_tables.sql.
+--
+-- ASCII only, comments included. psql on Windows defaults its client encoding
+-- to WIN1252, and a single character without a WIN1252 equivalent aborts the
+-- statement it sits in. That is not a hypothetical: it happened to 001.
+--
+-- Why this is here now, before the checkout exists:
+--
+-- The order confirmation and the tax invoice have to reach the buyer in the
+-- language they were reading when they bought. That fact exists only during
+-- the checkout request, and it cannot be reconstructed afterwards. It is not
+-- the site default, because most buyers are not on the default. It is not
+-- derivable from the address, because an Israeli address says nothing about
+-- which language someone reads. And it is not the browser's Accept-Language
+-- header months later, because that is not stored and would be a guess anyway.
+-- If it is not captured at the moment of purchase it is gone, so the column
+-- goes in before there is any code that could forget to write it.
+
+alter table orders
+  add column buyer_locale text not null
+    constraint orders_buyer_locale_supported check (buyer_locale in ('he', 'en'));
+
+-- On the values in that constraint.
+--
+-- They are not invented here. They are the contents of `locales` in
+-- lib/i18n/config.js, which is the single source of truth for the languages
+-- the site supports, and they were copied from it at the time this migration
+-- was written rather than assumed.
+--
+-- Be aware of what that costs, because it contradicts a rule the project
+-- states explicitly. lib/i18n/config.js promises that adding a third language
+-- is a two-step job: add the code to the config, add its locale JSON. This
+-- constraint makes it a three-step job, because SQL cannot read a JavaScript
+-- module and a CHECK has to hold literals.
+--
+-- That trade is taken deliberately: an order whose language is a typo is an
+-- invoice that never arrives, and the database is the only place that can
+-- refuse it whatever writes the row. But the third step must not come as a
+-- surprise, so here it is in full. Adding French would need a migration
+-- containing:
+--
+--     alter table orders drop constraint orders_buyer_locale_supported;
+--     alter table orders add constraint orders_buyer_locale_supported
+--       check (buyer_locale in ('he', 'en', 'fr'));
+--
+-- The constraint is named rather than left to Postgres to name precisely so
+-- that this is a two-line migration and not an archaeology exercise.
+
+-- On there being no default.
+--
+-- Required, and deliberately without one. A default of 'he' would be the most
+-- dangerous kind of correct-looking value: every order written by code that
+-- forgot to set the language would silently claim its buyer reads Hebrew, and
+-- the failure would surface as an English-speaking customer receiving a Hebrew
+-- invoice, long after the request that could have told the truth is gone.
+-- With no default, that same bug fails loudly at insert time instead.
+--
+-- NOT NULL is added directly here only because the table is empty. On a table
+-- with rows this would have to be three steps: add the column nullable,
+-- backfill it, then set it not null.

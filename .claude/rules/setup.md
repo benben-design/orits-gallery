@@ -13,6 +13,8 @@ npm run lint       # ESLint over the whole project, then the contrast guard
 npm run images:manifest   # regenerate lib/data/image-manifest.json
 npm run dev:placeholders  # regenerate the /dev placeholder images
 npm run check:contrast    # WCAG check over every permitted colour pairing
+
+npm run seed:local        # fill a LOCAL database with the sixteen works
 ```
 
 There is one app and one dev server. No separate API process.
@@ -94,17 +96,40 @@ never ship a stale manifest — but the dev server will happily use an old one.
 
 ## Environment
 
-No environment variables are required yet — there is no database, no auth and no
-payment provider wired up.
+`.env.example` at the repo root lists every key the project will need, with
+dummy values. Copy it to `.env.local` and fill that in; `.env.local` is
+git-ignored by the `.env*.local` rule and never committed.
 
-As each arrives, add its variables to `.env.local` locally and to the Vercel
-project for deployment, keep an `.env.example` in the repo listing every key with
-dummy values, and never commit real credentials.
+**Only `DATABASE_URL` is read by anything today**, and only by the seed script —
+no page, route or component reads an environment variable yet. The other keys in
+the example are forecasts: the admin session secret, the site URL, Cloudinary,
+and the payment provider's keys, whose names will change once a provider is
+chosen. Uncomment nothing into use before something reads it, and add a key to
+the example in the same change that starts reading it.
 
-Expected eventually: the Neon connection string, a JWT secret for the admin
-session, Cloudinary credentials, and the payment provider's keys.
+As each arrives, add it to `.env.local` locally and to the Vercel project for
+deployment. Never commit real credentials.
 
 ## Database
 
-Not set up yet. When it is, migrations live in `database/migrations/` and are
-applied in a recorded order — see database.md.
+A **local Postgres**, created by hand in pgAdmin, called `art_studio`. Neon is
+the intended production host and is not connected yet.
+
+The schema is plain SQL in `database/migrations/`, applied by hand in numeric
+order — no runner, no ORM, forward-only. Conventions and the whole schema are in
+database.md.
+
+Two operational notes that cost real time when missed:
+
+- **`psql` on Windows defaults its client encoding to WIN1252.** A single
+  character in a migration with no WIN1252 equivalent aborts the statement it
+  sits in, and the errors that follow point somewhere else entirely. Migrations
+  are written ASCII-only for this reason; `$env:PGCLIENTENCODING = "UTF8"`
+  fixes the shell if you ever need it. pgAdmin's query tool is unaffected.
+- **Reconnect the pgAdmin query tool to the right database before running a
+  migration.** It keeps the previous connection, and the tables land in
+  `postgres` with no error.
+
+To fill a fresh local database with the sixteen works, run `npm run seed:local`.
+It refuses to do anything unless `DATABASE_URL` points at loopback, and it is
+safe to run repeatedly.

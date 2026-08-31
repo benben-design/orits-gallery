@@ -15,7 +15,8 @@ first thing read at the start of a session.
 | `vercel.json` | Framework, region `fra1`, and the `X-Robots-Tag` noindex headers on `/admin/*` and `/dev` |
 | `jsconfig.json` | The `@/*` path alias |
 | `eslint.config.mjs` | ESLint flat config — `eslint-config-next/core-web-vitals` plus ignores. Not wired into the build |
-| `package.json` | Scripts. `prebuild` regenerates the image manifest; `lint` runs ESLint then the contrast guard; `dev:placeholders` regenerates the `/dev` placeholder images |
+| `package.json` | Scripts. `prebuild` regenerates the image manifest; `lint` runs ESLint then the contrast guard; `dev:placeholders` regenerates the `/dev` placeholder images; `seed:local` fills a local database. `pg` is the only runtime dependency beyond Next and React |
+| `.env.example` | **Committed template listing every key the project will need**, dummy values only, `DATABASE_URL` first. The real `.env.local` is git-ignored. Only `DATABASE_URL` is read by anything today; the rest are forecasts |
 | `.gitattributes` | Stores every text file as LF regardless of the checkout platform, and marks image/font binaries. Landed in the first commit precisely so it never has to renormalize the tree later |
 
 ## i18n — `lib/i18n/`
@@ -31,15 +32,16 @@ first thing read at the start of a session.
 
 | File | Role |
 |---|---|
-| `works-repository.js` | **The only painting data module pages may import.** Product-shaped, all async, plain objects out |
-| `artworks.js` | Storage. The local stand-in for the works table. Off limits outside `lib/data` |
-| `image-manifest.json` | Generated. Real pixel dimensions per painting. Never hand-edited |
+| `works-repository.js` | **The only painting data module pages may import.** Product-shaped, all async, plain objects out. Still reads `artworks.js` — nothing here queries Postgres yet |
+| `artworks.js` | Storage, and now **also the seed fixture**. Off limits outside `lib/data` except `scripts/seed-local-database.mjs`. Its JSON import carries `with { type: 'json' }` so plain Node can load it — remove that and the seed script breaks. See data-layer.md |
+| `image-manifest.json` | Generated. Real pixel dimensions per painting. Never hand-edited. Authoritative over the database's copy while `public/paintings/` exists |
 
 ## Lib
 
 | File | Role |
 |---|---|
-| `lib/format.js` | `formatPrice`, `formatDimensions` — fixed locale tags so server and client agree |
+| `lib/format.js` | `formatPrice`, `formatDimensions` — fixed locale tags so server and client agree. Treats `price.amount` as **whole shekels**, which the database does not |
+| `lib/db.js` | **Owns the database connection.** One pooled `pg` client behind `getPool()`, created on first use and cached on `globalThis` so hot reload cannot leak pools. Throws with instructions when `DATABASE_URL` is missing. Server-side only — **nothing imports it yet** |
 
 ## Styles
 
@@ -56,6 +58,22 @@ first thing read at the start of a session.
 | `scripts/generate-image-manifest.mjs` | Reads JPEG/PNG headers in `public/paintings/` and writes the manifest. No dependencies. Wired into `prebuild` |
 | `scripts/check-contrast.mjs` | **The palette guard.** Computes WCAG contrast for every permitted pairing and asserts the forbidden ones stay forbidden. Reads values from `app/tokens.css`. Runs with `npm run lint` and on its own as `npm run check:contrast`. Not in the build |
 | `scripts/generate-dev-placeholders.mjs` | Writes the three placeholder paintings for `/dev`. Encodes PNG by hand and reads its two colours out of `app/tokens.css`, so the files can never drift from the palette. No dependencies. **Not** wired into `prebuild` — the output is committed |
+| `scripts/seed-local-database.mjs` | **Local development only.** Fills a local database with the sixteen works from `artworks.js` plus their images. Refuses to run unless `DATABASE_URL` points at loopback, and also refuses on `NODE_ENV=production` or on Vercel — the check runs before any connection opens. Idempotent: works upsert on `slug_en`, images are replaced, all in one transaction. Deliberately **not** in `database/migrations/` and deliberately **unnumbered**. `npm run seed:local` |
+
+## Database — `database/migrations/`
+
+Plain SQL, applied by hand in pgAdmin or with `psql`, in numeric order. No
+runner, no ORM, forward-only, ASCII-only. Conventions and the full schema are in
+database.md. Which migrations a given database has had applied is not recorded
+anywhere — ask the database.
+
+| File | Role |
+|---|---|
+| `001_create_works_table.sql` | `works`. uuid key, slug per language, the four statuses, `published_at` as a separate axis, optional reduced price, at most one featured work |
+| `002_create_work_images_table.sql` | `work_images`. Several rows per work, `image_ref`, pixel dimensions, type, position, optional alt text. At most one `main` per work |
+| `003_create_orders_tables.sql` | `orders` and `order_lines`. No quantity column, no repeated work in an order, and an ordered work cannot be deleted |
+| `004_create_admin_users_table.sql` | `admin_users`. Hash only, case-insensitive email uniqueness, no role column, no reset fields |
+| `005_add_order_buyer_locale.sql` | Adds `orders.buyer_locale`, required, constrained to the locales in `lib/i18n/config.js` |
 
 ## Assets
 
@@ -111,9 +129,15 @@ therefore no top-level `app/layout.js`.
 
 ## Not built yet
 
-The database layer, admin auth, cart and checkout logic, gallery filters and
-pagination, the artwork page body, Cloudinary, sitemap, OG images and hreflang
-tags. Add them here as they land.
+Admin auth, the admin accounts themselves, cart and checkout logic, gallery
+filters and pagination, the artwork page body, Cloudinary, sitemap, OG images
+and hreflang tags. Add them here as they land.
+
+The database schema exists and the connection module exists, but **no
+application code reads Postgres**: every page still goes through
+`works-repository.js` into `artworks.js`, and `lib/db.js` has no importers.
+Swapping the repository over is the next milestone, and data-layer.md lists what
+it has to reconcile.
 
 When the sitemap lands it needs no `/dev` exclusion: generated from the locale
 list and the works repository, as seo.md requires, it cannot emit a URL outside

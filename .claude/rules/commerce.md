@@ -20,6 +20,39 @@ Alongside it, a work records **which channel it sold through** — this site,
 under1000, or elsewhere. The artist sells in parallel on other platforms, so the
 site is not the only thing that can consume a painting.
 
+The four values are unchanged and deliberate. What has changed is that they are
+now enforced by the database as well as by the application — adding a fifth is a
+migration, not an edit.
+
+## Status does not control visibility
+
+**Publication is a separate axis.** A work carries a nullable publication
+timestamp — `published_at` in the schema — and null means a **draft**: it exists
+in the admin and the public site must not show it.
+
+A draft may hold **any** of the four sale statuses. A work can be sold and
+unpublished, or available and unpublished. So no sale status ever means "hidden",
+and nothing may infer visibility from `status` alone. Any public read filters on
+publication *and* presents status; the two questions are unrelated.
+
+This is why publication is not a fifth status. Folding it in would make
+"sold but not yet published" unexpressible, and that is a real state — the
+artist photographs and drafts a work that has already gone at a fair.
+
+## A discount is a price, not a status
+
+A work may carry an **optional reduced price** alongside its regular one. A
+discounted work is **still `available`** — there is no discounted status, and
+there must never be one.
+
+The database enforces that a reduced price actually undercuts the regular price,
+and that absent means absent rather than zero, because a zero would be a free
+painting.
+
+**How a reduced price is presented has not been decided.** The four-state table
+below covers status only. Whatever is chosen, it must not be carried by colour
+alone, for the same reason as everything else here.
+
 ### The four presentations (decided)
 
 Each state gets its own treatment, and **none of them is carried by colour
@@ -66,8 +99,10 @@ Mitigations, all required:
 3. **Marking a work sold is the single most prominent action in the admin.** One
    click from the works list, with no need to open an edit screen. If the artist
    has to hunt for it, she will not do it, and the site will sell air.
-4. **A record created automatically never defaults to available.** Any future
-   import or folder-watching automation creates a **draft**, not a live listing.
+4. **A record created automatically is never publicly visible.** Any future
+   import or folder-watching automation creates a **draft**. The schema makes
+   this the default rather than a discipline: `published_at` has no default, so
+   a row inserted without one is a draft whether or not the importer remembered.
 
 ## Automation, when it comes
 
@@ -100,10 +135,51 @@ promises row on the homepage — original one-off work, signed by the artist,
 insured shipping in Israel, 14-day cancellation — is a conversion mechanism, not
 decoration. Treat pricing, availability and policy visibility as product surface.
 
+## Orders
+
+An order is a historical record. It says what was true when money moved, and
+nothing that later happens to the catalogue may change what it says.
+
+- **An order line has no quantity, and adding one would be a bug.** Every
+  painting is a one-off; "2 x Lemons" is not a thing that can be sold. One line
+  is one work.
+- **The same work cannot appear twice in one order.** The database refuses it —
+  with no quantity column, that is also the only way the bug could express
+  itself.
+- **A work that has been ordered cannot be deleted.** The database refuses,
+  rather than shrinking a paid order or leaving a line that has forgotten which
+  painting was sold. A sold painting therefore stays in the catalogue
+  permanently, which is the right answer anyway: if the artist wants it out of
+  sight, that is unpublishing it, not deleting it. **The admin must explain this
+  in plain Hebrew** — a raw database error reaching the artist is a phone call
+  to her son.
+- **The price on a line is copied at the moment of purchase**, never read back
+  off the work. Prices change, and a discounted sale was charged at the reduced
+  price; neither may retroactively rewrite what a buyer paid.
+- **An order records the language the buyer was reading.** Required, not
+  inferred. The confirmation and the tax invoice have to arrive in that
+  language, and it cannot be reconstructed afterwards — it is not the site
+  default, and an Israeli address says nothing about which language someone
+  reads.
+
+Known gap, and it matters legally: **the 14-day cancellation window cannot be
+computed from the schema as it stands.** Only creation and last-update
+timestamps exist, so once an order moves from paid to shipped the payment date
+is gone. Israeli law counts the window from receipt. This needs dated status
+transitions before checkout is built.
+
+Nothing writes orders yet — no cart, no checkout, no payment provider.
+
 ## Money handling
 
 Prices are stored as an amount plus a currency, never as a formatted string, and
 never as a float that gets rounded at display time in different places.
+
+**In the database that amount is a whole number of minor units — agorot.** The
+local data file still holds whole shekels, so a conversion is required between
+them, and it belongs in the repository in exactly one place. A silent mismatch
+renders a price a hundred times too large and neither layer complains. See
+data-layer.md.
 
 The client never determines what is charged. The server computes the price from
 its own records at payment time.

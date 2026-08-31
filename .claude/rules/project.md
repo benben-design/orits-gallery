@@ -20,8 +20,10 @@ drives most of the non-obvious rules in this repo.
    components go through `lib/data/works-repository.js`. → data-layer.md
 3. **Never crop a painting.** Mixed aspect ratios are the norm here, not an
    edge case. Fit inside a fixed container; never fill it. → images.md
-4. **Status is not a boolean.** `available | reserved | sold | not-for-sale`,
-   plus the channel it sold through. → commerce.md
+4. **Status is not a boolean, and it is not visibility.**
+   `available | reserved | sold | not-for-sale`, plus the channel it sold
+   through — and separately a publication timestamp, where empty means a draft.
+   A draft may hold any of the four statuses. → commerce.md
 5. **The site chrome must not compete with the art.** Warm neutral surfaces,
    plus exactly one accent — a deep terracotta, used only for interactive
    things. No second accent, no decorative colour. → frontend/styles.md
@@ -52,8 +54,8 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | React | React 19 |
 | Styling | Plain CSS — `app/tokens.css` + `app/globals.css`, co-located CSS Modules per component. No framework, no component library |
 | Images | `public/paintings/` + Next's built-in image pipeline today; **Cloudinary later** |
-| Database | Neon (PostgreSQL) — **not wired up yet** |
-| Auth | Admin-only login for the artist — **not built yet**; planned as httpOnly JWT cookies |
+| Database | PostgreSQL. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, and **no application code queries either one yet** |
+| Auth | Admin login for **two accounts** with equal rights, the artist's and the developer's — **not built yet**; planned as httpOnly JWT cookies |
 | Payments | Provider not chosen yet — Stripe vs an Israeli provider that issues a tax invoice |
 | Host | Vercel, one deployment, region `fra1` |
 
@@ -78,8 +80,9 @@ it does not apply here.
 ├── lib/
 │   ├── i18n/             locale config, dictionary loader, locales/*.json
 │   ├── data/             the data access layer — see data-layer.md
+│   ├── db.js             the pooled Postgres connection. Nothing imports it yet
 │   └── format.js         locale-aware price and dimension formatting
-├── database/             schema and migrations. Present, empty
+├── database/migrations/  plain SQL, applied by hand, forward-only
 ├── scripts/              operational scripts, no dependencies
 ├── public/paintings/     the painting images
 ├── proxy.js              locale gate — redirects any path with no locale
@@ -158,7 +161,11 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Gallery filters and pagination, artwork page body | Not built yet |
 | Cart, checkout and order logic | Not built yet |
 | Sitemap, OG images, hreflang tags | Not built yet — required by seo.md |
-| Database, auth, payments, Cloudinary | Not started |
+| Database schema | Written — five migrations in `database/migrations/`, run by hand against a local Postgres |
+| Local seed data | `npm run seed:local` fills a local database from `lib/data/artworks.js` |
+| Database connection module | `lib/db.js` exists. **Nothing imports it** |
+| Reading painting data from Postgres | **Not done.** Every page still goes through the repository into the local file |
+| Neon, auth, payments, Cloudinary | Not started |
 
 Exactly **two client components** exist — the language switcher, and the hero's
 studio loop. Everything else is a server component. Both are leaves, and the
@@ -185,6 +192,13 @@ No photograph of the artist has been supplied. `StorySection` renders a labelled
 empty frame at the right proportions rather than a stock portrait or a stand-in
 face.
 
+One placeholder has no home in the database. **Medium is a closed set of two
+keys there** — `oil-on-canvas` and `pastel-on-paper`, translated in the
+application — and it is optional. There is no key meaning "not recorded yet", so
+a seeded work carries **no medium at all** rather than a fake one, and the
+`[PLACEHOLDER] Medium not recorded yet` string has nowhere to go. Those two keys
+still need entries in both locale files.
+
 ## Key decisions, and why
 
 - **Next.js over the owner's previous Vite + Express setup**: this is a public,
@@ -197,7 +211,20 @@ face.
 - **Two categories only** — `landscape` and `still-life` — as a filter on one
   gallery, not as separate collection pages. Collection pages stay possible later
   without a migration because the category is already a field.
-- **Status is a four-value field, never a boolean.** See commerce.md.
+- **Status is a four-value field, never a boolean.** See commerce.md. Whether a
+  work is publicly visible is a *separate* nullable timestamp, so a draft can
+  hold any of the four statuses.
+- **The database key is a generated uuid, independent of the slug and of the
+  image filename.** In `lib/data/artworks.js` one string does all three jobs;
+  that coupling was not carried into the schema, because it ends the moment
+  images move to a hosting service. Nothing may build an image path from a
+  work's id.
+- **Money is stored in the database as a whole number of agorot** — minor units.
+  The local data file still holds whole shekels, so the repository has to convert
+  in one place when it swaps over. A silent mismatch renders a price a hundred
+  times too large. See data-layer.md.
+- **Migrations are plain SQL, applied by hand, forward-only, and ASCII-only.**
+  No runner, no ORM. See database.md for why the ASCII part is not fussiness.
 - **The chrome must not compete with the art.** The paintings are highly
   saturated, so the surfaces are warm neutrals. A single deep-terracotta accent
   carries interaction only — it is drawn from the same family as the work

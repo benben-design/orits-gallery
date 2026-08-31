@@ -19,9 +19,25 @@ the images actually in the repo.
 
 ## Database — Neon
 
-Not connected yet. When it is: the connection string is an environment variable
-in the Vercel project, and schema changes are applied to Neon deliberately as
-part of deploying — never assumed to have happened.
+Not connected yet, and nothing in the application queries a database at all —
+see database.md. Development runs against a local Postgres.
+
+When Neon arrives: the connection string is `DATABASE_URL` in the Vercel
+project, and the migrations in `database/migrations/` are applied to it **by
+hand, in numeric order, as a deliberate step of deploying** — never assumed to
+have happened. There is no runner and no ledger table, so the only way to know
+what a given database has had applied is to ask that database.
+
+Two hazards specific to having two databases:
+
+- **The local database and Neon can drift.** Applying a migration locally does
+  nothing to production. A deploy that ships code depending on a new column
+  before that column exists in Neon fails at runtime, not at build time.
+- **`npm run seed:local` must never reach production**, which is why it refuses
+  any host that is not loopback and also refuses when `NODE_ENV=production` or
+  when Vercel's environment variables are present. It writes deliberately absurd
+  placeholder prices; running it against real data would be unrecoverable
+  without a restore.
 
 ## Environment variables
 
@@ -41,3 +57,9 @@ Beyond a green build, these are launch blockers and are easy to forget:
   privacy, accessibility. See commerce.md.
 - **A custom domain**, not the vercel.app URL.
 - **Both languages walked end to end**, including checkout, in right-to-left.
+- **The site actually reading the database.** Today every page reads
+  `lib/data/artworks.js`, so a deployed build serves the file's contents and
+  ignores Postgres entirely. Until the repository swaps over, the admin cannot
+  change anything a visitor sees.
+- **The two admin accounts existing**, with real password hashes. The table is
+  empty and there is no way to sign in.

@@ -109,6 +109,27 @@ run `npm run images:manifest`.
 The layout needs those numbers precisely because it must not crop: to reserve
 the right box before the image loads, and to avoid layout shift.
 
+### Two places now hold pixel dimensions, and only one is authoritative
+
+The database also stores them: `work_images.pixel_width` and
+`pixel_height`. So the same fact lives in two places, which is normally how
+facts drift. The rule that resolves it:
+
+> **While `public/paintings/` exists, the generated manifest wins.** It is
+> re-read from the actual files on every build and cannot disagree with them.
+> The database columns take over when the files no longer live in the repository
+> — that is, when images move to hosting and the manifest script has nothing
+> left to parse.
+
+Until then the database columns are a copy that the seed script fills in from
+the manifest, and nothing should read them in preference to it. Neither number
+is ever typed by hand in either place.
+
+Note also that pixel dimensions and physical size are **different quantities in
+different tables**: pixels of a file in `work_images`, centimetres of a canvas
+in `works.width_cm` / `height_cm`. The naming keeps them apart deliberately —
+confusing them produces a layout that is wrong in a way nobody spots by eye.
+
 ## Current images are stand-ins
 
 Every file in `public/paintings/` is a WhatsApp-compressed copy capped at 1600px,
@@ -136,6 +157,34 @@ The model carries an ordered image collection with three types:
 Only `main` exists today. Build the artwork page so the others slot in without
 a redesign.
 
+The database enforces the part that matters: **at most one `main` image per
+work**, because it is the grid card, the top of the artwork page and the Open
+Graph image, so "which image is the painting" must not have two answers.
+`detail` and `in-situ` may repeat freely. Ordering is an explicit position, and
+positions are *not* unique — two images may share one, and reads break the tie
+on position then id.
+
+## An image is not located from the work's id
+
+This changed, and it invalidates the old shortcut.
+
+In `lib/data/artworks.js` one string is the work's id, its English slug **and**
+its image filename stem in `public/paintings/`, so a path could be built from an
+id. In the database it is not: the key is a generated uuid with no meaning
+outside the database, and the image's location is its own column — `image_ref`
+on `work_images`.
+
+So **nothing may derive an image path from a work's id.** Read the reference.
+
+`image_ref` is named neither `path` nor `url` nor `public_id` on purpose: it
+holds a local path under `public/paintings/` today and a hosted identifier
+later, and a name describing either one makes the other read as a bug. Swapping
+delivery is a change of value, not a migration.
+
+That today's filename stems still match `slug_en` is a leftover coincidence of
+how the files were named. It is not a rule, and building on it re-creates the
+coupling this removed.
+
 ## Delivery
 
 Today: files in `public/paintings/`, served through Next's built-in image
@@ -149,3 +198,10 @@ below the fold should be eager.
 
 Alt text is content, so it is bilingual and lives with the work, not hardcoded.
 Describe the painting — subject, medium — not the fact that it is an image.
+
+In the database it is per language and **optional** — `alt_he` and `alt_en` on
+`work_images`. Absent means the application derives it from the work's title in
+that language, which is why it is nullable rather than defaulted: a default
+would be an English or Hebrew phrase living in the database, and every
+user-facing string on this project comes from the locale files. The seeded works
+carry none, so the fallback is the path currently exercised.

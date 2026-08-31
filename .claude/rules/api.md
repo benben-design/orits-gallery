@@ -27,8 +27,13 @@ admin's save actions, the cart, checkout, and the payment webhook do.
   from its verified session cookie.
 - Never trust a price, a status, or a total supplied by the client. The server
   computes what is charged from its own records.
-- Validate input at the boundary. Reject unknown status or category values
-  against the exported constants rather than writing whatever arrived.
+- Validate input at the boundary. Reject unknown values against the exported
+  constants rather than writing whatever arrived. The closed sets are wider than
+  they were: the four sale statuses, the two categories, the two image types,
+  the two medium keys, the five order statuses, the three sale channels, and the
+  supported locales. Each is also constrained in the database, so an unvalidated
+  write fails there — but as a constraint violation the user cannot act on,
+  which is not an error message.
 - An error returned to the browser says what the user can do about it; the
   detail goes to the server log.
 
@@ -47,3 +52,12 @@ the site selling a painting that no longer exists.
 Payment webhooks are the only writer of payment state. Never set an order paid
 from a client callback or a redirect — the user closing the tab must not change
 the outcome.
+
+Amounts crossing this boundary are **minor units** — agorot — because that is
+how they are stored and how a provider charges. Convert once, in the repository,
+and never in a route handler; two conversion sites is how one of them gets
+missed and a charge comes out a hundred times too large.
+
+A checkout must also capture the **language the buyer was reading** and write it
+to the order. It is required, it cannot be recovered afterwards, and the tax
+invoice depends on it.
