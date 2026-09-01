@@ -32,8 +32,8 @@ first thing read at the start of a session.
 
 | File | Role |
 |---|---|
-| `works-repository.js` | **The only painting data module pages may import.** Product-shaped, all async, plain objects out. Still reads `artworks.js` — nothing here queries Postgres yet |
-| `artworks.js` | Storage, and now **also the seed fixture**. Off limits outside `lib/data` except `scripts/seed-local-database.mjs`. Its JSON import carries `with { type: 'json' }` so plain Node can load it — remove that and the seed script breaks. See data-layer.md |
+| `works-repository.js` | **The only painting data module pages may import.** Product-shaped, all async, plain objects out. **Reads every painting from Postgres** through `lib/db.js`, converts agorot to shekels in the one place that conversion happens, and requires each read to state whether it is public or admin scope so a draft cannot leak by omission |
+| `artworks.js` | **The seed fixture, not storage.** `scripts/seed-local-database.mjs` is its only consumer for data, via `readAllRecords()`. It also holds `WORK_STATUSES`, `WORK_CATEGORIES` and `IMAGE_TYPES` — the repository re-exports the first two, so deleting this file breaks the running site as well as the seed. Off limits outside `lib/data` except that script. Its JSON import carries `with { type: 'json' }` so plain Node can load it — remove that and the seed script breaks. See data-layer.md |
 | `image-manifest.json` | Generated. Real pixel dimensions per painting. Never hand-edited. Authoritative over the database's copy while `public/paintings/` exists |
 
 ## Lib
@@ -41,7 +41,7 @@ first thing read at the start of a session.
 | File | Role |
 |---|---|
 | `lib/format.js` | `formatPrice`, `formatDimensions` — fixed locale tags so server and client agree. Treats `price.amount` as **whole shekels**, which the database does not |
-| `lib/db.js` | **Owns the database connection.** One pooled `pg` client behind `getPool()`, created on first use and cached on `globalThis` so hot reload cannot leak pools. Throws with instructions when `DATABASE_URL` is missing. Server-side only — **nothing imports it yet** |
+| `lib/db.js` | **Owns the database connection.** One pooled `pg` client behind `getPool()`, created on first use and cached on `globalThis` so hot reload cannot leak pools. Throws with instructions when `DATABASE_URL` is missing. Server-side only, and **`works-repository.js` is its only importer**. This module owns the connection and runs no queries of its own; nothing else may create a pool |
 
 ## Styles
 
@@ -80,7 +80,7 @@ anywhere — ask the database.
 | Path | Role |
 |---|---|
 | `public/dev/` | Generated placeholder paintings for `/dev`, in the three orientations. Regenerate with `npm run dev:placeholders`; never hand-edit |
-| `public/paintings/` | The 16 paintings. Filename stem is the work's `id` and English slug. Low-resolution stand-ins — see images.md |
+| `public/paintings/` | The 16 paintings. Each filename stem happens to match a work's `slug_en` — a leftover of how the files were named, **not** a rule, and no longer the work's `id`, which is a uuid. The image's location is `work_images.image_ref` and nothing may derive it from an id. Low-resolution stand-ins — see images.md |
 | `public/video/` | Studio footage. `wide-4x3-slow50.mp4` is the homepage hero — 1080×810, slowed, silent; `story-roses-loop.mp4` is staged for the story section. Genuine iPhone originals shot **vertically**, so every crop caps at 1080px wide whatever its ratio — that is the ceiling on hero sharpness until a still photograph exists, and the reason a full-bleed hero was rejected. Working export name; rename when the subject is confirmed |
 
 ## Routes — `app/`
@@ -101,7 +101,7 @@ therefore no top-level `app/layout.js`.
 | `app/(dev)/dev/layout.js` | **Third root layout.** English, LTR, `noindex`. Exists so `/dev` sits outside the locale structure and cannot inherit the public shell |
 | `app/(dev)/dev/page.js` | **The design system, rendered** — every colour on the surface it is used on, the spacing and radius scales, the interactive states, and the real artwork component across all three orientations and all four statuses. Needs no database and no real content. A permanent developer tool |
 | `app/(dev)/dev/page.module.css` | Chrome for the above. `.buttonHovered` and `.buttonFocused` mirror declarations in `ButtonLink.module.css` and `globals.css` so both states can be seen at rest — keep them in step |
-| `app/api/health/route.js` | Liveness check; also proves the repository is reachable from a route handler |
+| `app/api/health/route.js` | Liveness check; also proves the repository is reachable from a route handler. It calls `getAllWorks()`, so it now checks the **database** too — the quickest way to tell whether `DATABASE_URL` and the local Postgres are working, and it fails when they are not |
 | `app/robots.js` | Disallows `/admin`, `/dev` and `/api/` |
 | `app/fonts.js` | The two faces, loaded once via `next/font` and exposed as CSS variables |
 
@@ -133,11 +133,14 @@ Admin auth, the admin accounts themselves, cart and checkout logic, gallery
 filters and pagination, the artwork page body, Cloudinary, sitemap, OG images
 and hreflang tags. Add them here as they land.
 
-The database schema exists and the connection module exists, but **no
-application code reads Postgres**: every page still goes through
-`works-repository.js` into `artworks.js`, and `lib/db.js` has no importers.
-Swapping the repository over is the next milestone, and data-layer.md lists what
-it has to reconcile.
+**The site reads Postgres.** Every page goes through `works-repository.js`, which
+queries the database through `lib/db.js`; `artworks.js` is now only the seed
+fixture and the home of the shared constants. What the swap had to reconcile —
+minor units, the uuid key, the publication filter, medium — is in data-layer.md,
+and those reconciliations are live code now rather than a plan.
+
+Development runs against a local Postgres. **Neon is still not connected**, so
+there is no deployed database behind any of this — see database.md.
 
 When the sitemap lands it needs no `/dev` exclusion: generated from the locale
 list and the works repository, as seo.md requires, it cannot emit a URL outside

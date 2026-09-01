@@ -100,12 +100,14 @@ never ship a stale manifest — but the dev server will happily use an old one.
 dummy values. Copy it to `.env.local` and fill that in; `.env.local` is
 git-ignored by the `.env*.local` rule and never committed.
 
-**Only `DATABASE_URL` is read by anything today**, and only by the seed script —
-no page, route or component reads an environment variable yet. The other keys in
-the example are forecasts: the admin session secret, the site URL, Cloudinary,
-and the payment provider's keys, whose names will change once a provider is
-chosen. Uncomment nothing into use before something reads it, and add a key to
-the example in the same change that starts reading it.
+**Only `DATABASE_URL` is read by anything today** — by `lib/db.js`, and so by
+every page that reads a painting, and separately by the seed script. Without it
+in `.env.local` the dev server starts and then fails on the first page that
+touches the database, with a message naming the fix. The other keys in the
+example are forecasts: the admin session secret, the site URL, Cloudinary, and
+the payment provider's keys, whose names will change once a provider is chosen.
+Uncomment nothing into use before something reads it, and add a key to the
+example in the same change that starts reading it.
 
 As each arrives, add it to `.env.local` locally and to the Vercel project for
 deployment. Never commit real credentials.
@@ -133,3 +135,10 @@ Two operational notes that cost real time when missed:
 To fill a fresh local database with the sixteen works, run `npm run seed:local`.
 It refuses to do anything unless `DATABASE_URL` points at loopback, and it is
 safe to run repeatedly.
+
+**The local database is now a requirement for running the site at all**, not
+just for the seed script. Every page reads paintings from it, so on a fresh
+clone the order is: create `art_studio`, apply the migrations in numeric order,
+copy `.env.example` to `.env.local` and set `DATABASE_URL`, then
+`npm run seed:local`. Skip any of those and the dev server starts and then
+errors on the first page that reads a painting.

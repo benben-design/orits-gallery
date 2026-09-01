@@ -4,10 +4,14 @@ PostgreSQL. Development runs against a **local Postgres**, created by hand in
 pgAdmin; the database is called `art_studio`. **Neon is the intended host for
 production and is not connected yet.**
 
-The schema exists as plain SQL in `database/migrations/`. The application does
-**not read from it yet** — pages still go through `lib/data/works-repository.js`,
-which still reads the local file. Swapping that over is the next real milestone
-and has not been done. See data-layer.md.
+The schema is plain SQL in `database/migrations/`, and **the application reads
+it**: every page goes through `lib/data/works-repository.js`, which queries
+Postgres through `lib/db.js`. `lib/data/artworks.js` is now the seed fixture
+rather than storage. See data-layer.md.
+
+That is true of the **local** database only. Neon has nothing pointing at it, so
+a deployed build has no database to read — which is a launch blocker, not a
+working state. See deployment.md.
 
 ## Migration conventions
 
@@ -194,8 +198,8 @@ a required `buyer_locale`, and `created_at` / `updated_at`.
 
 ## Not built
 
-- **The repository still reads the local file.** No application code queries
-  Postgres. `lib/db.js` exists and nothing imports it.
+- **Neon.** The local database is the only one that exists. Production has no
+  database, and the migrations have never been applied to one.
 - **The admin accounts themselves.** The table is empty; there is no signup
   flow and no hashing dependency installed, so creating the two rows needs a
   hash generated outside the database first.

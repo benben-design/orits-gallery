@@ -54,7 +54,7 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | React | React 19 |
 | Styling | Plain CSS — `app/tokens.css` + `app/globals.css`, co-located CSS Modules per component. No framework, no component library |
 | Images | `public/paintings/` + Next's built-in image pipeline today; **Cloudinary later** |
-| Database | PostgreSQL. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, and **no application code queries either one yet** |
+| Database | PostgreSQL. **The site reads it** — every painting comes from Postgres through `lib/data/works-repository.js`. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, so production has no database at all |
 | Auth | Admin login for **two accounts** with equal rights, the artist's and the developer's — **not built yet**; planned as httpOnly JWT cookies |
 | Payments | Provider not chosen yet — Stripe vs an Israeli provider that issues a tax invoice |
 | Host | Vercel, one deployment, region `fra1` |
@@ -80,7 +80,7 @@ it does not apply here.
 ├── lib/
 │   ├── i18n/             locale config, dictionary loader, locales/*.json
 │   ├── data/             the data access layer — see data-layer.md
-│   ├── db.js             the pooled Postgres connection. Nothing imports it yet
+│   ├── db.js             the pooled Postgres connection, used by the repository
 │   └── format.js         locale-aware price and dimension formatting
 ├── database/migrations/  plain SQL, applied by hand, forward-only
 ├── scripts/              operational scripts, no dependencies
@@ -151,7 +151,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 |---|---|
 | Project scaffold, Next config, Vercel config | Done |
 | i18n config, dictionary loader, `he`/`en` locale files | Done |
-| Data access layer + local records + image manifest | Done |
+| Data access layer + seed fixture + image manifest | Done |
 | Design tokens, global styles, the two faces via `next/font` | Done |
 | The 16 painting images in `public/paintings/` | Done |
 | Both root layouts, public shell, admin shell | Done |
@@ -163,9 +163,10 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Sitemap, OG images, hreflang tags | Not built yet — required by seo.md |
 | Database schema | Written — five migrations in `database/migrations/`, run by hand against a local Postgres |
 | Local seed data | `npm run seed:local` fills a local database from `lib/data/artworks.js` |
-| Database connection module | `lib/db.js` exists. **Nothing imports it** |
-| Reading painting data from Postgres | **Not done.** Every page still goes through the repository into the local file |
-| Neon, auth, payments, Cloudinary | Not started |
+| Database connection module | `lib/db.js`, imported by the repository and by nothing else |
+| Reading painting data from Postgres | **Done.** Every page reads the database through the repository; `lib/data/artworks.js` is the seed fixture |
+| Neon | Not started — **no production database exists**, so a deploy cannot render a painting |
+| Auth, payments, Cloudinary | Not started |
 
 Exactly **two client components** exist — the language switcher, and the hero's
 studio loop. Everything else is a server component. Both are leaves, and the
@@ -220,9 +221,9 @@ still need entries in both locale files.
   images move to a hosting service. Nothing may build an image path from a
   work's id.
 - **Money is stored in the database as a whole number of agorot** — minor units.
-  The local data file still holds whole shekels, so the repository has to convert
-  in one place when it swaps over. A silent mismatch renders a price a hundred
-  times too large. See data-layer.md.
+  The seed fixture holds whole shekels, so the repository converts in exactly one
+  place on the way out and the seed script converts the other way on the way in.
+  A silent mismatch renders a price a hundred times too large. See data-layer.md.
 - **Migrations are plain SQL, applied by hand, forward-only, and ASCII-only.**
   No runner, no ORM. See database.md for why the ASCII part is not fussiness.
 - **The chrome must not compete with the art.** The paintings are highly

@@ -19,8 +19,14 @@ the images actually in the repo.
 
 ## Database — Neon
 
-Not connected yet, and nothing in the application queries a database at all —
-see database.md. Development runs against a local Postgres.
+Not connected yet. Development runs against a local Postgres, and **the
+application does query it** — every page reads paintings from the database
+through `lib/data/works-repository.js`. See database.md.
+
+Those two facts together are the current deployment problem: the code now needs
+a database that production does not have. `lib/db.js` throws when `DATABASE_URL`
+is unset, so a deploy today fails at request time on every page that reads a
+painting, which is all of them. Connecting Neon is what closes that.
 
 When Neon arrives: the connection string is `DATABASE_URL` in the Vercel
 project, and the migrations in `database/migrations/` are applied to it **by
@@ -57,9 +63,9 @@ Beyond a green build, these are launch blockers and are easy to forget:
   privacy, accessibility. See commerce.md.
 - **A custom domain**, not the vercel.app URL.
 - **Both languages walked end to end**, including checkout, in right-to-left.
-- **The site actually reading the database.** Today every page reads
-  `lib/data/artworks.js`, so a deployed build serves the file's contents and
-  ignores Postgres entirely. Until the repository swaps over, the admin cannot
-  change anything a visitor sees.
+- **A production database.** The site reads Postgres now, but only a local one
+  exists: Neon is not connected, `DATABASE_URL` is not set in Vercel, and the
+  migrations have never been applied to a hosted database. Until that is done a
+  deployed build cannot render a single painting.
 - **The two admin accounts existing**, with real password hashes. The table is
   empty and there is no way to sign in.

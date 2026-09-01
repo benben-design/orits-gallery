@@ -1,61 +1,88 @@
 # Data Layer
 
-Painting data lives in a local file today. The schema for Postgres exists — see
-database.md — but **no application code reads it yet**. The whole point of this
-layer is that switching over costs one file.
+**Painting data comes from Postgres.** `lib/data/works-repository.js` queries it
+through `lib/db.js` — see database.md for the schema. The swap cost one file and
+changed nothing above it: same function names, same arguments, same returned
+shapes, which is what the indirection was for.
+
+Development runs against a local Postgres. **Neon is not connected**, so nothing
+deployed has a database behind it yet.
 
 ## The rule
 
 `lib/data/works-repository.js` is the **only** module that pages, layouts and
 components may import for painting data.
 
-`lib/data/artworks.js` is storage. Nothing outside `lib/data` may import it —
-with one deliberate exception noted below. If you find yourself importing it
-from a page, stop: the function you need belongs in the repository.
+`lib/data/artworks.js` is **not storage any more** — it is the seed fixture, and
+the home of the shared constants. Nothing outside `lib/data` may import it, with
+one deliberate exception noted below. If you find yourself importing it from a
+page, stop: the function you need belongs in the repository, and the data it
+would give you is not what the site is serving.
 
 ## What `lib/data/artworks.js` is for now
 
-**It does not disappear when the database arrives.** That was the original plan
-and it is no longer true.
+**It did not disappear when the database arrived.** That was the original plan
+and it is no longer true. It has two jobs left, and both are load-bearing —
+deleting the file breaks the seed script *and* the running site.
 
-`scripts/seed-local-database.mjs` reads it — through `readAllRecords()` — to
-fill a local database with the sixteen works. So the file's role changes rather
-than ending: it stops being what the site reads and becomes **the seed fixture
-for local development**. It is the one file outside `lib/data` allowed to import
-it, and it is a script rather than anything the site serves.
+1. **The seed fixture.** `scripts/seed-local-database.mjs` reads it through
+   `readAllRecords()` to fill a local database with the sixteen works. That
+   script is the one file outside `lib/data` allowed to import it, and it is a
+   script rather than anything the site serves.
+2. **The shared vocabulary.** `WORK_STATUSES`, `WORK_CATEGORIES` and
+   `IMAGE_TYPES` are declared here, and the repository re-exports the first two
+   so components can import them without reaching past the repository. Remove
+   the file and `works-repository.js` fails to resolve its import — every page
+   with it.
 
-Two consequences worth knowing before editing that file:
+Three consequences worth knowing before editing that file:
 
 - **It must stay importable from plain Node**, not only through Next's bundler.
   Its JSON import therefore carries an import attribute
   (`with { type: 'json' }`); without it, `node` refuses the module with
   `ERR_IMPORT_ATTRIBUTE_MISSING` and the seed script has no data source.
 - Its records are still the source of the real titles, slugs, categories and
-  statuses. Changing one changes what a re-seeded local database contains.
+  statuses. Changing one changes what a **re-seeded** local database contains —
+  and nothing else. The site reads the database, so an edit here is invisible
+  until `npm run seed:local` runs again.
+- Its own header comment still describes it as storage that disappears when the
+  database arrives. That is stale, and it is the file's own docblock rather than
+  a rules file — worth correcting next time the file is touched for another
+  reason.
 
 ## What the repository looks like
 
 Functions are named in product terms, not storage terms: the works on show, the
-work at this slug, the most recent works, the featured work. Two properties keep
-the promise that swapping the backend is invisible:
+work at this slug, the most recent works, the featured work. Two properties kept
+the promise that swapping the backend was invisible, and they were what made the
+swap a one-file change:
 
-1. **Every function is async**, even while the implementation is synchronous.
-   Callers already `await`, so real I/O later changes nothing for them.
+1. **Every function is async.** It always was, deliberately, back when the
+   implementation was synchronous — so callers already `await`, and real I/O
+   arriving changed nothing for them.
 2. **Every function returns plain serializable objects.** Never class instances,
-   never a database row leaked as-is.
+   never a database row leaked as-is. The mapping from row to work object
+   happens inside the repository.
 
 Both properties apply to functions you add. A new synchronous export is a
-regression.
+regression, and so is returning a `pg` row.
+
+A third property arrived with the database. **Every read states its visibility
+scope** — public or admin — and the helper that builds the `where` clause throws
+if one does not. Publication is a separate axis from sale status, so a new read
+that simply forgot to filter would quietly serve drafts; this makes that
+omission impossible rather than merely discouraged. Only `getWorkById` is
+admin-scoped, because the admin has to open works it has not published.
 
 ## The work record, as the repository returns it today
 
 | Field | Notes |
 |---|---|
-| `id` | Stable string. In this file it doubles as the English slug and the image filename stem |
+| `id` | The database uuid, as a string. Meaningless outside the database — **not** the slug, **not** the image filename stem |
 | `slug` | Per locale — `{ he, en }`. See i18n.md |
 | `title` | Per locale |
-| `description` | Per locale |
-| `medium` | Per locale, and free text |
+| `description` | Per locale. Nullable — null means not written yet, though every seeded work carries the placeholder copy |
+| `medium` | Per locale in shape only. Holds the raw database key in both languages, or null — see the note below |
 | `dimensions` | `{ width, height, unit }` — physical size of the painting |
 | `price` | `{ amount, currency }` — `amount` is **whole shekels** |
 | `year` | |
@@ -66,49 +93,59 @@ regression.
 | `addedAt` | What "most recent" orders by |
 | `hasPlaceholderData` | True while the stand-in values below are still in place |
 
-`WORK_STATUSES`, `WORK_CATEGORIES` and `IMAGE_TYPES` are exported constants.
-Use them; never retype the string literals in a component.
+`WORK_STATUSES` and `WORK_CATEGORIES` are re-exported by the repository — import
+them from there, and never retype the string literals in a component.
 
-## Where this record and the database disagree
+`IMAGE_TYPES` is declared alongside them in `artworks.js` but is **not**
+re-exported and currently has no importer. Anything that needs it should be
+given the same re-export rather than reaching into the fixture.
 
-The schema was derived from this record, but four things are deliberately
-different, and each is a real trap for whoever writes the swap.
+## Where the fixture and the database disagree
+
+The schema was derived from the fixture's record, but four things are
+deliberately different. They were the traps in the swap; they are now live code,
+and each is still the thing that breaks if someone edits carelessly.
 
 **Money units.** The database stores `price_agorot` — a whole number of **minor
-units**. This file holds `price.amount` in **whole shekels**, because
+units**. The fixture holds `price.amount` in **whole shekels**, because
 `lib/format.js` renders it with `maximumFractionDigits: 0`. A hundredfold
 difference that both sides render as a plausible integer.
 
-> The conversion belongs in the repository, in one place, at the moment rows
-> become work objects — and nowhere else. Not in a component, not in
+> The conversion lives in the repository, in one place — `toMajorUnits`, applied
+> as rows become work objects — and nowhere else. Not in a component, not in
 > `lib/format.js`, not at each call site. `scripts/seed-local-database.mjs` has
-> the other direction (`toAgorot`) and is the reference for the shape of it.
+> the other direction (`toAgorot`), for writing the fixture's shekels back down
+> into agorot.
 
-Get it wrong and a ₪999 painting is offered for ₪99,900. Nothing in either
-layer will complain.
+Divide a second time somewhere and the two sites disagree; remove the division
+and a ₪999 painting is offered for ₪99,900. Nothing in either layer complains.
 
-**The identifier.** Here, one string is the id, the English slug and the image
-filename stem. In the database it is none of those: the key is a generated uuid
-with no meaning outside the database, and each slug is its own column. So
-`getWorkById` changes meaning across the swap, and `/admin/works/[id]` currently
-addresses works by the old string. **Nothing may derive an image path from a
-work's id** once the swap happens.
+**The identifier.** In the fixture, one string is the id, the English slug and
+the image filename stem. In the database it is none of those: the key is a
+generated uuid with no meaning outside the database, and each slug is its own
+column. So `getWorkById` now takes a uuid — `/admin/works/[id]` addresses works
+by it — and it compares as text so that a malformed id 404s instead of raising a
+type error. **Nothing may derive an image path from a work's id.** The image's
+location is `work_images.image_ref`, and that is what the repository reads.
 
-**Publication.** This file has no notion of a draft: every record is visible.
-The database has `published_at`, where null means a draft that the public site
-must not show. Public reads therefore gain a filter that has no equivalent here,
-and forgetting it publishes drafts.
+**Publication.** The fixture has no notion of a draft: every record is visible.
+The database has `published_at`, where null means a draft the public site must
+not show. Every public read filters on it, and the repository refuses to build a
+query that has not said which scope it is in — see the third property above.
+That is the mechanism that replaced "remember the filter".
 
-**Medium.** Here it is free text per locale, and its placeholder is
+**Medium.** In the fixture it is free text per locale, with the placeholder
 `[PLACEHOLDER] Medium not recorded yet`. In the database it is a closed set of
 two keys — `oil-on-canvas`, `pastel-on-paper` — translated in the application,
-and **optional**. There is no key meaning "not recorded yet", so the seeded
-works carry no medium at all rather than a fake one, and the placeholder string
-has nowhere to go. See i18n.md: those two keys still need entries in both locale
-files.
+and **optional**. There is no key meaning "not recorded yet", so the seeded works
+carry no medium at all rather than a fake one, and the placeholder string has
+nowhere to go. The repository therefore returns null for every current work.
+Where a key *is* present it comes back untranslated in both languages, which is
+a deliberately visible seam: translating it needs entries in `he.json` and
+`en.json` that do not exist yet. See i18n.md.
 
-The database also carries two fields this record has no equivalent for at all:
-`price_reduced_agorot` and `sale_channel`.
+The database also carries two fields the work record still has no equivalent for:
+`price_reduced_agorot` and `sale_channel`. Nothing reads them yet.
 
 ## Placeholder data
 
