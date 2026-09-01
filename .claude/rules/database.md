@@ -178,7 +178,49 @@ a required `buyer_locale`, and `created_at` / `updated_at`.
   SQL — a password passed to a database function is a password in the query log.
 - **No password-reset columns**, deliberately: that mechanism has not been
   designed, and guessing at the columns would fix the shape of a flow nobody
-  has thought through. No last-login or failed-attempt columns either.
+  has thought through. No last-login column either.
+- **Failed attempts are counted, but not here.** 004 deferred that until there
+  was a policy to enforce; migration 006 is the policy, and it puts the counter
+  in its own table rather than in columns on this one. That is not a detail:
+  columns here could only count attempts against addresses that have accounts,
+  and that difference in behaviour would leak which addresses do. See
+  `admin_login_attempts` below.
+
+### `admin_login_attempts`
+
+The counter behind the sign-in rate limit. Added by migration 006, which is the
+policy that 004 deferred.
+
+`id`, `email_lower` (nullable), `ip`, `failures`, `blocked_until`,
+`first_failure_at`, `last_failure_at`.
+
+- **A row is one counter, and which counter depends on `email_lower`.** Set, it
+  counts one address from one source — the tight limit. Null, it counts one
+  source across every address it has tried — the looser ceiling. Both are
+  checked on every attempt and the strictest block wins.
+- **It is keyed on the pair, not on either half.** Address alone would let any
+  stranger lock the artist out of her own account; source alone is defeated by
+  rotating addresses.
+- **It references nothing.** There is deliberately no foreign key to
+  `admin_users`, because attempts are counted against the address that was
+  *typed*, whether or not an account exists. A foreign key would make that
+  impossible and would leak which addresses are real.
+- **Two partial unique indexes, not one composite.** In a plain unique index
+  NULLs are distinct from one another, so every source-wide row for one IP would
+  be allowed to exist repeatedly and the looser ceiling would silently never
+  accumulate. `admin_login_attempts_pair` covers the non-null case and
+  `admin_login_attempts_source` the null one, and the upserts conflict against
+  them by repeating each predicate.
+- **No thresholds or delays live here.** They are constants in
+  `lib/auth/login-throttle.js`, because a policy you have to write a migration
+  to tune is a policy nobody tunes.
+- **The table is pruned by the application**, on each recorded failure, in the
+  same round trip: rows that are both unblocked and quiet for an hour are
+  deleted. There is no cron on this project, and a cleanup that runs exactly
+  when the table is growing is the right shape.
+- `ip` is text rather than `inet`: it arrives from a proxy header, it may be v4
+  or v6, and a value that fails to parse must still be countable rather than
+  raising mid-login.
 
 ## Rules
 
@@ -199,11 +241,11 @@ a required `buyer_locale`, and `created_at` / `updated_at`.
 ## Not built
 
 - **Neon.** The local database is the only one that exists. Production has no
-  database, and the migrations have never been applied to one.
-- **The admin accounts themselves.** The table is empty; there is no signup
-  flow and no hashing dependency installed, so creating the two rows needs a
-  hash generated outside the database first.
-- **The authentication mechanism.** Planned as httpOnly cookies; not designed
-  beyond that.
+  database, and the migrations have never been applied to one — including 006,
+  without which every admin sign-in errors rather than degrading quietly.
+- **The admin route guard.** Signing in and out are built — a signed httpOnly
+  cookie, no session table, see security.md — but nothing yet refuses an admin
+  page to someone without a session. Whether a given database has any admin
+  rows is a question for that database, not for this file.
 - **The payment provider**, and therefore what actually writes `orders`.
 - **Image hosting.** `image_ref` holds local paths today.

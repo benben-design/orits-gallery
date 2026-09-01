@@ -1,0 +1,80 @@
+/**
+ * The admin's first real form. Logical properties throughout, so it lays out
+ * correctly in the Hebrew right-to-left shell without a single direction-
+ * specific rule.
+ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 24rem;
+  margin-block-start: var(--space-6);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.input {
+  font: inherit;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  min-block-size: 3rem;
+  inline-size: 100%;
+}
+
+/**
+ * The one filled control in the project. The public site's call to action is an
+ * outline, but this is the single action on an otherwise empty page, and the
+ * accent is exactly what the palette reserves for an interactive thing.
+ */
+.submit {
+  align-self: start;
+  min-block-size: 3rem;
+  padding-inline: var(--space-7);
+  padding-block: var(--space-3);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-on-accent);
+  background-color: var(--accent);
+  transition: background-color var(--duration) var(--ease);
+}
+
+.submit:disabled {
+  cursor: progress;
+  background-color: var(--text-muted);
+}
+
+@media (hover: hover) {
+  .submit:not(:disabled):hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+/**
+ * Not carried by colour alone — it is a bordered band with its own words, for
+ * the same reason the sale statuses are not colour-coded. The clay tint is a
+ * background only, and text on it is --text-primary; --text-muted there is
+ * 4.46:1 and forbidden. See .claude/rules/frontend/styles.md.
+ */
+.error {
+  color: var(--text-primary);
+  background-color: var(--surface-tint);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+}

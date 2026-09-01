@@ -55,8 +55,11 @@
   },
   "gallery": {
     "title": "Gallery",
-    "body": "[PLACEHOLDER] The gallery page has not been built yet. All works will be shown here.",
-    "empty": "[PLACEHOLDER] No works to show."
+    "empty": "There are no works to show yet.",
+    "intro": "Every work",
+    "filterLabel": "Filter by category",
+    "filterAll": "All",
+    "emptyInCategory": "No works in this category."
   },
   "artwork": {
     "title": "Work",
@@ -69,7 +72,8 @@
     "status": "Status",
     "category": "Category",
     "imageAlt": "{title} — painting by {artist}",
-    "notFound": "[PLACEHOLDER] The requested work was not found."
+    "notFound": "[PLACEHOLDER] The requested work was not found.",
+    "noImage": "No image yet"
   },
   "about": {
     "title": "About",
@@ -146,11 +150,16 @@
       "works": "Works",
       "newWork": "New work",
       "orders": "Orders",
-      "login": "Log in"
+      "signOut": "Sign out"
     },
     "login": {
       "title": "Admin login",
-      "body": "[PLACEHOLDER] The login screen has not been built. There is no auth mechanism here."
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "error": "That email or password is not correct.",
+      "tooManyAttempts": "Too many sign-in attempts. Wait a few minutes and try again."
     },
     "dashboard": {
       "title": "Dashboard",
@@ -173,6 +182,75 @@
       "title": "Order",
       "body": "[PLACEHOLDER] The single order page has not been built yet.",
       "idLabel": "Order id"
+    },
+    "workForm": {
+      "sections": {
+        "painting": "The painting",
+        "details": "Details",
+        "pricing": "Price and availability",
+        "publishing": "Publishing",
+        "address": "Web address"
+      },
+      "titleHe": "Title (Hebrew)",
+      "titleEn": "Title (English)",
+      "descriptionHe": "Description (Hebrew)",
+      "descriptionEn": "Description (English)",
+      "category": "Category",
+      "medium": "Medium",
+      "mediumNone": "Not recorded",
+      "year": "Year",
+      "widthCm": "Width (cm)",
+      "heightCm": "Height (cm)",
+      "price": "Price (ILS)",
+      "priceReduced": "Reduced price (ILS)",
+      "priceReducedHint": "Optional. Must be below the regular price.",
+      "status": "Status",
+      "saleChannel": "Sold through",
+      "addedAt": "Date added",
+      "publish": "Publish to the site now",
+      "publishHint": "Left unticked the work is saved as a draft: visible here in the admin, not on the site.",
+      "slugHe": "Hebrew address",
+      "slugEn": "English address",
+      "addressHint": "Generated from the title. Once published it must not change — links already shared would break.",
+      "imageNotice": "Image upload is not built yet. Add the work now and attach its photograph later.",
+      "submit": "Add the work",
+      "submitting": "Saving…",
+      "createdDraft": "Saved as a draft.",
+      "createdPublished": "Added and published to the site.",
+      "errors": {
+        "summary": "Could not save. Check the marked fields.",
+        "required": "This field is required.",
+        "notANumber": "Enter a number.",
+        "mustBePositive": "Must be greater than zero.",
+        "tooLarge": "That value is too large.",
+        "notBelowPrice": "The reduced price must be below the regular price.",
+        "notAllowed": "Unrecognised value.",
+        "notADate": "That is not a valid date.",
+        "unusable": "No web address can be made from that title.",
+        "duplicateSlug": "A work already uses that address. Change the title or the address.",
+        "unexpected": "Something went wrong and the work was not saved. Try again.",
+        "notSignedIn": "Your session expired. Sign in again and retry.",
+        "slugLocked": "A published work's address cannot be changed.",
+        "notFound": "That work was not found. It may have been deleted."
+      },
+      "save": "Save changes",
+      "savedPublished": "Changes saved. The work is on the site.",
+      "savedDraft": "Changes saved. The work is a draft and is not on the site.",
+      "publishedLabel": "Shown on the site",
+      "publishedHint": "Unticking takes the work off the site and keeps it as a draft. Nothing is deleted.",
+      "addressLockedHint": "This work is published, so its address cannot change. Changing it would break every link already shared and its place in Google.",
+      "saleChannelQuestion": "Where did it sell?",
+      "saleChannelNotRecorded": "Not recorded",
+      "saleChannelAutomatic": "This work sold through this site. That record is made at checkout and cannot be changed here."
     }
+  },
+  "medium": {
+    "oil-on-canvas": "Oil on canvas",
+    "pastel-on-paper": "Pastel on paper"
+  },
+  "saleChannel": {
+    "this-site": "This site",
+    "under1000": "under1000",
+    "elsewhere": "Elsewhere"
   }
 }

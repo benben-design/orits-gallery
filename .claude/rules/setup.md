@@ -8,14 +8,21 @@ npm install
 npm run dev        # Next dev server
 npm run build      # production build; runs the image manifest first
 npm run start      # serve the production build locally
-npm run lint       # ESLint over the whole project, then the contrast guard
+npm run lint       # ESLint, then the contrast guard, then the admin guard check
 
 npm run images:manifest   # regenerate lib/data/image-manifest.json
 npm run dev:placeholders  # regenerate the /dev placeholder images
 npm run check:contrast    # WCAG check over every permitted colour pairing
+npm run check:guard       # every guarded admin page calls the guard
 
 npm run seed:local        # fill a LOCAL database with the sixteen works
+npm run admin:create      # create an admin account, or change its password
 ```
+
+`admin:create` prompts for the password with the echo off and refuses to run
+without a terminal. The password is never an argument, never an environment
+variable, and there is no default password in the repository. It takes the email
+as an optional argument: `npm run admin:create -- orit@example.com`.
 
 There is one app and one dev server. No separate API process.
 
@@ -43,9 +50,16 @@ removes it from previews, which is the trade.
 
 ## Linting
 
-`npm run lint` does two things: `eslint .` over every JS/MJS file in the
-project — including `proxy.js`, the config files and `scripts/` — and then
-`scripts/check-contrast.mjs`, the palette guard.
+`npm run lint` does three things in order: `eslint .` over every JS/MJS file in
+the project — including `proxy.js`, the config files and `scripts/` — then
+`scripts/check-contrast.mjs`, the palette guard, then
+`scripts/check-admin-guard.mjs`, which fails if any page in the guarded admin
+group does not call `requireAdminSession`.
+
+Both guards are advisory in the same way lint is: they are **not** in the build
+and cannot fail a deploy. That is deliberate for the palette. For the admin
+guard it is a real limitation worth knowing — a page added without the guard
+ships, and the check only complains when someone runs it.
 
 ## The palette guard
 
@@ -100,11 +114,22 @@ never ship a stale manifest — but the dev server will happily use an old one.
 dummy values. Copy it to `.env.local` and fill that in; `.env.local` is
 git-ignored by the `.env*.local` rule and never committed.
 
-**Only `DATABASE_URL` is read by anything today** — by `lib/db.js`, and so by
-every page that reads a painting, and separately by the seed script. Without it
-in `.env.local` the dev server starts and then fails on the first page that
-touches the database, with a message naming the fix. The other keys in the
-example are forecasts: the admin session secret, the site URL, Cloudinary, and
+**Two keys are read today.** `DATABASE_URL`, by `lib/db.js` and so by every page
+that reads a painting, and separately by the seed script. And
+`ADMIN_SESSION_SECRET`, by `lib/auth/session.js`, which signs the admin session
+cookie — it must be at least 32 characters, and signing refuses outright below
+that. Generate one with:
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+```
+
+Without either in `.env.local` the dev server starts and then fails on the first
+page that needs it, with a message naming the fix. **Rotating
+`ADMIN_SESSION_SECRET` signs everyone out immediately** — that is the only way
+to revoke a session, and it is deliberate; see security.md.
+
+The remaining keys in the example are forecasts: the site URL, Cloudinary, and
 the payment provider's keys, whose names will change once a provider is chosen.
 Uncomment nothing into use before something reads it, and add a key to the
 example in the same change that starts reading it.

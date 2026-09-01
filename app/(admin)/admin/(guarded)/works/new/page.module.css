@@ -1,0 +1,6 @@
+/* Matches the heading treatment the other admin pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-5);
+}

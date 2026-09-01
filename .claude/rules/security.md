@@ -16,12 +16,138 @@
   adding one is not a shortcut worth taking under any deadline. Hashing happens
   in the application, never in SQL: a password passed to a database function is
   a password in the query log.
-- **Authentication itself is not built.** Planned as httpOnly cookies — no token
-  in `localStorage`, ever — but nothing beyond that is designed, there is no
-  password-reset mechanism, and the accounts table is empty.
-- The auth check is applied in one place and covers **every** admin route and
-  **every** mutation, not only the pages that render a form. An unguarded write
-  endpoint is the whole breach.
+- **Passwords are hashed with scrypt, in `lib/auth/password.js`.** That module
+  is the only place hashing or verification happens. Node's built-in crypto, so
+  no dependency. The stored value is self-describing —
+  `$scrypt$N=65536,r=8,p=1$<salt>$<key>` — which is what lets the cost be
+  raised later without resetting a single password: verification reads the
+  parameters out of the value rather than assuming today's constants.
+  Verification compares with `timingSafeEqual`, because a plain `===` leaks how
+  much of a guess was right through how long the comparison took.
+- **Accounts are created by `npm run admin:create` and by nothing else.** There
+  is no signup route, and there must not be one. The password is typed at a
+  prompt with the echo off; it is never an argument, an environment variable or
+  a file, and the script refuses to run without a terminal so that those remain
+  impossible rather than merely discouraged. **There is no default password
+  anywhere in this repository** — a documented default is a password every
+  reader of the git history already knows.
+- **Signing in and out are built.** The form is a Server Action, so no endpoint
+  exists that could carry a credential in a URL, and a failed attempt returns
+  the same message and does the same work whether the address is unknown or the
+  password is wrong — see the decoy hash in `lib/auth/admin-users.js`. Nothing
+  about a failed attempt is logged; a log of attempted addresses is a list of
+  admin accounts.
+- **The route guard is built, and it guards rendering only.** Every page under
+  `app/(admin)/admin/(guarded)/` calls `requireAdminSession()` from
+  `lib/auth/admin-guard.js` as its first statement; without a valid session the
+  request redirects to the login page and the page body is never produced. It
+  verifies the cookie's signature and expiry and reads no database.
+- **A guard at the rendering layer is not a security boundary.** This is the
+  sentence to remember: it runs when a *page* renders, and nothing else. It does
+  **not** run for route handlers under `app/api/`, and it does **not** run for
+  Server Actions — an action is a POST endpoint that Next reaches directly, and
+  the page guard has no say in it. So:
+
+  > **Every admin mutation written from here on must verify the session
+  > itself**, in its own first lines, whatever guards the page that renders its
+  > form. A form behind a guarded page is not a protected write; the guard
+  > protected the form, not the endpoint.
+
+  Concretely: a new Server Action in `app/(admin)/admin/actions.js` starts with
+  its own `readAdminSession()` check and returns without writing if there is
+  none. `signIn` and `signOut` are the exceptions that prove it — one must work
+  signed out, and the other only removes a cookie.
+- **`generateMetadata` runs even when the guard redirects**, because it is a
+  separate export from the page component and Next calls it either way. It was
+  measured: a signed-out request to `/admin/orders` returns a 307 whose body
+  carries no page markup at all, but does carry
+  `<title>הזמנות · אזור ניהול</title>`. Today every admin title is a fixed
+  dictionary string, so nothing leaks. The rule that keeps it that way:
+  **never build an admin page's metadata out of record data.** A title like
+  "Edit: Lemons · Admin" would tell someone with no session that a work by that
+  name exists, and the guard would not stop it.
+- **Sign-in is rate limited, and the counter is in Postgres.** scrypt bounds
+  someone working through a stolen database; it does nothing about someone
+  posting to the login form in a loop, and `lib/auth/login-throttle.js` is what
+  does. Five consecutive failures block further attempts for a minute, escalating
+  to fifteen; a successful sign-in clears it. **A blocked attempt verifies no
+  password at all** — a limit that runs scrypt and then declines to look at the
+  answer costs the server as much as no limit.
+
+  Three details are load-bearing rather than incidental:
+
+  - **The counter is keyed on the submitted address *and* the client address,
+    not either alone.** Address alone lets a stranger lock the artist out of her
+    own account by hammering it; source alone is defeated by rotating. A looser
+    ceiling per source, across all addresses, bounds working through a list.
+  - **Failures are counted against the address as typed, whether or not an
+    account exists.** Throttling only real accounts would make the site behave
+    differently for an address that exists, which is precisely what the shared
+    error message and the decoy hash in `admin-users.js` are arranged to avoid
+    saying.
+  - **It must never move into memory.** Vercel runs many short-lived instances,
+    so an in-memory counter is per-instance and resets at random: it would pass
+    every test on one laptop and do almost nothing in production. That is the
+    worst kind of security control, the kind that reports success.
+
+  The blocked message names no remaining time and reads identically for any
+  address — a countdown is a progress bar for whoever is guessing.
+- **This is what makes the eight-character password minimum acceptable.**
+  `MIN_PASSWORD_LENGTH` in `lib/auth/password.js` was lowered from twelve for a
+  non-technical operator, and eight characters would be thin protection against
+  an unthrottled form. Against a form that stops after five wrong guesses, it is
+  a reasonable floor. **The two are a pair: do not lower the minimum further, and
+  do not remove the throttle, without revisiting the other.**
+- **There is still no password-reset mechanism.**
+
+## The session
+
+A signed httpOnly cookie and **nothing else**. There is no session table, and
+that is a decision rather than an omission.
+
+The cookie holds `{ sub, exp }` — the account's uuid and an absolute expiry —
+base64url encoded, with an HMAC-SHA256 signature over it keyed on
+`ADMIN_SESSION_SECRET`. It is signed, not encrypted: the holder can read which
+account it names, nobody can change it. The signature is compared in constant
+time, and it is verified **before** anything in the payload is believed —
+reading the expiry out of an unverified payload would be trusting a number the
+holder chose.
+
+**What this costs, accepted knowingly:**
+
+- **An individual session cannot be revoked.** Signing out clears the cookie in
+  that browser; a copy taken beforehand stays valid until it expires. Nothing
+  server-side is tracking it.
+- **Rotating `ADMIN_SESSION_SECRET` invalidates every session at once**, for
+  both accounts, immediately. That is the only revocation mechanism there is,
+  and it is the thing to do if a session is ever believed stolen.
+
+Both were traded for two accounts, a fourteen-day expiry, and no per-request
+database read. **Do not "fix" this by adding a session table without deciding
+you want that cost** — it is a real change, not a missing piece.
+
+The cookie's attributes are set in one place, `lib/auth/admin-session.js`:
+
+| Attribute | Value | Why |
+|---|---|---|
+| `httpOnly` | always | Script on an admin page cannot read the session |
+| `sameSite` | `lax` | Not sent on a cross-site POST, which is what stops another site submitting to an admin route in the artist's name |
+| `secure` | outside development only | Refused over plain HTTP. Off in development because localhost is http — note that `npm run start` sets `NODE_ENV=production`, so a production build browsed over http://localhost will not keep the cookie. That is correct, not a bug |
+| `path` | `/admin` | Not sent with public pages, images or the API |
+| expiry | 14 days, absolute | No sliding refresh: using the admin does not extend it. A sliding window means a stolen cookie in regular use never expires |
+
+**The path scoping has a consequence worth knowing before it bites: an admin
+endpoint placed outside `/admin` never receives this cookie**, and will look
+unauthenticated however correct its guard is. Admin mutations therefore live
+under `/admin`. Server Actions post back to the page that rendered the form, so
+they are already inside it.
+- There is **one implementation** of the auth check — `requireAdminSession` for
+  pages, `readAdminSession` underneath it — and it must cover **every** admin
+  route and **every** mutation, not only the pages that render a form. An
+  unguarded write endpoint is the whole breach. Note that "one implementation"
+  is not "one call site": the page guard is called per page, for the reason
+  given in `lib/auth/admin-guard.js`, and `scripts/check-admin-guard.mjs` is
+  what keeps that from decaying into a page somebody forgot.
 - Never trust an identity, a price, a status or a total from a request body. The
   server derives identity from the verified session and computes money from its
   own records.

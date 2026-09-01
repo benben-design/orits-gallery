@@ -84,14 +84,16 @@ admin-scoped, because the admin has to open works it has not published.
 | `description` | Per locale. Nullable — null means not written yet, though every seeded work carries the placeholder copy |
 | `medium` | Per locale in shape only. Holds the raw database key in both languages, or null — see the note below |
 | `dimensions` | `{ width, height, unit }` — physical size of the painting |
-| `price` | `{ amount, currency }` — `amount` is **whole shekels** |
+| `price` | `{ amount, reducedAmount, currency }` — both in **whole shekels**, converted once in the repository. `reducedAmount` is null when there is no discount, and a discounted work is **still `available`**: this is a price, never a status |
 | `year` | |
 | `category` | `landscape` \| `still-life` |
 | `status` | `available` \| `reserved` \| `sold` \| `not-for-sale` |
+| `saleChannel` | `this-site` \| `under1000` \| `elsewhere`, or null. Which channel it sold through — the question `status` leaves open. **Admin-facing only: nothing on the public site may render it** |
 | `images` | Ordered collection; each has a type: `main`, `detail`, `in-situ` |
 | `featured` | Marks the homepage hero work |
 | `addedAt` | What "most recent" orders by |
-| `hasPlaceholderData` | True while the stand-in values below are still in place |
+| `publishedAt` | When it went live, or **null for a draft**. The only field that answers "is this on the public site" — a sale status never does. Always non-null on a work returned by a public read; it is here for the admin, which sees both kinds |
+| `hasPlaceholderData` | True while the stand-in values below are still in place. False on anything the artist entered herself |
 
 `WORK_STATUSES` and `WORK_CATEGORIES` are re-exported by the repository — import
 them from there, and never retype the string literals in a component.
@@ -144,8 +146,28 @@ Where a key *is* present it comes back untranslated in both languages, which is
 a deliberately visible seam: translating it needs entries in `he.json` and
 `en.json` that do not exist yet. See i18n.md.
 
-The database also carries two fields the work record still has no equivalent for:
-`price_reduced_agorot` and `sale_channel`. Nothing reads them yet.
+**Sale channel.** `sale_channel` is read back on every work, beside `status`,
+and it is the one field on the record that is **admin-facing only**. A visitor
+has no use for the fact that a painting went through another platform, and
+rendering it would turn the artist's sales channels into public information. It
+was written but not read for a while — the write path stored it and the column
+list omitted it — which is the failure this whole table exists to make visible.
+
+**Reduced price.** `price_reduced_agorot` is now read as `price.reducedAmount`.
+It is read for a reason that has nothing to do with displaying it: the admin's
+edit form has a field for it, and **a form that cannot see a stored value
+overwrites it with blank the first time anything else on the record is saved.**
+A discount vanishing because the artist fixed a typo in a title is the kind of
+loss nobody notices until a buyer is charged full price. How a reduced price
+should be *presented publicly* is still undecided — see commerce.md — and
+reading it here does not decide that.
+
+Every column on `works` is now read except `featured`'s companion housekeeping
+(`created_at`, `updated_at`). Two fields were written-but-never-read for a
+while — `sale_channel` and `price_reduced_agorot` — and both were found the same
+way: something needed to display or edit them. **When you add a column, add it
+to `WORK_COLUMNS` and `toWork` in the same change**, or the gap sits there
+silently until a form quietly destroys the value.
 
 ## Placeholder data
 
@@ -157,6 +179,48 @@ accident. Titles, categories, slugs and images are real; everything else is
 knowingly fake until the artist supplies it.
 
 Do not "tidy" them into plausible-looking values.
+
+## Writing
+
+`createWork` and `updateWork` are the writes, and the same three rules apply:
+async, plain objects out, and this is still the only module that touches the
+database.
+
+Two things are specific to updating:
+
+- **Publication does not reset.** `published_at` is filled with
+  `coalesce(published_at, now())`, so saving a published work again keeps the
+  date it originally went live rather than bumping it on every edit.
+  Unpublishing sets it back to null, which is how a work comes off the public
+  site without being deleted.
+  > **Known limit:** unpublishing *destroys* the original date, so a work that
+  > is unpublished and later republished gets a new one. Preserving it across
+  > that round trip needs a second column — a `first_published_at`, i.e. a new
+  > migration — because one nullable column cannot hold both "is it public" and
+  > "when did it first go live". Not built; decide whether it matters before
+  > building it.
+- **Slugs are written as given.** Refusing to change a published work's slug is
+  a rule about what the admin may offer, and it lives in the action, where the
+  current publication state is known. A repository that silently ignored part of
+  its own input would be worse — the caller would have no way to tell.
+
+Two things about it are worth knowing before adding the next one:
+
+- **It does not check who is calling.** Authorisation belongs to the caller —
+  every admin mutation verifies the session itself, see security.md — because a
+  repository that quietly enforced it would be doing two jobs and would be the
+  wrong place to look for either.
+- **It does not validate.** `lib/data/work-input.js` does that, and hands the
+  repository a record whose money is already in agorot and whose closed sets are
+  already checked. Two validators drift; one does not. A slug collision is the
+  exception, because only the database can know about it — it comes back as a
+  `DuplicateSlugError` naming which language collided, so the admin can say
+  which box to change instead of showing a constraint name.
+
+The money conversion still happens in exactly one place per direction:
+`toMajorUnits` in the repository on the way out, and `validateWorkInput` on the
+way in. Nothing in `createWork` multiplies by 100, and nothing there should
+start to.
 
 ## Adding data access
 

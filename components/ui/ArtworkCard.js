@@ -28,6 +28,9 @@ export default function ArtworkCard({ work, locale, dictionary, sizes, priority 
             title,
             artist: dictionary.site.artistName,
           })}
+          /* A work entered in the admin has no photograph until one is
+             attached, so mainImage is legitimately undefined here. */
+          emptyLabel={dictionary.artwork.noImage}
           sizes={sizes}
           priority={priority}
         />

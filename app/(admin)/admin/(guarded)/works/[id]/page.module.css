@@ -1,0 +1,16 @@
+/* Matches the heading treatment the other admin pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-2);
+}
+
+/**
+ * Which painting is open. Set below the heading rather than in it, because an
+ * admin page's <title> must never be built from record data — generateMetadata
+ * runs even when the guard redirects. See security.md.
+ */
+.subject {
+  color: var(--text-muted);
+  margin-block-end: var(--space-5);
+}

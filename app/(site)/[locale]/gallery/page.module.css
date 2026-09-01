@@ -1,0 +1,68 @@
+/**
+ * The catalogue.
+ *
+ * The grid is deliberately identical to the homepage's — same token, same
+ * gaps — because it is the same object shown in a different place, and two
+ * grids that differ slightly read as a mistake rather than as a distinction.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--frame-grid-min), 1fr));
+  gap: var(--space-8) var(--space-6);
+  margin-block-start: var(--space-8);
+}
+
+.cell {
+  display: flex;
+}
+
+.cell > * {
+  inline-size: 100%;
+}
+
+/**
+ * The filter row. A rule beneath it rather than a filled bar: the gallery wall
+ * has as little furniture as possible, and a tinted toolbar above the work
+ * would be the first thing the eye lands on instead of the paintings.
+ */
+.filters {
+  margin-block-start: var(--space-7);
+  border-block-end: var(--border-hairline) solid var(--line);
+  padding-block-end: var(--space-4);
+}
+
+.filterList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.filter {
+  color: var(--text-muted);
+  padding-block-end: var(--space-1);
+  border-block-end: 2px solid transparent;
+  transition: color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+/**
+ * The active filter is marked twice over — the ink darkens *and* an underline
+ * appears — so which one is on does not depend on noticing a shade. Same
+ * principle as the sale statuses: never colour alone.
+ */
+.filterActive {
+  color: var(--text-primary);
+  border-block-end-color: var(--accent);
+}
+
+@media (hover: hover) {
+  .filter:hover {
+    color: var(--text-primary);
+  }
+}
+
+.empty {
+  margin-block-start: var(--space-8);
+  color: var(--text-muted);
+}

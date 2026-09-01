@@ -10,12 +10,27 @@ API handlers live under `app/api/` in the same app as the pages. There is no
 separate server process and no separate deployment.
 
 **Prefer not to add an endpoint at all.** A server component reads through the
-repository directly — no route, no fetch, no loading state. An API route is for
-things a server component cannot do: mutations, form submissions, webhooks, and
-anything a client component genuinely needs at runtime.
+repository directly — no route, no fetch, no loading state.
 
-So: the gallery, the homepage grid and the artwork page need **no** API. The
-admin's save actions, the cart, checkout, and the payment webhook do.
+For **writes**, there is a middle option this file originally did not name, and
+it is now the default: a **Server Action**. A `'use server'` function passed to
+a form's `action` runs only on the server, is reachable only by POST, and has no
+URL of its own. Signing in is built this way — see `app/(admin)/admin/actions.js`
+— and it is why there is no login endpoint. Two things fall out for free that a
+hand-written one has to get right: a credential can never end up in a query
+string, and the form still works before the page's JavaScript has loaded.
+
+So a route handler is for what neither a server component nor an action can do:
+**webhooks** (a payment provider posts to a URL, and it cannot call an action),
+anything a **third party** must reach, and anything a client component genuinely
+needs to fetch at runtime.
+
+The gallery, the homepage grid and the artwork page need **no** API. The admin's
+save actions should be Server Actions. The payment webhook must be a route.
+
+**Anything under the admin must live under `/admin`.** The session cookie is
+scoped to that path, so a handler at `/api/admin/...` would never receive it and
+would look unauthenticated no matter how correct its guard. See security.md.
 
 ## Conventions
 

@@ -74,3 +74,26 @@
 .bare .painting {
   box-shadow: var(--shadow-frame-bare);
 }
+
+/**
+ * Stands in for the painting on a work whose photograph has not been attached
+ * yet — a normal state for a record just created in the admin.
+ *
+ * Dashed, like the placeholder notice on the stub pages, so it reads as
+ * "nothing here yet" rather than as a painting that failed to load. It fills
+ * the mat rather than sitting at its centre, because the mat's own padding is
+ * the margin a real painting would have.
+ */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: var(--space-4);
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}

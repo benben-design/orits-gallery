@@ -25,6 +25,18 @@ export default function ArtworkFrame({
   priority = false,
   ratio,
   /**
+   * Shown in place of the painting when there is no image yet.
+   *
+   * A work is created in the admin before its photograph is attached — she
+   * enters the details, then adds the picture — so "no image" is a normal
+   * state of a real record, not an error. The frame still reserves its box, so
+   * a grid containing one does not go ragged, and the label says which state
+   * this is rather than leaving a silent empty rectangle.
+   *
+   * Without this the card crashed: `image.src` on an undefined image.
+   */
+  emptyLabel,
+  /**
    * "surface" mounts the work on a near-white board; "bare" hangs it straight
    * on the wall.
    *
@@ -57,15 +69,19 @@ export default function ArtworkFrame({
         height definite, which is what "fixed-size container" requires.
       */}
       <div className={styles.mat}>
-        <Image
-          className={styles.painting}
-          src={image.src}
-          alt={alt}
-          width={image.width}
-          height={image.height}
-          sizes={sizes}
-          priority={priority}
-        />
+        {image ? (
+          <Image
+            className={styles.painting}
+            src={image.src}
+            alt={alt}
+            width={image.width}
+            height={image.height}
+            sizes={sizes}
+            priority={priority}
+          />
+        ) : (
+          <p className={styles.empty}>{emptyLabel}</p>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,242 @@
+/**
+ * The admin's first real data-entry form.
+ *
+ * Logical properties throughout, so it lays out correctly in the Hebrew
+ * right-to-left shell without a single direction-specific rule. Shares its
+ * input and button treatment with AdminLoginForm deliberately — two admin
+ * forms that look different read as two different products.
+ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  max-width: 44rem;
+  margin-block-start: var(--space-6);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+}
+
+.legend {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-inline: var(--space-2);
+}
+
+/**
+ * Fields that sit together on one line on a wide screen and stack on a phone.
+ * Flex rather than grid so a row of two and a row of three need no separate
+ * column definitions.
+ */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.row > .field {
+  flex: 1 1 12rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.input,
+.textarea {
+  font: inherit;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  inline-size: 100%;
+}
+
+.input {
+  min-block-size: 3rem;
+}
+
+.textarea {
+  resize: vertical;
+  line-height: var(--leading-normal);
+}
+
+/**
+ * A field the server rejected. Marked by a thicker edge in the ink rather than
+ * by hue: the palette has one accent and it means "interactive", and an error
+ * carried by colour alone is invisible to a colour-blind reader and in a
+ * screenshot. The sentence underneath is what actually says what is wrong.
+ */
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+  border-color: var(--text-primary);
+  border-width: 2px;
+}
+
+.fieldError {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: var(--leading-normal);
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.checkbox {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  accent-color: var(--accent);
+}
+
+.checkboxLabel {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+/* The web address, folded away. No JavaScript involved. */
+.advanced {
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4) var(--space-5);
+}
+
+.summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.advanced[open] .summary {
+  margin-block-end: var(--space-4);
+}
+
+.advanced .row {
+  margin-block-start: var(--space-4);
+}
+
+.submit {
+  align-self: start;
+  min-block-size: 3rem;
+  padding-inline: var(--space-7);
+  padding-block: var(--space-3);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-on-accent);
+  background-color: var(--accent);
+  transition: background-color var(--duration) var(--ease);
+}
+
+.submit:disabled {
+  cursor: progress;
+  background-color: var(--text-muted);
+}
+
+@media (hover: hover) {
+  .submit:not(:disabled):hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+/**
+ * The band at the top of the form. Same treatment as the login form's failure
+ * message, and for the same reason: bordered and worded, never colour alone.
+ */
+.formError,
+.success,
+.notice {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.formError {
+  background-color: var(--surface-tint);
+}
+
+.success {
+  background-color: var(--surface-tint);
+  margin-block-start: var(--space-6);
+}
+
+/* The image-upload caveat: dashed, like every other "not built yet" band. */
+.notice {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+/**
+ * The channel question, which only the sold status asks.
+ *
+ * Indented behind a rule on the inline start, so it reads as a follow-up to the
+ * status above it rather than as another field in the row. Logical property, so
+ * the rule sits on the right in Hebrew and the left in English without a second
+ * declaration.
+ */
+.followUp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-inline-start: 2px solid var(--line-strong);
+  padding-inline-start: var(--space-5);
+  margin-block-start: var(--space-2);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  align-items: center;
+}
+
+.choicesLegend {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding: 0;
+  /* Floated out of the flex row so the options sit on one line beside it. */
+  inline-size: 100%;
+  margin-block-end: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.choice input {
+  accent-color: var(--accent);
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+}

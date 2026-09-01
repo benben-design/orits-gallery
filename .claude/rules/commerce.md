@@ -20,6 +20,21 @@ Alongside it, a work records **which channel it sold through** — this site,
 under1000, or elsewhere. The artist sells in parallel on other platforms, so the
 site is not the only thing that can consume a painting.
 
+Two rules about that field, and neither is in the schema:
+
+- **The channel belongs to the sold status.** A sold work has somewhere it sold;
+  an available one has no channel at all. The admin form asks the question only
+  once "sold" is chosen, rather than standing it beside the status as an
+  unrelated box. The database deliberately does **not** tie the two columns, so
+  a work can still be edited in either order — this is the form guiding her, not
+  a constraint.
+- **`this-site` is written by checkout and never by hand.** It means money moved
+  through this site, so it is a claim about an order that either exists or does
+  not. The admin therefore offers only `under1000` and `elsewhere`, with
+  under1000 first because that is the sale the site cannot see and the one she
+  actually records. A work already carrying `this-site` keeps it: the form says
+  where it came from and passes it through untouched rather than dropping it.
+
 The four values are unchanged and deliberate. What has changed is that they are
 now enforced by the database as well as by the application — adding a fifth is a
 migration, not an edit.

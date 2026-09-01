@@ -8,11 +8,13 @@
     "prebuild": "node scripts/generate-image-manifest.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . && node scripts/check-contrast.mjs",
+    "lint": "eslint . && node scripts/check-contrast.mjs && node scripts/check-admin-guard.mjs",
     "images:manifest": "node scripts/generate-image-manifest.mjs",
     "dev:placeholders": "node scripts/generate-dev-placeholders.mjs",
     "seed:local": "node --env-file-if-exists=.env.local scripts/seed-local-database.mjs",
-    "check:contrast": "node scripts/check-contrast.mjs"
+    "admin:create": "node --env-file-if-exists=.env.local scripts/create-admin-user.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:guard": "node scripts/check-admin-guard.mjs"
   },
   "dependencies": {
     "next": "^16.3.3",

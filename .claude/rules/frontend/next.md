@@ -18,9 +18,17 @@ TypeScript and no JSX-specific extension.
   only.
 
 The parenthesised folders are **route groups**: they organise files without
-appearing in the URL. They exist here to give the site and the admin **two
-separate root layouts**, which is why there is no top-level `app/layout.js`.
-Each root layout renders its own `<html>` and `<body>`.
+appearing in the URL. They do two jobs here.
+
+The outer ones give the site, the admin and `/dev` **separate root layouts**,
+which is why there is no top-level `app/layout.js`. Each root layout renders its
+own `<html>` and `<body>`.
+
+`app/(admin)/admin/(guarded)/` is the second job: a group used purely to draw a
+line through a section of the tree. `(guarded)/page.js` is still `/admin` — the
+URL is untouched — but the login page sits outside the group and everything
+inside it is guarded. This is the idiomatic way to say "these routes share a
+property" without inventing a URL segment for it.
 
 A `layout.js` wraps everything beneath it and does not re-render on navigation
 between its children. `app/(site)/[locale]/layout.js` is the public root layout:
@@ -33,6 +41,21 @@ transition. That is fine — nobody crosses from the shop into the admin mid-ses
 **Next 16 renamed `middleware` to `proxy`.** The file is `proxy.js` at the repo
 root and the exported function is `proxy`. It runs on the Node runtime; the edge
 runtime is not available there.
+
+Its matcher **excludes `/admin` deliberately**, and the admin guard is therefore
+not there — it is called by each guarded page. Two facts decided that shape, and
+both were measured rather than assumed:
+
+- **A layout cannot know which page was requested.** It receives
+  `{ children, params }`, `params` is empty for a group, and `headers()` on a
+  document request carries no path. So a layout guard can only ever send people
+  to the dashboard, never back to the page they asked for.
+- **When a layout and its page both redirect, the layout's redirect wins.** A
+  layout guard does not coexist with a page guard that knows better; it
+  overrides it.
+
+If you ever need the requested path in a server component, this is the reason
+you will not find it — resolve it where it is known, or pass it down.
 
 ## Server and client components
 

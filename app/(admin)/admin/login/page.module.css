@@ -1,0 +1,9 @@
+/**
+ * Matches the heading treatment the stub pages use, so the admin still reads as
+ * one place while the rest of it is scaffolding.
+ */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-5);
+}

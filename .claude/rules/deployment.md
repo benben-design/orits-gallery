@@ -67,5 +67,12 @@ Beyond a green build, these are launch blockers and are easy to forget:
   exists: Neon is not connected, `DATABASE_URL` is not set in Vercel, and the
   migrations have never been applied to a hosted database. Until that is done a
   deployed build cannot render a single painting.
-- **The two admin accounts existing**, with real password hashes. The table is
-  empty and there is no way to sign in.
+- **The two admin accounts existing in the production database**, created with
+  `npm run admin:create` against Neon once it exists. Creating them locally
+  does nothing for production, and a local run cannot reach it.
+- **`ADMIN_SESSION_SECRET` set in the Vercel project**, and a different value
+  from the local one. Without it every admin page throws; with the local one
+  copied over, a session minted on a laptop would work in production.
+- **A check that the guard survived the deploy.** It is built, but it is
+  ordinary application code rather than infrastructure: browse to an admin page
+  signed out on the deployed site and confirm it lands on the login form.

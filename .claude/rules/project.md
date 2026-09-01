@@ -55,7 +55,7 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | Styling | Plain CSS — `app/tokens.css` + `app/globals.css`, co-located CSS Modules per component. No framework, no component library |
 | Images | `public/paintings/` + Next's built-in image pipeline today; **Cloudinary later** |
 | Database | PostgreSQL. **The site reads it** — every painting comes from Postgres through `lib/data/works-repository.js`. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, so production has no database at all |
-| Auth | Admin login for **two accounts** with equal rights, the artist's and the developer's — **not built yet**; planned as httpOnly JWT cookies |
+| Auth | **Built.** Two accounts with equal rights, the artist's and the developer's. scrypt password hashing, accounts created by `npm run admin:create`, sign-in and sign-out through a signed httpOnly cookie with no session table, and every guarded admin page redirecting a visitor without a session to the login form. The guard covers **rendering only** — mutations verify the session themselves, see security.md |
 | Payments | Provider not chosen yet — Stripe vs an Israeli provider that issues a tax invoice |
 | Host | Vercel, one deployment, region `fra1` |
 
@@ -80,6 +80,7 @@ it does not apply here.
 ├── lib/
 │   ├── i18n/             locale config, dictionary loader, locales/*.json
 │   ├── data/             the data access layer — see data-layer.md
+│   ├── auth/             password hashing, the session cookie, the page guard
 │   ├── db.js             the pooled Postgres connection, used by the repository
 │   └── format.js         locale-aware price and dimension formatting
 ├── database/migrations/  plain SQL, applied by hand, forward-only
@@ -158,7 +159,10 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Every route in the locked map above | Done — as stubs, except the homepage |
 | The four homepage sections + UI primitives | Done |
 | `/admin/settings` | Not built |
-| Gallery filters and pagination, artwork page body | Not built yet |
+| Gallery | Built — the full catalogue, filtered by category through the URL. **Pagination deliberately not built** at sixteen works |
+| Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **No image upload**: that needs hosting first |
+| Editing a painting from the admin | Built — `/admin/works/[id]` shares the same form. Publishing and unpublishing happen here; a published work's address is read-only. **No delete, no featured control** |
+| Artwork page body | Not built yet |
 | Cart, checkout and order logic | Not built yet |
 | Sitemap, OG images, hreflang tags | Not built yet — required by seo.md |
 | Database schema | Written — five migrations in `database/migrations/`, run by hand against a local Postgres |
@@ -166,12 +170,20 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Database connection module | `lib/db.js`, imported by the repository and by nothing else |
 | Reading painting data from Postgres | **Done.** Every page reads the database through the repository; `lib/data/artworks.js` is the seed fixture |
 | Neon | Not started — **no production database exists**, so a deploy cannot render a painting |
-| Auth, payments, Cloudinary | Not started |
+| Admin password hashing + account creation | Done — `lib/auth/password.js`, `npm run admin:create` |
+| Admin sign-in and sign-out | Done — signed httpOnly cookie, no session table. See security.md |
+| Rate limiting on sign-in | Done — counters in Postgres (migration 006), five failures then an escalating block. Paired with the eight-character password minimum |
+| The admin route guard | Done — every page under `(guarded)/` redirects without a session, and signing in returns to the page that was asked for |
+| Payments, Cloudinary | Not started |
 
-Exactly **two client components** exist — the language switcher, and the hero's
-studio loop. Everything else is a server component. Both are leaves, and the
-hero's poster is server-rendered so nothing above the fold waits on JavaScript.
-See app-files.md.
+Exactly **four client components** exist — the language switcher, the hero's
+studio loop, and the admin's login and new-work forms. Everything else is a
+server component, including the gallery and its filters, which are links and a
+query parameter rather than state. All four are leaves, and the hero's poster is
+server-rendered so nothing above the fold waits on JavaScript. Both admin forms
+are client components for one reason: a rejected submission has to come back
+with its errors and the typed values intact, without either travelling through
+a URL. See app-files.md.
 
 ## Placeholder data — read before touching content
 
@@ -197,8 +209,9 @@ One placeholder has no home in the database. **Medium is a closed set of two
 keys there** — `oil-on-canvas` and `pastel-on-paper`, translated in the
 application — and it is optional. There is no key meaning "not recorded yet", so
 a seeded work carries **no medium at all** rather than a fake one, and the
-`[PLACEHOLDER] Medium not recorded yet` string has nowhere to go. Those two keys
-still need entries in both locale files.
+`[PLACEHOLDER] Medium not recorded yet` string has nowhere to go. Both keys are
+now translated in `he.json` and `en.json`, so a work that does carry a medium
+renders it properly.
 
 ## Key decisions, and why
 
