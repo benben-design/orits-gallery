@@ -29,8 +29,11 @@ import {
 import {
   createWork as createWorkRecord,
   updateWork as updateWorkRecord,
+  deleteWork as deleteWorkRecord,
+  unpublishWork as unpublishWorkRecord,
   getWorkById,
   DuplicateSlugError,
+  WorkHasOrdersError,
 } from '@/lib/data/works-repository';
 import { validateWorkInput, workToFormValues } from '@/lib/data/work-input';
 import { safeReturnTo, ADMIN_LOGIN_PATH } from '@/lib/auth/admin-guard';
@@ -264,4 +267,96 @@ export async function updateWork(workId, previousState, formData) {
     // stored rather than from what was typed — normalised slugs included.
     values: workToFormValues(saved),
   };
+}
+
+/**
+ * Where the confirmation page lives, with an outcome attached.
+ *
+ * Errors travel back in the URL rather than through `useActionState`, which is
+ * what keeps the confirmation page a **server** component: there is no typed
+ * input to preserve across a failed attempt, only a code to render a sentence
+ * from, and a code is not a credential. It also means the whole flow works with
+ * no JavaScript at all — a link, a page, a form post.
+ *
+ * Not exported: a `'use server'` module may only export async functions.
+ */
+function confirmationPath(workId, outcome) {
+  const path = '/admin/works/' + encodeURIComponent(workId) + '/delete';
+  return outcome ? path + '?outcome=' + outcome : path;
+}
+
+/**
+ * Deletes a painting, permanently.
+ *
+ * **Verifies the session itself**, like every other mutation here: the page
+ * guard runs when a page renders and has no say over a Server Action, which is
+ * a POST endpoint Next reaches directly. Anyone who knows this action's id can
+ * call it without ever loading a page. See security.md.
+ *
+ * Two things it deliberately does not do:
+ *
+ *   - **It does not delete images.** `work_images.work_id` cascades in the
+ *     schema, so they go with the row. A loop here would be a second place that
+ *     has to be kept in step with the database.
+ *   - **It does not check whether the work has been sold through this site.**
+ *     `order_lines.work_id` is `on delete restrict`, so the database refuses and
+ *     the repository turns that into `WorkHasOrdersError`. Reading the orders
+ *     table first would be a check-then-act race and a second home for a rule
+ *     the schema already enforces. No orders exist yet; when they do, this path
+ *     is already correct rather than newly expensive. See commerce.md.
+ *
+ * @param {string} workId - Bound server-side, so the browser cannot swap it.
+ */
+export async function deleteWork(workId) {
+  // No session: sign in. Nothing is deleted, and the answer says nothing about
+  // whether a work by that id exists.
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  let deleted;
+
+  try {
+    deleted = await deleteWorkRecord(workId);
+  } catch (error) {
+    // redirect() throws, so these run outside the try's reach by construction.
+    if (error instanceof WorkHasOrdersError) {
+      redirect(confirmationPath(workId, 'ordered'));
+    }
+
+    console.error('[admin] deleteWork failed', error);
+    redirect(confirmationPath(workId, 'unexpected'));
+  }
+
+  if (!deleted) redirect(confirmationPath(workId, 'notFound'));
+
+  // The work may have just vanished from the gallery, the homepage grid and the
+  // sitemap. Without this they keep serving their cached render and she
+  // reasonably concludes the delete did not work.
+  revalidatePath('/', 'layout');
+
+  redirect('/admin');
+}
+
+/**
+ * Takes a painting off the public site, without deleting anything.
+ *
+ * This is what the delete confirmation offers instead of deleting a published
+ * work, and it is the same state unticking "published" in the edit form
+ * produces — one meaning of unpublished, reached two ways.
+ *
+ * **Verifies the session itself**, for the same reason as above.
+ *
+ * @param {string} workId - Bound server-side.
+ */
+export async function unpublishWork(workId) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  const unpublished = await unpublishWorkRecord(workId);
+
+  if (!unpublished) redirect(confirmationPath(workId, 'notFound'));
+
+  revalidatePath('/', 'layout');
+
+  // Back to the list, where it now reads as a draft. That is the confirmation:
+  // she can see the state she asked for rather than being told about it.
+  redirect('/admin');
 }

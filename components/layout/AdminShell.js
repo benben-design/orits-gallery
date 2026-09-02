@@ -24,7 +24,8 @@ import styles from './AdminShell.module.css';
 export default function AdminShell({ dictionary, signedIn, children }) {
   const links = signedIn
     ? [
-        { key: 'dashboard', href: '/admin', label: dictionary.admin.nav.dashboard },
+        /* /admin is the works list itself, not a dashboard in front of one. */
+        { key: 'works', href: '/admin', label: dictionary.admin.nav.works },
         { key: 'newWork', href: '/admin/works/new', label: dictionary.admin.nav.newWork },
         { key: 'orders', href: '/admin/orders', label: dictionary.admin.nav.orders },
       ]

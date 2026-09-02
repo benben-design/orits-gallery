@@ -71,8 +71,21 @@ A third property arrived with the database. **Every read states its visibility
 scope** — public or admin — and the helper that builds the `where` clause throws
 if one does not. Publication is a separate axis from sale status, so a new read
 that simply forgot to filter would quietly serve drafts; this makes that
-omission impossible rather than merely discouraged. Only `getWorkById` is
-admin-scoped, because the admin has to open works it has not published.
+omission impossible rather than merely discouraged.
+
+**Exactly two reads are admin-scoped**, and they are the whole of the exception:
+`getWorkById`, because the admin has to open a work it has not published, and
+`getWorksForAdmin`, because she cannot get back to a painting she has just
+created if the only way to list works hides it. Every other read here — every
+one a visitor can reach — is public-scoped.
+
+That makes the scope **the only thing standing between a draft and a visitor**,
+and it is load-bearing in two directions now. The preview at
+`/admin/works/[id]/preview` renders the *public* artwork body from
+`getWorkById`: one body component, two routes, two scopes. And the admin's list
+exists precisely because widening a public read to serve it would have published
+every draft on the site in one line. Add an admin read rather than loosening a
+public one, every time.
 
 ## The work record, as the repository returns it today
 
@@ -142,9 +155,11 @@ two keys — `oil-on-canvas`, `pastel-on-paper` — translated in the applicatio
 and **optional**. There is no key meaning "not recorded yet", so the seeded works
 carry no medium at all rather than a fake one, and the placeholder string has
 nowhere to go. The repository therefore returns null for every current work.
-Where a key *is* present it comes back untranslated in both languages, which is
-a deliberately visible seam: translating it needs entries in `he.json` and
-`en.json` that do not exist yet. See i18n.md.
+Where a key *is* present it comes back untranslated in both languages, because
+medium is not bilingual content: both keys have entries in `he.json` and
+`en.json`, and `components/ui/mediumLabel.js` is the single place that turns one
+into words. The repository knows nothing about dictionaries and should not start.
+See i18n.md.
 
 **Sale channel.** `sale_channel` is read back on every work, beside `status`,
 and it is the one field on the record that is **admin-facing only**. A visitor
@@ -182,9 +197,22 @@ Do not "tidy" them into plausible-looking values.
 
 ## Writing
 
-`createWork` and `updateWork` are the writes, and the same three rules apply:
-async, plain objects out, and this is still the only module that touches the
-database.
+`createWork`, `updateWork`, `deleteWork` and `unpublishWork` are the writes, and
+the same three rules apply: async, plain objects out, and this is still the only
+module that touches the database.
+
+Two things about the last two:
+
+- **`deleteWork` deletes nothing but the row.** `work_images` cascades in the
+  schema, so the images go with it; a loop here would be a second place that has
+  to be kept in step with the database, and the first thing forgotten when a
+  third child table appears. It turns the `order_lines` restrict violation into
+  `WorkHasOrdersError` so the admin can say it in Hebrew rather than showing a
+  constraint name — and it does **not** read the orders table first, because a
+  check-then-act is a race and a second home for a rule the schema enforces.
+- **`unpublishWork` exists so the delete confirmation can offer something other
+  than deleting.** It produces exactly the state unticking "published" produces,
+  and the known limit above applies: the original publication date is gone.
 
 Two things are specific to updating:
 

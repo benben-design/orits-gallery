@@ -3,6 +3,7 @@ import ArtworkFrame from './ArtworkFrame';
 import StatusBadge from './StatusBadge';
 import Price from './Price';
 import { getStatusPresentation } from './statusPresentation';
+import { mediumLabel } from './mediumLabel';
 import { localeHref } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { formatDimensions } from '@/lib/format';
@@ -16,6 +17,7 @@ import styles from './ArtworkCard.module.css';
  */
 export default function ArtworkCard({ work, locale, dictionary, sizes, priority = false }) {
   const title = work.title[locale];
+  const medium = mediumLabel(work, locale, dictionary);
   const mainImage = work.images.find((image) => image.type === 'main') ?? work.images[0];
   const href = localeHref(locale, `/art/${work.slug[locale]}`);
 
@@ -38,18 +40,27 @@ export default function ArtworkCard({ work, locale, dictionary, sizes, priority 
           <h3 className={styles.title}>{title}</h3>
 
           {/*
-            Medium and size, in the secondary ink. Both are placeholder values
-            on every record today — deliberately absurd ones — so this line is
-            where "999 × 999 cm" becomes visible. That is the intent: see
-            data-layer.md.
+            Medium and size, in the secondary ink. The size is a placeholder
+            value on every record today — a deliberately absurd one — so this
+            line is where "999 × 999 cm" becomes visible. That is the intent:
+            see data-layer.md.
+
+            Medium is optional and every current row has none, so it and its
+            separator are drawn only when there is one. Otherwise the hairline
+            leads a line that starts with nothing, which is the same orphaned
+            rule the price row below is careful to avoid.
 
             The dimensions are wrapped in <bdi> because they are a Latin-and-
             digits run inside a right-to-left paragraph. Without isolation the
             trailing unit reorders against the numbers in Hebrew.
           */}
           <p className={styles.spec}>
-            <span>{work.medium[locale]}</span>
-            <span aria-hidden="true" className={styles.separator} />
+            {medium ? (
+              <>
+                <span>{medium}</span>
+                <span aria-hidden="true" className={styles.separator} />
+              </>
+            ) : null}
             <bdi>{formatDimensions(work.dimensions)}</bdi>
           </p>
 

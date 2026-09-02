@@ -4,6 +4,7 @@ import AdminWorkForm from '@/components/admin/AdminWorkForm';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
+import { isTranslationConfigured } from '@/lib/translate';
 import { createWork } from '@/app/(admin)/admin/actions';
 import { WORK_STATUSES, WORK_CATEGORIES } from '@/lib/data/works-repository';
 import { WORK_MEDIA, MANUAL_SALE_CHANNELS, AUTOMATIC_SALE_CHANNEL, SOLD_STATUS } from '@/lib/data/work-input';
@@ -53,6 +54,14 @@ export default async function AdminNewWorkPage() {
           mode="create"
           action={createWork}
           today={today}
+          /*
+            Whether the English fields fill themselves in from the Hebrew. The
+            key lives on the server and is never sent here — only the answer to
+            whether there is one. Without it the form is exactly what it was
+            before translation existed rather than one that fails at every
+            field. See lib/translate.js.
+          */
+          translationAvailable={isTranslationConfigured()}
           labels={dictionary.admin.workForm}
           options={{
             categories: toOptions(WORK_CATEGORIES, dictionary.category),

@@ -1,7 +1,17 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import Link from 'next/link';
+import { useActionState, useRef, useState } from 'react';
 import styles from './AdminWorkForm.module.css';
+
+/**
+ * Where the browser asks for a translation.
+ *
+ * Under `/admin` because the session cookie is scoped to that path: the same
+ * handler one segment outside it would receive no cookie and refuse her every
+ * time. The handler itself is app/(admin)/admin/api/translate/route.js.
+ */
+const TRANSLATE_ENDPOINT = '/admin/api/translate';
 
 /**
  * The sentence under a field the server rejected.
@@ -21,6 +31,207 @@ function FieldError({ name, message }) {
 }
 
 /**
+ * An English field that fills itself in from its Hebrew twin.
+ *
+ * She writes in Hebrew. Left to itself that means every English box is either
+ * empty or a chore, so leaving a Hebrew field translates the **whole** field in
+ * one go and drops the result into its English counterpart. Never per keystroke:
+ * a translation of half a sentence is wasted quota and a flickering box.
+ *
+ * Two pieces of state decide everything, and neither is stored in the database —
+ * this is form state, and what gets saved is simply the text she approved:
+ *
+ *   - **`pending`** — a translation has arrived and she has not looked at it
+ *     yet. The form refuses to save while any field is in this state. That gate
+ *     is the entire point: without it she can save a machine translation she
+ *     never read, which is what this exists to prevent. Approving clears it, and
+ *     so does editing, because editing means she read it.
+ *   - **`hers`** — whose words are in the box. True the moment she types in it,
+ *     and true on load for a stored value, whose provenance we cannot know and
+ *     must not gamble on. **Automatic translation only ever replaces the
+ *     machine's own text**, so re-editing the Hebrew never destroys a sentence
+ *     she wrote. The button is how she asks for a fresh one anyway.
+ *
+ * Emptying the box hands it back to the machine: there is nothing of hers left
+ * in it to protect.
+ */
+function useTranslatedField({ english, source, enabled, kind }) {
+  const [value, setValue] = useState(english ?? '');
+  const [pending, setPending] = useState(false);
+  /** 'idle' | 'translating' | 'failed' | 'noSource' */
+  const [phase, setPhase] = useState('idle');
+
+  const hers = useRef(Boolean((english ?? '').trim()));
+
+  /**
+   * The Hebrew the box was last translated from, seeded with what the work
+   * already holds. It keeps opening a work and tabbing through it from spending
+   * a translation on text nobody changed — automatic translation follows an
+   * edit to the Hebrew, not a visit to the field.
+   */
+  const translatedFrom = useRef((source ?? '').trim() || null);
+
+  /**
+   * Which request the box is waiting for. Bumped when she types as well as when
+   * a new request goes out, so an answer that lands after she has started
+   * writing is dropped rather than typed over her.
+   */
+  const requestId = useRef(0);
+
+  async function translate(rawSource) {
+    const text = rawSource.trim();
+
+    if (!text) {
+      setPhase('noSource');
+      return;
+    }
+
+    const id = (requestId.current += 1);
+    translatedFrom.current = text;
+    setPhase('translating');
+
+    let translated = null;
+
+    try {
+      const response = await fetch(TRANSLATE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // 'title' or 'description' — a painting title has to come back a
+        // noun phrase rather than a sentence, and this side is the only one
+        // that knows which field is asking. The set is owned by
+        // lib/translate.js and checked by the endpoint; it is a literal here
+        // because importing that module would ship it, and the key it reads,
+        // into the browser.
+        body: JSON.stringify({ text, kind }),
+      });
+
+      if (response.ok) {
+        const payload = await response.json();
+        if (payload?.ok && typeof payload.text === 'string') translated = payload.text;
+      }
+    } catch {
+      // Offline, or the request never landed. Every failure is the same failure
+      // here: nothing arrives, nothing is waiting for approval, and she types
+      // the English herself and saves. A translation service having a bad
+      // afternoon must not be able to trap her in the form.
+    }
+
+    if (id !== requestId.current) return;
+
+    if (translated === null) {
+      // Forgotten on purpose, so that leaving the Hebrew field again retries
+      // instead of remembering one bad minute for the rest of the session.
+      translatedFrom.current = null;
+      setPhase('failed');
+      return;
+    }
+
+    setPhase('idle');
+    setValue(translated);
+    setPending(true);
+    hers.current = false;
+  }
+
+  return {
+    value,
+    pending,
+    phase,
+
+    /** She typed in the English box. It is hers, and nothing overwrites it. */
+    onEdit(next) {
+      requestId.current += 1;
+      setValue(next);
+      hers.current = next.trim().length > 0;
+      setPending(false);
+      setPhase('idle');
+    },
+
+    /** Read and accepted as it stands. */
+    approve() {
+      setPending(false);
+    },
+
+    /** Leaving the Hebrew field: the one moment an automatic translation runs. */
+    onSourceBlur(rawSource) {
+      if (!enabled) return;
+
+      const text = rawSource.trim();
+      if (!text) return;
+      if (hers.current) return;
+      if (text === translatedFrom.current) return;
+
+      translate(text);
+    },
+
+    /** The explicit ask, which overwrites her English because she asked it to. */
+    onRequest(rawSource) {
+      translate(rawSource);
+    },
+  };
+}
+
+/**
+ * The controls under an English field: what is waiting for her, and the way to
+ * ask for another translation.
+ *
+ * Module scope for the same reason `FieldError` is.
+ */
+function TranslationControls({ name, labels, translation, onRequest }) {
+  return (
+    <div className={styles.translation}>
+      {translation.pending ? (
+        <p className={styles.unapprovedNote} id={name + '-pending'} role="status">
+          {labels.pending}
+        </p>
+      ) : null}
+
+      <div className={styles.translationActions}>
+        {translation.pending ? (
+          <button type="button" className={styles.approve} onClick={translation.approve}>
+            {labels.approve}
+          </button>
+        ) : null}
+
+        <button
+          type="button"
+          className={styles.textButton}
+          onClick={onRequest}
+          disabled={translation.phase === 'translating'}
+        >
+          {labels.translate}
+        </button>
+
+        {translation.phase === 'translating' ? (
+          <span className={styles.hint}>{labels.translating}</span>
+        ) : null}
+      </div>
+
+      {/*
+        A failure is stated and then got out of the way. It is not an error on
+        her part and there is nothing to fix: the English box is simply empty and
+        she fills it in, exactly as she would have before any of this existed.
+      */}
+      {translation.phase === 'failed' ? (
+        <p className={styles.hint} role="status">
+          {labels.failed}
+        </p>
+      ) : null}
+
+      {translation.phase === 'noSource' ? (
+        <p className={styles.hint} role="status">
+          {labels.noSource}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** The text sitting in one of the uncontrolled Hebrew boxes right now. */
+function readValue(ref) {
+  return ref.current ? ref.current.value : '';
+}
+
+/**
  * The form for adding *or* editing a painting. **The fourth client
  * component**, and the second in the admin.
  *
@@ -37,6 +248,11 @@ function FieldError({ name, message }) {
  * Every string is a prop, resolved from the Hebrew dictionary on the server.
  * The action returns error *codes*; this component turns them into sentences.
  * See i18n.md.
+ *
+ * **The English writes itself, and she signs it off.** Leaving a Hebrew field
+ * translates it and fills its English twin, marked as not yet approved; the
+ * form will not save while anything is in that state. See `useTranslatedField`
+ * above for the two rules that make it bearable rather than infuriating.
  *
  * Two things are deliberately absent:
  *
@@ -61,6 +277,16 @@ export default function AdminWorkForm({
   slugsLocked = false,
   /** 'create' or 'edit', which picks the button and the success wording. */
   mode = 'create',
+  /**
+   * Whether a translation key is configured, answered on the server.
+   *
+   * Off by default and off when there is no key, in which case the whole
+   * feature is simply absent: no button, no attempt when a field is left, and
+   * above all no failure message under every field she fills in. An install
+   * without a key should look like this form did before translation existed,
+   * not like a broken one.
+   */
+  translationAvailable = false,
 }) {
   const [state, formAction, isPending] = useActionState(action, {
     status: 'idle',
@@ -108,12 +334,70 @@ export default function AdminWorkForm({
    */
   const channelIsAutomatic = values.saleChannel === options.automaticSaleChannel;
 
+  /**
+   * The two translated pairs.
+   *
+   * The Hebrew boxes stay uncontrolled like every other field on this form; they
+   * are read through a ref at the one moment their text is needed, which is when
+   * she asks for a translation. Their English twins are controlled, because
+   * something other than the person typing now writes into them.
+   */
+  const titleHeRef = useRef(null);
+  const descriptionHeRef = useRef(null);
+
+  const titleTranslation = useTranslatedField({
+    english: values.titleEn,
+    source: values.titleHe,
+    enabled: translationAvailable,
+    kind: 'title',
+  });
+
+  const descriptionTranslation = useTranslatedField({
+    english: values.descriptionEn,
+    source: values.descriptionHe,
+    enabled: translationAvailable,
+    kind: 'description',
+  });
+
+  /**
+   * Everything waiting to be read. While this is not empty the form does not
+   * save, and the band above the button says which field to go to.
+   */
+  const awaitingApproval = [
+    { id: 'titleEn', label: labels.titleEn, pending: titleTranslation.pending },
+    {
+      id: 'descriptionEn',
+      label: labels.descriptionEn,
+      pending: descriptionTranslation.pending,
+    },
+  ].filter((entry) => entry.pending);
+
   const field = (name) => ({
     id: name,
     name,
     defaultValue: values[name] ?? '',
     'aria-invalid': errors[name] ? 'true' : undefined,
     'aria-describedby': errors[name] ? name + '-error' : undefined,
+  });
+
+  /**
+   * The same wiring for a field the machine also writes into: controlled, and
+   * described by whichever of its two notes are showing.
+   */
+  const translatedField = (name, translation, base) => ({
+    id: name,
+    name,
+    value: translation.value,
+    onChange: (event) => translation.onEdit(event.target.value),
+    className: translation.pending ? base + ' ' + styles.unapproved : base,
+    'aria-invalid': errors[name] ? 'true' : undefined,
+    'aria-describedby':
+      [
+        errors[name] ? name + '-error' : null,
+        translation.pending ? name + '-pending' : null,
+      ]
+        .filter(Boolean)
+        .join(' ') || undefined,
   });
 
   // Creating: the form is done with, and replacing it is the clearest possible
@@ -123,6 +407,19 @@ export default function AdminWorkForm({
     return (
       <p className={styles.success} role="status">
         {state.published ? labels.createdPublished : labels.createdDraft}
+        {/*
+          The moment she most wants to look at the work is the one just after
+          saving it, and until now this message was a dead end. The action
+          returns the new work's id for exactly this.
+        */}
+        {state.workId ? (
+          <Link
+            className={styles.successLink}
+            href={'/admin/works/' + encodeURIComponent(state.workId) + '/preview'}
+          >
+            {labels.preview}
+          </Link>
+        ) : null}
       </p>
     );
   }
@@ -150,7 +447,19 @@ export default function AdminWorkForm({
           <label className={styles.label} htmlFor="titleHe">
             {labels.titleHe}
           </label>
-          <input className={styles.input} type="text" required {...field('titleHe')} />
+          {/*
+            Translated when she leaves the field, and never while she is inside
+            it. A title translated at every keystroke would be a flickering box
+            and a hundred paid calls for one line of Hebrew.
+          */}
+          <input
+            className={styles.input}
+            type="text"
+            required
+            ref={titleHeRef}
+            onBlur={(event) => titleTranslation.onSourceBlur(event.target.value)}
+            {...field('titleHe')}
+          />
           <FieldError name="titleHe" message={errorFor('titleHe')} />
         </div>
 
@@ -160,12 +469,19 @@ export default function AdminWorkForm({
           </label>
           {/* Latin text inside a right-to-left page, like the login fields. */}
           <input
-            className={styles.input}
             type="text"
             dir="ltr"
             required
-            {...field('titleEn')}
+            {...translatedField('titleEn', titleTranslation, styles.input)}
           />
+          {translationAvailable ? (
+            <TranslationControls
+              name="titleEn"
+              labels={labels.translation}
+              translation={titleTranslation}
+              onRequest={() => titleTranslation.onRequest(readValue(titleHeRef))}
+            />
+          ) : null}
           <FieldError name="titleEn" message={errorFor('titleEn')} />
         </div>
 
@@ -173,7 +489,13 @@ export default function AdminWorkForm({
           <label className={styles.label} htmlFor="descriptionHe">
             {labels.descriptionHe}
           </label>
-          <textarea className={styles.textarea} rows={4} {...field('descriptionHe')} />
+          <textarea
+            className={styles.textarea}
+            rows={4}
+            ref={descriptionHeRef}
+            onBlur={(event) => descriptionTranslation.onSourceBlur(event.target.value)}
+            {...field('descriptionHe')}
+          />
           <FieldError name="descriptionHe" message={errorFor('descriptionHe')} />
         </div>
 
@@ -182,11 +504,20 @@ export default function AdminWorkForm({
             {labels.descriptionEn}
           </label>
           <textarea
-            className={styles.textarea}
             rows={4}
             dir="ltr"
-            {...field('descriptionEn')}
+            {...translatedField('descriptionEn', descriptionTranslation, styles.textarea)}
           />
+          {translationAvailable ? (
+            <TranslationControls
+              name="descriptionEn"
+              labels={labels.translation}
+              translation={descriptionTranslation}
+              onRequest={() =>
+                descriptionTranslation.onRequest(readValue(descriptionHeRef))
+              }
+            />
+          ) : null}
           <FieldError name="descriptionEn" message={errorFor('descriptionEn')} />
         </div>
       </fieldset>
@@ -480,13 +811,44 @@ export default function AdminWorkForm({
         </div>
       </details>
 
-      <button type="submit" className={styles.submit} disabled={isPending}>
-        {isPending
-          ? labels.submitting
-          : mode === 'edit'
-            ? labels.save
-            : labels.submit}
-      </button>
+      {/* ---- Saving -------------------------------------------------- *
+        The gate. While a translation is unapproved the button is disabled and
+        the band above it says so and names the fields, each one a link that
+        jumps to it — the form is long, and "you cannot save" without "here is
+        where to go" is how someone ends up phoning her son.
+
+        A disabled button is the whole mechanism on purpose. Letting the submit
+        through and refusing it inside the action would run React's form reset
+        on the way past and empty every uncontrolled box on this form, which is
+        a far worse outcome than a button she cannot press.
+      */}
+      <div className={styles.submitRow}>
+        {awaitingApproval.length > 0 ? (
+          <p className={styles.blocked} role="status">
+            {labels.translation.blocked}{' '}
+            {awaitingApproval.map((entry, index) => (
+              <span key={entry.id}>
+                {index > 0 ? labels.translation.listSeparator : null}
+                <a className={styles.blockedLink} href={'#' + entry.id}>
+                  {entry.label}
+                </a>
+              </span>
+            ))}
+          </p>
+        ) : null}
+
+        <button
+          type="submit"
+          className={styles.submit}
+          disabled={isPending || awaitingApproval.length > 0}
+        >
+          {isPending
+            ? labels.submitting
+            : mode === 'edit'
+              ? labels.save
+              : labels.submit}
+        </button>
+      </div>
     </form>
   );
 }

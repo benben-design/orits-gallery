@@ -4,6 +4,7 @@ import { fontVariables } from '@/app/fonts';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { getDictionary } from '@/lib/i18n/dictionaries';
+import { siteUrl } from '@/lib/site-url';
 import { locales, isLocale, getDirection, getLocaleTag } from '@/lib/i18n/config';
 import styles from './layout.module.css';
 
@@ -39,6 +40,13 @@ export async function generateMetadata({ params }) {
   const dictionary = await getDictionary(locale);
 
   return {
+    /*
+      The base every relative URL in a page's metadata resolves against. Set
+      once, here, so that no page has to remember it — and so that a page which
+      does build its URLs absolutely, as the artwork page does, is agreeing with
+      this rather than inventing its own answer. See lib/site-url.js.
+    */
+    metadataBase: new URL(siteUrl()),
     title: {
       default: dictionary.site.title,
       template: `%s — ${dictionary.site.artistName}`,

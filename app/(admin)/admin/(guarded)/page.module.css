@@ -1,0 +1,183 @@
+/**
+ * The works list.
+ *
+ * Logical properties throughout, so the rows read right-to-left in the Hebrew
+ * admin without a single direction-specific rule.
+ */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-6);
+}
+
+/* Matches the heading treatment the other admin pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+}
+
+.add {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  padding-block: var(--space-2);
+}
+
+@media (hover: hover) {
+  .add:hover {
+    color: var(--accent-hover);
+  }
+}
+
+.empty {
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * One painting.
+ *
+ * A hairline between rows rather than around each one: thirty bordered cards
+ * is a spreadsheet, and the admin should stay as quiet as the site it manages.
+ *
+ * The row holds two destinations — the work, and the question about deleting
+ * it — so it is the list item, and each destination is its own link inside.
+ */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-block-end: var(--border-hairline) solid var(--line);
+  transition: background-color var(--duration) var(--ease);
+}
+
+/* The painting itself, taking the whole row apart from the delete link. */
+.open {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding-block: var(--space-4);
+}
+
+/**
+ * The way to the delete question, and only to the question — nothing here
+ * deletes anything.
+ *
+ * In the secondary ink rather than the accent: it is the least likely thing she
+ * wants on any given row, and an accent-coloured "delete" on thirty rows reads
+ * as an invitation.
+ */
+.delete {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background-color: var(--surface-mat);
+  }
+
+  .delete:hover {
+    color: var(--text-primary);
+  }
+}
+
+/**
+ * The picture, small and fixed.
+ *
+ * `flex: none` so a row without one keeps exactly the same shape as a row with
+ * one — the frame reserves its box either way, which is the whole reason this
+ * uses the same component as the gallery card rather than a bare <img>.
+ */
+.thumbnail {
+  flex: none;
+  inline-size: 4rem;
+  --frame-ratio: 1 / 1;
+  /* The mat's default inset is sized for a card; at four rem it is all mat. */
+  --frame-inset: var(--space-1);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.workTitle {
+  font-size: var(--text-md);
+  color: var(--text-primary);
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/**
+ * On the site, or not yet.
+ *
+ * The distinction she is scanning for, and it is carried by form rather than by
+ * hue: a draft is outlined in a dashed edge, like every other provisional thing
+ * on this project, and a published work sits on the clay tint. Both keep their
+ * word, so the two are still distinguishable in a screenshot and to a reader
+ * who cannot separate the two backgrounds.
+ */
+.draft,
+.live {
+  border-radius: var(--radius-sm);
+  padding-inline: var(--space-3);
+  padding-block: var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+}
+
+.draft {
+  border: var(--border-hairline) dashed var(--line-strong);
+  color: var(--text-muted);
+}
+
+.live {
+  /* text-primary on surface-tint: 10.80:1, and one of the permitted pairings. */
+  background-color: var(--surface-tint);
+  color: var(--text-primary);
+}
+
+.status {
+  color: var(--text-primary);
+}
+
+/**
+ * Where it sold. Admin-only data, and the only place on this site it appears —
+ * see commerce.md. Set in the secondary ink because it is the answer to a
+ * question the status already raised, not a state of its own.
+ */
+.channel {
+  color: var(--text-muted);
+}

@@ -1,0 +1,134 @@
+/**
+ * The delete confirmation.
+ *
+ * The one page in this admin where the destructive control is deliberately the
+ * *quieter* of the two: taking a work off the site is the filled button, and
+ * deleting is an outlined one. The palette has a single accent and it means
+ * "interactive", not "danger" — so the emphasis has to be carried by weight and
+ * by order, which is also what keeps it legible without colour.
+ */
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-2);
+}
+
+/* Which painting, set below the heading — an admin <title> never names one. */
+.subject {
+  color: var(--text-muted);
+  margin-block-end: var(--space-6);
+}
+
+/**
+ * What the last attempt did. Bordered and worded like every other message on
+ * this project, never colour alone.
+ */
+.outcome {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-tint);
+  padding: var(--space-4);
+  margin-block-end: var(--space-5);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * The consequence. Set at reading size rather than as fine print: it is the
+ * whole reason this page exists, and a warning nobody reads is a warning that
+ * was not given.
+ */
+.warning {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * What she probably meant instead, set apart so it does not read as more of the
+ * warning. Indented behind a rule on the inline start, like the sale-channel
+ * follow-up on the work form.
+ */
+.alternative {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: var(--space-4);
+  border-inline-start: 2px solid var(--line-strong);
+  padding-inline-start: var(--space-5);
+  margin-block-start: var(--space-5);
+}
+
+.alternativeText {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+/* The safe option, and the only filled button on the page. */
+.keep {
+  min-block-size: 3rem;
+  padding-inline: var(--space-7);
+  padding-block: var(--space-3);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-on-accent);
+  background-color: var(--accent);
+  transition: background-color var(--duration) var(--ease);
+}
+
+.decision {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+  margin-block-start: var(--space-8);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+/**
+ * Deleting. Outlined in the ink rather than filled in the accent — it is not
+ * the recommended way out, and it should not look like the button the eye lands
+ * on. It is still an ordinary-sized target: a control made deliberately hard to
+ * hit is a control someone mis-hits.
+ */
+.delete {
+  min-block-size: 3rem;
+  padding-inline: var(--space-6);
+  padding-block: var(--space-3);
+  border: var(--border-hairline) solid var(--text-primary);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background-color: transparent;
+  transition: background-color var(--duration) var(--ease);
+}
+
+.cancel {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  padding-block: var(--space-2);
+}
+
+@media (hover: hover) {
+  .keep:hover {
+    background-color: var(--accent-hover);
+  }
+
+  .delete:hover {
+    background-color: var(--surface-mat);
+  }
+
+  .cancel:hover {
+    color: var(--accent-hover);
+  }
+}

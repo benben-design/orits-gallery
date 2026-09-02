@@ -42,19 +42,23 @@ are warm on warm, and each one needs its own edge; the near-white mount board
 deliberately slight — 1.179:1, about 6.4 L\* — so the mount alone is not what
 holds the edge. `--shadow-frame` on the painting does the rest.
 
-**`ArtworkFrame`'s `bare` tone is currently unused, and that is not an
-oversight.** It exists for a single large work hanging straight on the wall —
-enough presence to hold the ground by itself, where a mount would read as a
-card, and a card reads as commerce rather than gallery. The homepage hero was
-that work until the hero became studio footage, so nothing passes `tone="bare"`
-today.
+**`ArtworkFrame`'s `bare` tone belongs to the artwork page, and to nothing
+else.** It exists for a single large work hanging straight on the wall — enough
+presence to hold the ground by itself, where a mount would read as a card, and a
+card reads as commerce rather than gallery. The homepage hero was that work until
+the hero became studio footage; `components/ui/ArtworkDetail.js` is the caller
+now, and it is the only one — which means both the public artwork page and the
+admin preview that renders the same component get it, as they should.
 
-Keep the tone and keep `--shadow-frame-bare`. The artwork page's main image is
-the obvious next place for it, and the pairing is load-bearing when it is used:
-with no mount the shadow is the *only* thing separating the work from the
-beige, so `bare` carries a heavier shadow at the same ink and the same
-neutrality. Still a canvas on a wall, never a floating card. If `bare` is ever
-used again without that token, the work meets the wall with nothing in between.
+The pairing with `--shadow-frame-bare` is load-bearing wherever it is used: with
+no mount the shadow is the *only* thing separating the work from the beige, so
+`bare` carries a heavier shadow at the same ink and the same neutrality. Still a
+canvas on a wall, never a floating card. If `bare` is ever used without that
+token, the work meets the wall with nothing in between.
+
+The same page keeps the **mounted** tone for the supporting images beneath it,
+and that is the rule stated twice rather than an inconsistency: one large work
+holds its own edge, several small ones warm-on-warm do not.
 
 **The hero itself is no longer governed by this section.** It is footage, not a
 painting — see the cropping note below.

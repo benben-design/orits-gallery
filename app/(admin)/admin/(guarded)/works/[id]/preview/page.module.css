@@ -1,0 +1,104 @@
+/**
+ * The preview's own chrome, and nothing else.
+ *
+ * Everything below the banner is the public page's stylesheet, unchanged and
+ * unwrapped — no rule here may reach into it. The moment this file starts
+ * restyling the painting, the preview stops answering the question it exists to
+ * answer.
+ */
+
+/**
+ * The band saying what she is looking at.
+ *
+ * Dashed and in the secondary ink, like every other "not live yet" surface on
+ * this project. It is never carried by colour alone: the sentence is the
+ * signal, and the border is the reinforcement.
+ */
+.banner,
+.bannerLive {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4) var(--space-5);
+  margin-block-end: var(--space-7);
+}
+
+/**
+ * A work that is already public gets a solid edge and the tint behind it, so
+ * the two states are not distinguishable by their wording alone at a glance.
+ * Dashed reads as provisional; solid reads as settled, which is what "already
+ * on the site" is.
+ */
+.bannerLive {
+  border-style: solid;
+  background-color: var(--surface-tint);
+}
+
+.bannerText {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  /* Takes the row on a narrow screen, so the controls wrap beneath it. */
+  flex: 1 1 18rem;
+}
+
+.bannerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.languages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.language,
+.action {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  /* A comfortable target without turning these into buttons. */
+  padding-block: var(--space-2);
+}
+
+/**
+ * The language being previewed. Marked by weight and by dropping the underline
+ * rather than by hue — the same discipline as the gallery's active filter, and
+ * `aria-current` says it as well for anyone not looking at the styling.
+ */
+.languageActive {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+}
+
+@media (hover: hover) {
+  .language:hover,
+  .action:hover {
+    color: var(--accent-hover);
+  }
+
+  .languageActive:hover {
+    color: var(--text-primary);
+  }
+}
+
+/**
+ * The frame the public body sits in.
+ *
+ * It carries `dir` and `lang`, so it is a real boundary rather than decoration,
+ * and it deliberately has no visual treatment at all: a border or a background
+ * here would be a second design, which is the one thing this page must not be.
+ */
+.frame {
+  /* A containing block for the body's own layout, and nothing more. */
+  display: block;
+}

@@ -57,6 +57,15 @@
   its own `readAdminSession()` check and returns without writing if there is
   none. `signIn` and `signOut` are the exceptions that prove it — one must work
   signed out, and the other only removes a cookie.
+- **The same rule covers a read that costs money.** `/admin/api/translate` is
+  the first route handler in the admin and it writes nothing at all, so the
+  sentence above about *mutations* does not reach it. It still verifies the
+  session in its first statement, because an unguarded one is a free
+  translation service for the internet billed to us, reachable without ever
+  loading a page. Two details go with it: it sits **under `/admin`** so the
+  path-scoped cookie actually arrives, and the provider key is read only in
+  `lib/translate.js`, on the server. A key the page can reach is a key anyone
+  can spend.
 - **`generateMetadata` runs even when the guard redirects**, because it is a
   separate export from the page component and Next calls it either way. It was
   measured: a signed-out request to `/admin/orders` returns a 307 whose body

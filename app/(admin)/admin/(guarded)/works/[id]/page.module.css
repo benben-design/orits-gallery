@@ -14,3 +14,21 @@
   color: var(--text-muted);
   margin-block-end: var(--space-5);
 }
+
+/**
+ * The way through to the preview, sitting on the same line as the work's name
+ * because it is about that work rather than about the form below it.
+ */
+.preview {
+  margin-inline-start: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (hover: hover) {
+  .preview:hover {
+    color: var(--accent-hover);
+  }
+}

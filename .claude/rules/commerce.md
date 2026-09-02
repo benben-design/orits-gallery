@@ -114,6 +114,10 @@ Mitigations, all required:
 3. **Marking a work sold is the single most prominent action in the admin.** One
    click from the works list, with no need to open an edit screen. If the artist
    has to hunt for it, she will not do it, and the site will sell air.
+   **Not built.** The works list exists now and shows the status of every work,
+   but changing one still means opening the edit form and saving it. That is
+   the next thing to build here, and it needs its own Server Action with its own
+   session check — see security.md.
 4. **A record created automatically is never publicly visible.** Any future
    import or folder-watching automation creates a **draft**. The schema makes
    this the default rather than a discipline: `published_at` has no default, so
@@ -165,9 +169,11 @@ nothing that later happens to the catalogue may change what it says.
   rather than shrinking a paid order or leaving a line that has forgotten which
   painting was sold. A sold painting therefore stays in the catalogue
   permanently, which is the right answer anyway: if the artist wants it out of
-  sight, that is unpublishing it, not deleting it. **The admin must explain this
-  in plain Hebrew** — a raw database error reaching the artist is a phone call
-  to her son.
+  sight, that is unpublishing it, not deleting it. **The admin explains this in
+  plain Hebrew** — a raw database error reaching the artist is a phone call to
+  her son — and it does so by catching the constraint rather than by checking
+  first, so the rule has one home. Built, and exercised against a real order
+  line before any order flow exists.
 - **The price on a line is copied at the moment of purchase**, never read back
   off the work. Prices change, and a discounted sale was charged at the reduced
   price; neither may retroactively rewrite what a buyer paid.

@@ -1,13 +1,26 @@
 # API
 
-Nothing is built yet. This file records the conventions to build to, and must be
-filled in with real routes as they land — the previous project kept a full method
-/ path / body / returns table per area, and this should end up the same.
+Two routes exist. This file records the conventions to build to, and the table
+below is filled in as more land — the previous project kept a full method / path
+/ body / returns table per area, and this should end up the same.
+
+## The routes there are
+
+| Method | Path | Body | Returns | Notes |
+|---|---|---|---|---|
+| GET | `/api/health` | — | `{ status, works, dataIsPlaceholder }` | Liveness, and proof the repository and the database are reachable from a handler |
+| POST | `/admin/api/translate` | `{ text, kind }` — Hebrew, at most 5,000 characters, and `title` or `description` | `{ ok: true, text }`, or `{ ok: false, error }` | The admin work form filling an English field in from its Hebrew twin. Verifies the session itself and returns 401 without one. 400 empty, unparseable or an unknown kind, 413 too long, 429 the provider is rate limiting, 503 no key or a key it refuses, 502 anything else |
+
+Health predates the envelope and keeps its own shape; **`{ ok }` is the shape
+every route from here on shares**, with `error` a *code* rather than a sentence,
+exactly as the Server Actions return codes. The Hebrew lives in the locale files
+and the browser picks it.
 
 ## Shape
 
-API handlers live under `app/api/` in the same app as the pages. There is no
-separate server process and no separate deployment.
+API handlers live in the same app as the pages — public ones under `app/api/`,
+admin ones under `/admin` for the cookie reason below. There is no separate
+server process and no separate deployment.
 
 **Prefer not to add an endpoint at all.** A server component reads through the
 repository directly — no route, no fetch, no loading state.
@@ -24,6 +37,18 @@ So a route handler is for what neither a server component nor an action can do:
 **webhooks** (a payment provider posts to a URL, and it cannot call an action),
 anything a **third party** must reach, and anything a client component genuinely
 needs to fetch at runtime.
+
+`/admin/api/translate` is the built example of that last case: the browser needs
+an answer in the middle of a form, when a field is left, and the provider key may
+not leave the server. It is a route because there is no page render to hang it
+on — not because a route was the first thing to hand.
+
+Its `kind` is worth copying the next time a route feeds a language model. The
+browser has to say whether it is asking about a title or a description, because
+they want different instructions — but what it sends is **one token from a
+closed set, checked here against the exported constant**, never the instruction
+itself. A body that carried the prompt would be an endpoint for saying anything
+at all to a model, on our key.
 
 The gallery, the homepage grid and the artwork page need **no** API. The admin's
 save actions should be Server Actions. The payment webhook must be a route.

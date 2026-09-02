@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
@@ -5,6 +6,7 @@ import AdminWorkForm from '@/components/admin/AdminWorkForm';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
+import { isTranslationConfigured } from '@/lib/translate';
 import { updateWork } from '@/app/(admin)/admin/actions';
 import { getWorkById, WORK_STATUSES, WORK_CATEGORIES } from '@/lib/data/works-repository';
 import { WORK_MEDIA, MANUAL_SALE_CHANNELS, AUTOMATIC_SALE_CHANNEL, SOLD_STATUS, workToFormValues } from '@/lib/data/work-input';
@@ -62,7 +64,23 @@ export default async function AdminEditWorkPage({ params }) {
           admin titles must not be built from record data — so the work names
           itself here, in the body, where the guard has already run.
         */}
-        <p className={styles.subject}>{work.title[adminLocale]}</p>
+        <p className={styles.subject}>
+          {work.title[adminLocale]}
+          {/*
+            The way to look at the work before anyone else can. It matters most
+            on a draft, whose public address does not resolve yet and whose slug
+            becomes permanent the moment she ticks publish — but it is offered
+            on both, because "what does this look like" is the same question
+            either way and a link that appears and disappears is one she has to
+            think about.
+          */}
+          <Link
+            className={styles.preview}
+            href={'/admin/works/' + encodeURIComponent(work.id) + '/preview'}
+          >
+            {dictionary.admin.editWork.preview}
+          </Link>
+        </p>
 
         <AdminWorkForm
           mode="edit"
@@ -70,6 +88,12 @@ export default async function AdminEditWorkPage({ params }) {
           initialValues={workToFormValues(work)}
           slugsLocked={isPublished}
           today={work.addedAt}
+          /*
+            Same flag as the new-work page. On an existing work nothing is
+            translated on load and nothing is pending: the English it already
+            carries was approved when it was saved. See lib/translate.js.
+          */
+          translationAvailable={isTranslationConfigured()}
           labels={dictionary.admin.workForm}
           options={{
             categories: toOptions(WORK_CATEGORIES, dictionary.category),

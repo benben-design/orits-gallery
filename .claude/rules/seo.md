@@ -3,13 +3,34 @@
 These pages get shared in WhatsApp and found in Google. Both matter more here
 than on a typical app.
 
+**The artwork page is done; the rest is not.** `/[locale]/art/[slug]` carries a
+title, a description, a canonical URL, both language alternates and the painting
+as its share image, and `app/sitemap.js` covers the whole public site. The other
+public pages still declare no alternates of their own, and nothing anywhere emits
+structured data. Both are named again at the foot of this file.
+
+All of it rests on `lib/site-url.js`, the only reader of `NEXT_PUBLIC_SITE_URL`
+and the only place a path becomes absolute.
+
 ## Metadata
 
 Every public page defines its own title and description, from the locale
 dictionary — never hardcoded, never a single site-wide default reused everywhere.
 
 An artwork page's metadata is built from the work: its title in that language,
-its medium and size, its price when available.
+and a description that is **her own sentence when she has written one**. Every
+seeded record carries a bracketed placeholder description instead, so the page
+falls back to a line that is true of any painting here — `artwork.shareDescription`
+in the locale files — and `hasPlaceholderData` is what tells the two apart. The
+stand-ins stay visible on the page; a share preview is the one surface where
+publishing one would do damage rather than good, because it is what a stranger
+sees before deciding whether to open the link.
+
+**Metadata runs even when the page will 404.** Next resolves `generateMetadata`
+separately from the component, so neither `notFound()` nor the cross-language
+redirect stops it. A slug that resolves to nothing — a typo, or a draft whose URL
+someone guessed — must be answered without asserting that a work by that name
+exists.
 
 ## Social previews
 
@@ -18,6 +39,21 @@ highest-value SEO detail on the site: when someone sends a link to a friend, the
 painting is the message.
 
 Every public page needs a sensible OG image; the homepage uses the featured work.
+
+**The crop question, decided.** Platforms want roughly 1200x630 and these
+paintings run from 0.62 to 1.51, so no one file satisfies both that and the rule
+that a painting is never cropped. The artwork page hands over **the painting
+itself, whole**, at its true pixel dimensions, and lets each platform frame it.
+Generating a 1200x630 card with the work letterboxed on the wall colour was
+rejected twice over: most of that image is empty mat, and the platforms with a
+squarer preview crop *it* — so the painting ends up smaller and still cropped, in
+exchange for an image pipeline that does not exist. The rule images.md states is
+that **we** never crop a work; what Facebook does inside its own card is not a
+decision this repository gets to make. If previews look wrong once the real
+photography lands, a generated letterboxed card is the thing to build.
+
+A work with no photograph yet ships no image at all, rather than a stand-in
+nobody chose.
 
 ## hreflang
 
@@ -28,8 +64,30 @@ worse than none.
 
 ## Sitemap and robots
 
-The sitemap covers every public route in every locale, including one entry per
-artwork per language. It is generated from the repository, not maintained by hand.
+The sitemap covers every **built** public page in every locale, including one
+entry per artwork per language. It is generated from the repository, not
+maintained by hand — `app/sitemap.js`, which enumerates `locales` and never
+spells out a language, so adding one stays the two-step job i18n.md promises.
+
+**Only pages that exist.** A stub is not a page, and offering one is worse than
+offering nothing: thin content indexed early is expensive to undo, and a first
+deployment is exactly when it would happen. `/about`, `/contact` and the four
+`/legal` pages are absent until they carry real copy.
+
+**How a path joins.** The three lists are in `lib/public-routes.js` and
+`scripts/check-sitemap.mjs` holds them against the filesystem: every public page
+must be a stub, a declared exclusion, or listed. A stub that is listed fails the
+check, and so does a finished page that is in none of the three — so neither
+half depends on somebody remembering. A page becomes eligible by no longer
+rendering `StubPage`, which is the same act as building it.
+
+The purchase flow is deliberately absent, and declared as such rather than
+merely missing. A cart, a checkout and an order page are per-visitor states
+rather than pages with anything to rank, and an order addressed by id has
+nothing to say to anyone but its buyer.
+
+`robots.txt` points at the sitemap, which is one more URL that cannot be built
+without the base address.
 
 **Published works only.** A work whose publication timestamp is empty is a draft
 and must not appear in the sitemap, in an hreflang pair, or in any other public

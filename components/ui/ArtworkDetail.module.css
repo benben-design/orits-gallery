@@ -1,0 +1,189 @@
+/**
+ * One painting, large, with room around it.
+ *
+ * Logical properties throughout, so this lays out correctly in Hebrew without a
+ * single direction-specific rule — the painting sits at the inline start and the
+ * details at the inline end in both languages. That is also what lets the admin
+ * preview render the English page inside a Hebrew document: direction is
+ * resolved per element, so the preview wrapper sets it and everything below
+ * follows.
+ */
+
+.work {
+  display: grid;
+  gap: var(--space-7);
+
+  /**
+   * The tallest the painting may be, and therefore the widest — the frame is
+   * square from 48rem up, so one bound sets both.
+   *
+   * Two limits, whichever is smaller. 34rem stops the work sprawling on a large
+   * monitor, where a painting the height of the window reads as a lightbox
+   * rather than as a piece hanging on a wall. The viewport term is what makes
+   * it always fit: the header and the section's own breathing room come off
+   * first, and what is left is the ceiling. `svh` rather than `vh` because on a
+   * phone `vh` is the height with the browser chrome hidden, which is not the
+   * height anything is actually read at.
+   */
+  --plate-max: min(34rem, calc(100svh - 15rem));
+}
+
+/**
+ * Side by side once there is width for both. Below this the two stack, and the
+ * reading order is already the right one: the work, then what it is, then what
+ * it costs.
+ */
+@media (min-width: 60rem) {
+  .work {
+    /*
+      The painting's column is sized by the ceiling above rather than by a
+      fraction, so the details sit directly beside the work instead of across a
+      gap left by a painting that stopped growing.
+    */
+    grid-template-columns: minmax(0, var(--plate-max)) minmax(0, 1fr);
+    gap: var(--space-9);
+    align-items: start;
+  }
+}
+
+/*
+  Grid children default to min-content width; this lets the frame shrink. The
+  ceiling is repeated here for the stacked layout, where the plate fills a row
+  of its own rather than sitting in a track sized by it.
+*/
+.plate {
+  min-inline-size: 0;
+  max-inline-size: var(--plate-max);
+}
+
+/**
+ * The window the painting is fitted inside — never cropped to fill it.
+ *
+ * The ratio is art direction rather than decoration. On a phone the frame is
+ * portrait, because nine of the sixteen works are and a portrait in a square
+ * box on a narrow screen loses height it cannot spare. From the width at which
+ * the painting stops being the whole viewport it becomes square, which is the
+ * fairest window for a set of works running from 0.62 to 1.51: a portrait fits
+ * by height, a landscape by width, and neither is squeezed to suit the other.
+ *
+ * This sets the frame's own custom property rather than its aspect-ratio, so
+ * ArtworkFrame keeps owning how the ratio is used.
+ */
+.mainFrame {
+  --frame-ratio: 4 / 5;
+}
+
+@media (min-width: 48rem) {
+  .mainFrame {
+    --frame-ratio: 1 / 1;
+  }
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  /* Prose stays readable even when the column is given the whole page. */
+  max-inline-size: var(--measure);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  color: var(--text-primary);
+}
+
+/**
+ * Medium, size and year. A definition list because that is what they are — a
+ * label and its value — and because it reads correctly to a screen reader,
+ * where a two-column layout of loose spans does not.
+ */
+.specs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.spec {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/**
+ * A fixed label width lines the values up without a table, and without the
+ * labels and values ever colliding on a narrow screen: the row wraps instead.
+ */
+.specLabel {
+  flex: none;
+  min-inline-size: 5rem;
+  color: var(--text-muted);
+}
+
+.specValue {
+  color: var(--text-primary);
+}
+
+/**
+ * Price and availability. A step larger than the same row on a card, because
+ * here it is one of the two things a visitor came to find out; the other is
+ * whether the painting is still available, which the badge beside it answers.
+ *
+ * No buy button, deliberately — the cart is not built, and a button that leads
+ * nowhere costs more trust than an honest absence. See commerce.md.
+ */
+.availability {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}
+
+/* A hairline tick between price and status, as on the card. */
+.separator {
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--line-strong);
+  flex: none;
+}
+
+/**
+ * The stand-in values. Dashed and in the secondary ink, like every other
+ * "not real yet" band on the site, so it reads as a note about the data rather
+ * than as something the artist wrote.
+ */
+.placeholder {
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * The brushwork close-up and the view in a room, when they exist.
+ *
+ * `auto-fill` rather than `auto-fit` on purpose: with two images, auto-fit
+ * would stretch them across the whole page and they would compete with the
+ * painting above. Empty tracks keep them the size of what they are — supporting
+ * views, read after the work itself.
+ */
+.supporting {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-5);
+  margin-block-start: var(--space-9);
+}

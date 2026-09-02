@@ -50,6 +50,18 @@ Two hazards specific to having two databases:
 Set in the Vercel project, mirroring `.env.example`. A missing variable should
 fail the build loudly rather than degrade silently at runtime.
 
+`NEXT_PUBLIC_SITE_URL` is the one that will stop a deploy, and is meant to:
+without it the build throws while rendering the sitemap and the artwork pages.
+Set it to the real domain, not the vercel.app URL — a canonical tag pointing at
+a preview host is how a preview deployment ends up in search results instead of
+the site.
+
+`GEMINI_API_KEY` is the one deliberate exception. It is optional, and without it
+the admin form asks for the English by hand rather than offering to write it —
+a feature that is absent, not a site that is broken. Set it when the artist
+should have the help; leaving it unset is a supported state, not a launch
+blocker.
+
 ## Before going live
 
 Beyond a green build, these are launch blockers and are easy to forget:

@@ -63,8 +63,6 @@
   },
   "artwork": {
     "title": "Work",
-    "body": "[PLACEHOLDER] The single artwork page has not been built yet.",
-    "slugLabel": "URL slug",
     "medium": "Medium",
     "dimensions": "Dimensions",
     "year": "Year",
@@ -73,7 +71,11 @@
     "category": "Category",
     "imageAlt": "{title} — painting by {artist}",
     "notFound": "[PLACEHOLDER] The requested work was not found.",
-    "noImage": "No image yet"
+    "noImage": "No image yet",
+    "imageAltDetail": "{title} — a close-up of the brushwork, a painting by {artist}",
+    "imageAltInSitu": "{title} — the painting hanging on a wall, by {artist}",
+    "moreImages": "More views of this work",
+    "shareDescription": "{title} — an original painting by {artist}."
   },
   "about": {
     "title": "About",
@@ -146,11 +148,19 @@
   "admin": {
     "shellLabel": "Admin area",
     "nav": {
-      "dashboard": "Dashboard",
       "works": "Works",
       "newWork": "New work",
       "orders": "Orders",
       "signOut": "Sign out"
+    },
+    "works": {
+      "title": "Works",
+      "draft": "Draft",
+      "published": "On the site",
+      "soldThrough": "Sold through",
+      "noImage": "No image",
+      "empty": "No works have been added yet.",
+      "delete": "Delete"
     },
     "login": {
       "title": "Admin login",
@@ -161,10 +171,6 @@
       "error": "That email or password is not correct.",
       "tooManyAttempts": "Too many sign-in attempts. Wait a few minutes and try again."
     },
-    "dashboard": {
-      "title": "Dashboard",
-      "body": "[PLACEHOLDER] The dashboard has not been built yet."
-    },
     "newWork": {
       "title": "Add a work",
       "body": "[PLACEHOLDER] The new-work form has not been built yet."
@@ -172,7 +178,30 @@
     "editWork": {
       "title": "Edit work",
       "body": "[PLACEHOLDER] The edit-work form has not been built yet.",
-      "idLabel": "Work id"
+      "idLabel": "Work id",
+      "preview": "Preview"
+    },
+    "deleteWork": {
+      "title": "Delete a work",
+      "draftWarning": "This work is a draft. It has never appeared on the site, and deleting it removes it for good.",
+      "publishedWarning": "This work is on the site and has a permanent address. The link may already have been sent to someone or be known to Google — deleting it breaks that link for good, and it cannot be undone.",
+      "unpublishInstead": "If you simply do not want the work on the site, take it off instead. Nothing is deleted, and you can put it back at any time.",
+      "unpublishAction": "Take it off the site",
+      "deleteAction": "Delete permanently",
+      "cancel": "Cancel and go back to editing",
+      "outcomes": {
+        "ordered": "A work that sold through the site cannot be deleted — it appears on an order. Take it off the site instead.",
+        "notFound": "That work was not found. It may already have been deleted.",
+        "unexpected": "Something went wrong and the work was not deleted. Try again."
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "draft": "This is how the work will look on the site. It is not published yet — nobody but you can see it.",
+      "published": "This is how the work looks on the site. It is published and visible to everyone.",
+      "backToEdit": "Back to editing",
+      "viewOnSite": "Open the page on the site",
+      "languageLabel": "Preview language"
     },
     "orders": {
       "title": "Orders",
@@ -241,7 +270,18 @@
       "addressLockedHint": "This work is published, so its address cannot change. Changing it would break every link already shared and its place in Google.",
       "saleChannelQuestion": "Where did it sell?",
       "saleChannelNotRecorded": "Not recorded",
-      "saleChannelAutomatic": "This work sold through this site. That record is made at checkout and cannot be changed here."
+      "saleChannelAutomatic": "This work sold through this site. That record is made at checkout and cannot be changed here.",
+      "translation": {
+        "pending": "Automatic translation, not yet approved. Read it, then approve or edit it.",
+        "approve": "Approve the translation",
+        "translate": "Translate from Hebrew",
+        "translating": "Translating…",
+        "failed": "Automatic translation is unavailable right now. Type the English yourself and save as usual.",
+        "noSource": "There is no Hebrew text to translate.",
+        "blocked": "A translation is waiting for your approval, so this cannot be saved yet:",
+        "listSeparator": ", "
+      },
+      "preview": "Preview the work"
     }
   },
   "medium": {

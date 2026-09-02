@@ -56,6 +56,7 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | Images | `public/paintings/` + Next's built-in image pipeline today; **Cloudinary later** |
 | Database | PostgreSQL. **The site reads it** — every painting comes from Postgres through `lib/data/works-repository.js`. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, so production has no database at all |
 | Auth | **Built.** Two accounts with equal rights, the artist's and the developer's. scrypt password hashing, accounts created by `npm run admin:create`, sign-in and sign-out through a signed httpOnly cookie with no session table, and every guarded admin page redirecting a visitor without a session to the login form. The guard covers **rendering only** — mutations verify the session themselves, see security.md |
+| Translation | Google's Gemini, behind `lib/translate.js`, called only from `/admin/api/translate`. Fills the admin form's English fields in from the Hebrew, unapproved until she reads them. **Optional** — with no key the English is typed by hand |
 | Payments | Provider not chosen yet — Stripe vs an Israeli provider that issues a tax invoice |
 | Host | Vercel, one deployment, region `fra1` |
 
@@ -160,11 +161,15 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | The four homepage sections + UI primitives | Done |
 | `/admin/settings` | Not built |
 | Gallery | Built — the full catalogue, filtered by category through the URL. **Pagination deliberately not built** at sixteen works |
+| Deleting a painting | Built — from the works list, behind a confirmation that asks a **different question** of a draft and of a published work, and offers taking it off the site instead of breaking a permanent address. One click never deletes. A work on an order cannot be deleted at all |
+| Finding a painting in the admin | Built — `/admin` **is** the works list: every work with its publication state, sale status and sale channel, drafts sorted first, each row opening its edit page. It reads `getWorksForAdmin`, the admin-scoped list added for it |
 | Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **No image upload**: that needs hosting first |
 | Editing a painting from the admin | Built — `/admin/works/[id]` shares the same form. Publishing and unpublishing happen here; a published work's address is read-only. **No delete, no featured control** |
-| Artwork page body | Not built yet |
+| Seeing a work before it is public | Built — `/admin/works/[id]/preview` renders the public artwork body from the admin-scoped read, in either language, behind the guard. A dashed band says whether the work is published; the public route stays published-only |
+| English written for her | Built — leaving a Hebrew title or description translates it and fills the English twin, marked unapproved, and **the form does not save while anything is unapproved**. Her own English is never overwritten, and a failure leaves her typing it herself and saving as usual |
+| Artwork page body | **Built** — one painting large beside its details, reusing the grid's frame, price, badge and status table. The frame's `bare` mount finally has its caller. No buy button while the cart does not exist |
 | Cart, checkout and order logic | Not built yet |
-| Sitemap, OG images, hreflang tags | Not built yet — required by seo.md |
+| Sitemap, OG images, hreflang tags | **Built for the artwork page**, which carries its title, description, canonical, both alternates and the painting as its share image. `app/sitemap.js` covers every **built** public page in both languages plus one entry per painting per language, published only — the stubs are kept out by `scripts/check-sitemap.mjs` rather than by memory. **Still missing:** hreflang on the other public pages, and structured data anywhere |
 | Database schema | Written — five migrations in `database/migrations/`, run by hand against a local Postgres |
 | Local seed data | `npm run seed:local` fills a local database from `lib/data/artworks.js` |
 | Database connection module | `lib/db.js`, imported by the repository and by nothing else |

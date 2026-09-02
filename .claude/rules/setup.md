@@ -14,6 +14,7 @@ npm run images:manifest   # regenerate lib/data/image-manifest.json
 npm run dev:placeholders  # regenerate the /dev placeholder images
 npm run check:contrast    # WCAG check over every permitted colour pairing
 npm run check:guard       # every guarded admin page calls the guard
+npm run check:sitemap     # the sitemap offers built pages only, and all of them
 
 npm run seed:local        # fill a LOCAL database with the sixteen works
 npm run admin:create      # create an admin account, or change its password
@@ -50,16 +51,38 @@ removes it from previews, which is the trade.
 
 ## Linting
 
-`npm run lint` does three things in order: `eslint .` over every JS/MJS file in
+`npm run lint` does four things in order: `eslint .` over every JS/MJS file in
 the project — including `proxy.js`, the config files and `scripts/` — then
 `scripts/check-contrast.mjs`, the palette guard, then
 `scripts/check-admin-guard.mjs`, which fails if any page in the guarded admin
-group does not call `requireAdminSession`.
+group does not call `requireAdminSession`, then `scripts/check-sitemap.mjs`,
+which fails if the sitemap offers a stub or omits a finished page.
 
-Both guards are advisory in the same way lint is: they are **not** in the build
-and cannot fail a deploy. That is deliberate for the palette. For the admin
-guard it is a real limitation worth knowing — a page added without the guard
-ships, and the check only complains when someone runs it.
+All three guards are advisory in the same way lint is: they are **not** in the
+build and cannot fail a deploy. That is deliberate for the palette. For the
+other two it is a real limitation worth knowing — a page added without the
+guard ships, and a stub listed in the sitemap ships, and the checks only
+complain when someone runs them.
+
+## The sitemap guard
+
+`npm run check:sitemap` holds `lib/public-routes.js` against what is actually on
+disk. It exists because the sitemap originally listed the whole locked route
+map, six entries of which were stubs — a first deployment would have handed
+Google six placeholder pages, and thin content indexed early is expensive to
+undo.
+
+The invariant is that **every `page.js` under `app/(site)/[locale]/` is exactly
+one of three things: a stub, a deliberate exclusion, or listed in the sitemap.**
+"Stub" is not a judgement call — it is whether the page renders
+`components/ui/StubPage`, so a page stops being one by the same act that builds
+it. That closes both directions: a stub in `INDEXABLE_PATHS` fails, and a
+finished page in none of the three lists fails too, so neither "remember to
+remove it" nor "remember to add it" is left to anybody's memory.
+
+Exit codes: `0` all as declared, `1` a page is misfiled or a declared path has
+no page behind it, `2` the public route tree has moved and the script must move
+with it.
 
 ## The palette guard
 
@@ -114,10 +137,10 @@ never ship a stale manifest — but the dev server will happily use an old one.
 dummy values. Copy it to `.env.local` and fill that in; `.env.local` is
 git-ignored by the `.env*.local` rule and never committed.
 
-**Two keys are read today.** `DATABASE_URL`, by `lib/db.js` and so by every page
-that reads a painting, and separately by the seed script. And
-`ADMIN_SESSION_SECRET`, by `lib/auth/session.js`, which signs the admin session
-cookie — it must be at least 32 characters, and signing refuses outright below
+**Three keys are read today, and one of them is optional.** `DATABASE_URL`, by
+`lib/db.js` and so by every page that reads a painting, and separately by the
+seed script. And `ADMIN_SESSION_SECRET`, by `lib/auth/session.js`, which signs
+the admin session cookie — it must be at least 32 characters, and signing refuses outright below
 that. Generate one with:
 
 ```bash
@@ -125,12 +148,27 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 ```
 
 Without either in `.env.local` the dev server starts and then fails on the first
-page that needs it, with a message naming the fix. **Rotating
+page that needs it, with a message naming the fix.
+
+The third is `GEMINI_API_KEY`, read by `lib/translate.js`, which fills the admin
+form's English fields in from the Hebrew. It is **optional, and behaves that
+way**: with no key the admin asks for both languages by hand exactly as it did
+before — no button, and no failure message under every field she fills in. One
+key and one host; the model is pinned in `lib/translate.js` rather than
+configured here. Nothing on the public site reads it. **Rotating
 `ADMIN_SESSION_SECRET` signs everyone out immediately** — that is the only way
 to revoke a session, and it is deliberate; see security.md.
 
-The remaining keys in the example are forecasts: the site URL, Cloudinary, and
-the payment provider's keys, whose names will change once a provider is chosen.
+The fourth is `NEXT_PUBLIC_SITE_URL`, read by `lib/site-url.js` — the absolute
+base for canonical URLs, hreflang pairs, the sitemap and share images, none of
+which can be built from a relative path. **Unset, a production build fails**,
+which is deliberate: a wrong base does not break a page, it publishes a canonical
+URL pointing somewhere else and nobody notices for weeks. On a laptop it falls
+back to the dev server's own address, so `npm run dev` works without it and
+`npm run build` does not.
+
+The remaining keys in the example are forecasts: Cloudinary and the payment
+provider's keys, whose names will change once a provider is chosen.
 Uncomment nothing into use before something reads it, and add a key to the
 example in the same change that starts reading it.
 
