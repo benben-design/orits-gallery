@@ -14,7 +14,11 @@ import { isSignedIn } from '@/lib/auth/admin-session';
  * second root layout in its own route group — see .claude/rules/app-files.md.
  *
  * It is kept out of search results three ways: the robots metadata below,
- * app/robots.js, and an X-Robots-Tag header in vercel.json.
+ * app/robots.js, and an
+ * X-Robots-Tag header that
+ * `vercel.json` still holds and the new host does not read — see deployment.md.
+ * **That third way is not in effect until it is carried over to Netlify**, so
+ * the two above are what is actually doing the work today.
  */
 
 export async function generateMetadata() {

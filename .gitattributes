@@ -1,5 +1,5 @@
 # Normalize line endings to LF in the repository.
-# Vercel builds on Linux; keeping the stored form unambiguous from the first
+# The host builds on Linux; keeping the stored form unambiguous from the first
 # commit avoids a later renormalization commit touching every file.
 * text=auto eol=lf
 

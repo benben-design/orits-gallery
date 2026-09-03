@@ -55,6 +55,14 @@ photography lands, a generated letterboxed card is the thing to build.
 A work with no photograph yet ships no image at all, rather than a stand-in
 nobody chose.
 
+**A share image is handed over untransformed**, whichever delivery path it came
+from, and it is the one image URL on the site that does not go through
+`lib/image-loader.js` — a crawler is given the reference itself. That is why
+`absoluteUrl` has to leave an already-absolute URL alone: a painting the artist
+uploaded is already `https://res.cloudinary.com/…`, and prefixing the site
+address to it produced a preview that resolved to nothing. It went unnoticed for
+as long as every image was local.
+
 ## hreflang
 
 Every public page declares its alternate-language counterpart, and the pairing
@@ -96,9 +104,16 @@ sitemap invites Google to index a page the site does not intend to serve, and
 publication status is not the same question as sale status: a sold work is
 public, an unpublished one is not.
 
-`robots` disallows `/admin`. `vercel.json` additionally sends
-`X-Robots-Tag: noindex, nofollow, noarchive` on `/admin/*` — belt and braces,
-because an admin page leaking into search is embarrassing and permanent.
+`robots` disallows `/admin`. An `X-Robots-Tag: noindex, nofollow, noarchive`
+header on `/admin/*` is meant to sit beside it — belt and braces, because an
+admin page leaking into search is embarrassing and permanent.
+
+**That header is not in effect yet.** It is written in `vercel.json`, and this
+project deploys to Netlify, which does not read that file. `robots` still
+disallows the admin, so the braces are on; the belt is a task recorded in
+deployment.md, and it should be done before anything is deployed rather than
+after, because an indexed admin URL is permanent in a way a fixed config is
+not.
 
 ## Rendering
 

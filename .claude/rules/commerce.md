@@ -54,6 +54,41 @@ This is why publication is not a fifth status. Folding it in would make
 "sold but not yet published" unexpressible, and that is a real state — the
 artist photographs and drafts a work that has already gone at a fair.
 
+### Publishing has one precondition: a photograph
+
+**A work cannot be published without a main image**, and the admin refuses it
+with a message that says why — on the site it would appear as an empty frame,
+which is what a stranger would see before deciding whether to trust the shop.
+
+This became a rule the moment uploading existed. Before that, a work with no
+photograph was a state the admin *forced* on her and refusing it would only have
+blocked work she had no other way to do; now it is a mistake, so it is refused.
+
+**The rule is about the act of publishing, not about being published**, and that
+distinction is the whole of it:
+
+- Ticking publish on a work that is not yet public is refused when it has no
+  image.
+- Saving a work that is **already** public is never refused. A work published
+  before this rule existed goes on being editable, on every field, forever.
+
+That second half is not a loophole — it is the requirement. A rule written as
+"a published work must have an image" would stop her fixing a typo on an old
+record, on a field nobody touched. This project has already met that trap once,
+in the 100cm size limit that had to be deferred for exactly the same reason: a
+validation that arrives after the data does must apply to the transition, not to
+the state.
+
+The consequence, accepted knowingly: **the rule closes the door, it does not go
+back through it.** Anything published imageless before it landed stays that way
+until somebody attaches a photograph.
+
+**A new work can be created already published**, as long as it arrives with a
+photograph — the create form carries the image panel, so attaching one and
+ticking publish is a single save. Without one it is refused exactly as on the
+edit page, and the message says the work has not been saved at all, because it
+has not: nothing is written when the refusal fires.
+
 ## A discount is a price, not a status
 
 A work may carry an **optional reduced price** alongside its regular one. A

@@ -43,11 +43,21 @@ export async function generateMetadata() {
   return { title: dictionary.admin.works.title };
 }
 
-export default async function AdminWorksPage() {
+export default async function AdminWorksPage({ searchParams }) {
   await requireAdminSession('/admin');
 
   const dictionary = await getDictionary(adminLocale);
   const works = await getWorksForAdmin();
+
+  /*
+    What the save that sent her here did, carried in the URL rather than through
+    `useActionState` — which is what keeps this page a server component, and the
+    only thing that survives the redirect at all. Same shape as the delete
+    confirmation. An unknown code renders nothing rather than an empty band.
+  */
+  const query = await searchParams;
+  const saved = typeof query?.saved === 'string' ? query.saved : null;
+  const savedMessage = saved ? dictionary.admin.works.outcomes[saved] : null;
 
   return (
     <Section as="div" size="tight">
@@ -58,6 +68,17 @@ export default async function AdminWorksPage() {
             {dictionary.admin.newWork.title}
           </Link>
         </div>
+
+        {/*
+          The confirmation the form used to show, moved to where the save now
+          ends. `role="status"` rather than `alert`: nothing is wrong, and it
+          announces without interrupting whatever she does next.
+        */}
+        {savedMessage ? (
+          <p className={styles.saved} role="status">
+            {savedMessage}
+          </p>
+        ) : null}
 
         {works.length === 0 ? (
           <p className={styles.empty}>{dictionary.admin.works.empty}</p>

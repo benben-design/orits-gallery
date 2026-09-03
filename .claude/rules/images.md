@@ -113,21 +113,38 @@ run `npm run images:manifest`.
 The layout needs those numbers precisely because it must not crop: to reserve
 the right box before the image loads, and to avoid layout shift.
 
-### Two places now hold pixel dimensions, and only one is authoritative
+### Two places hold pixel dimensions, and the reference decides which one wins
 
 The database also stores them: `work_images.pixel_width` and
 `pixel_height`. So the same fact lives in two places, which is normally how
-facts drift. The rule that resolves it:
+facts drift. What resolves it is not a rule about the site as a whole — it is
+a question asked **per image**, and the stored `image_ref` answers it:
 
-> **While `public/paintings/` exists, the generated manifest wins.** It is
-> re-read from the actual files on every build and cannot disagree with them.
-> The database columns take over when the files no longer live in the repository
-> — that is, when images move to hosting and the manifest script has nothing
-> left to parse.
+> **A reference that points inside the repository resolves from the generated
+> manifest. Any other reference resolves from the database columns.** The two
+> kinds are told apart by the shape of the value: a local path begins with a
+> slash, a hosted identifier does not.
 
-Until then the database columns are a copy that the seed script fills in from
-the manifest, and nothing should read them in preference to it. Neither number
-is ever typed by hand in either place.
+For a local file the manifest wins because it is re-read from the actual files
+on every build and cannot disagree with them, while the columns are a copy the
+seed script wrote once. For a hosted one the columns are not a fallback but the
+only source there is — the manifest script parses `public/paintings/` and
+nothing else, so a file that is not in the repository has no entry in it and
+never will.
+
+**This was a global rule until now, and that was a trap.** Reading the manifest
+for every image meant the first work whose image lived anywhere else would
+throw on every read of that work — taking the works list, the gallery and the
+homepage down together, over one painting. `readPixelDimensions` in
+`lib/data/works-repository.js` is where the per-image decision is made, and
+`fetchImagesByWorkId` selects the two columns for it.
+
+A local reference with no manifest entry still throws, and should: it means the
+file is not on disk, so the image would 404 whatever numbers came back.
+
+The consequence for the move to hosting is that it needs no flag day. Works
+migrate one at a time, and each is read from whichever source its own reference
+names. Neither number is ever typed by hand in either place.
 
 Note also that pixel dimensions and physical size are **different quantities in
 different tables**: pixels of a file in `work_images`, centimetres of a canvas
@@ -142,6 +159,12 @@ design.
 
 **Replacing them with proper photography is a launch blocker.** Placeholder
 images are allowed in development; they are not allowed in public.
+
+The route for that replacement now exists: the artist attaches a photograph per
+work from the admin, and it supersedes the stand-in without anything being
+deleted from the repository. So this stops being one migration and becomes
+sixteen ordinary edits — which is also why the stand-ins can stay in
+`public/paintings/` while she works through them.
 
 Do not design around their softness. Build the layout for large, sharp images —
 `next.config.mjs` already declares device and image sizes for the replacements
@@ -191,12 +214,137 @@ coupling this removed.
 
 ## Delivery
 
-Today: files in `public/paintings/`, served through Next's built-in image
-optimisation. Later: Cloudinary, swapped behind the same components.
+**Both kinds now exist at once, and that is the settled state rather than a
+migration in progress.** The sixteen seeded paintings are files in
+`public/paintings/`. Anything the artist attaches herself lives on Cloudinary.
+Both are served through Next's built-in image optimisation, both are rendered by
+the same components, and which is which is a property of the stored
+`image_ref` — see the per-image rule above.
+
+**Who resizes an image is decided per image**, in `lib/image-loader.js`, wired
+in as `images.loaderFile`. Every `next/image` on the site goes through that one
+function and no component knows any of this:
+
+- a **hosted** painting is resized by the host, by writing a transformation into
+  its own URL;
+- a **local** file keeps Next's built-in optimiser, because there is no host to
+  ask.
+
+Sending a hosted painting through our own optimiser instead would mean pulling a
+file off one CDN so a serverless function could re-encode it onto another: the
+same work done twice, and on a deployed site metered twice as well.
+
+Two things about that wiring are load-bearing and were verified against Next's
+own source rather than assumed:
+
+- **It is a loader file, not a `loader` prop.** The prop would have been a
+  two-line change in `ArtworkFrame`, but a function prop cannot cross from a
+  server component into `next/image`, so the component passing one must be
+  `'use client'` — and `ArtworkFrame` renders the gallery grid, which must not
+  become a client component.
+- **`images.loader` stays at its default.** Setting it to `'custom'` makes
+  `/_next/image` return 404, which would break all sixteen local paintings.
+  Next's config validation accepts `loaderFile` beside the default loader
+  precisely so both paths can be live at once.
+
+There is deliberately **no `remotePatterns` entry**, and the absence does work.
+That list is only consulted by the built-in optimiser, which a hosted painting
+never reaches — so an entry would permit nothing that happens. What it would do
+is silently absorb the mistake: a hosted image that somehow fell through to the
+built-in optimiser would start being downloaded and re-encoded at our expense,
+and nothing in the page would look wrong. With no pattern configured, that same
+mistake throws by name the first time it renders.
 
 Always use Next's image component rather than a bare `<img>`, always supply real
-width and height from the manifest, and mark the hero image as priority. Nothing
-below the fold should be eager.
+width and height, and mark the hero image as priority. Nothing below the fold
+should be eager.
+
+### No transformation may crop
+
+The delivery layer is now the second place the never-crop rule lives, and it is
+the dangerous one.
+
+Everywhere else the rule is **visible**: a fixed frame, a fitted mat,
+`object-fit: contain`. You can see it break. A transformation cannot be seen. If
+`c_limit` in `lib/image-loader.js` became `c_fill`, the host would return
+cropped files into a layout that goes on looking perfectly correct — every box
+the right size, every row aligned, every painting quietly missing its edges. No
+layout code would have been touched and no rendering test would fail.
+
+So: **`c_limit`, width only.** It scales down to fit the width and stops — it
+never enlarges, and it never discards a pixel. Height is never bound, because
+giving it one turns the transformation into a box the painting is fitted to
+rather than a width. `c_fill`, `c_crop`, `c_thumb`, `c_lfill` and `c_fill_pad`
+discard pixels; `c_pad` keeps them but adds a border, which is the mat's job.
+
+`npm run check:crop` (`scripts/check-image-crop.mjs`) asserts this over every
+width in the srcset, and also that a local file still goes to the built-in
+optimiser untransformed. It is the fourth guard, the same shape as the other
+three, and it exists because this is the one rule on the project that can break
+without anything looking wrong.
+
+**A share image is not a delivery URL.** The Open Graph image is the painting's
+own stored reference, untransformed — see seo.md — so nothing on that path
+resizes and nothing on it may crop either.
+
+## How a photograph gets here
+
+The artist attaches one on **either** admin page — creating a work or editing
+it — and the panel is the same panel, with the same limits and the same
+drag-and-drop.
+
+One thing genuinely differs, and the wording differs with it. On the edit page
+the photograph is **saved on its own** the moment the upload finishes: there is
+a work to attach it to, and its id is bound into the action server-side. On the
+create page there is no work yet, so the reference waits in a hidden field and
+is written **with the record**, in one transaction — the work and its
+photograph land together or neither does. The panel says which of the two is
+happening rather than showing one sentence and doing the other.
+
+**The file never passes through our server.** A Server Action caps its request
+body at 1MB and these photographs are several times that, so the browser posts
+the file straight to the host. The server owns the two ends of that:
+
+- **It signs the upload beforehand.** Not an unsigned upload preset — that is a
+  public write endpoint into the artist's media library, named in the page
+  source and usable by anyone who reads it. The signature covers every
+  parameter, so the only two the browser may send are the folder and timestamp
+  we signed.
+- **It reads the asset back afterwards, and stores what the host says.** What
+  the browser reports about a file it just uploaded is a claim. This matters
+  here more than it looks: pixel dimensions are what reserves the box before a
+  painting loads, so a wrong pair is a page that jumps or a work drawn at the
+  wrong ratio — in a layout whose whole rule is that a painting is never
+  distorted or cropped.
+
+She can either choose a file or **drag one onto the panel**. Dragging is an
+addition and never the only route: it cannot be done from a keyboard and does
+not exist on the phone she is most likely to be holding, so the file input
+stays and the line advertising the drag is hidden wherever dragging is
+impossible. Both arrive at the same checks — `accept` on an input has no say
+over what gets dropped.
+
+**A file over 10MB or over 25 megapixels is refused in the browser, before it is
+sent.** Those are the host's own free-plan limits, not our policy. Letting the
+host refuse means she waits out an upload and is then told nothing she can act
+on, in English, by another company's API. The message names the limit and the
+file's actual size.
+
+**Uploading again replaces the row, and leaves the previous file on the host.**
+The database permits one main image per work, so the old row goes; the old asset
+stays. Deleting remotely from a save path is a half-succeeded save waiting to
+happen — the row gone and the file with it, or the file gone and the row still
+pointing at it — and it turns the undo for a mistaken upload into a support
+call. At thirty paintings the abandoned originals are not a storage problem
+worth buying that risk to solve.
+
+Only the **main** image can be attached this way. `detail` and `in-situ` slot
+into the same table and the same page without a redesign, and are not built.
+
+**And a work cannot be published without one.** Now that attaching a photograph
+is possible, publishing without one is a mistake rather than a state the admin
+forces on her, so it is refused — see commerce.md for why the refusal is on the
+act of publishing and never on saving a work that is already public.
 
 ## Alt text
 
@@ -209,3 +357,8 @@ that language, which is why it is nullable rather than defaulted: a default
 would be an English or Hebrew phrase living in the database, and every
 user-facing string on this project comes from the locale files. The seeded works
 carry none, so the fallback is the path currently exercised.
+
+**An upload does not write them either**, and that is the same decision rather
+than an omission: the admin has no alt-text field yet, and inventing one from
+the filename would put a phrase in the database that nobody wrote. Adding the
+field is what closes this, not the upload.

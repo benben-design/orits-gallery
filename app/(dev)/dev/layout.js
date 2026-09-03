@@ -12,7 +12,10 @@ import { fontVariables } from '@/app/fonts';
  *
  * It is a developer tool and is kept out of search results three ways, matching
  * the admin: the robots metadata below, a disallow in app/robots.js, and an
- * X-Robots-Tag header in vercel.json.
+ * X-Robots-Tag header that
+ * `vercel.json` still holds and the new host does not read — see deployment.md.
+ * **That third way is not in effect until it is carried over to Netlify**, so
+ * the two above are what is actually doing the work today.
  *
  * The document is English and left-to-right because the tool's own labels are
  * English. The specimens inside it carry their own dir="rtl" lang="he" — this

@@ -53,6 +53,25 @@ at all to a model, on our key.
 The gallery, the homepage grid and the artwork page need **no** API. The admin's
 save actions should be Server Actions. The payment webhook must be a route.
 
+**Image upload added no endpoint of ours at all**, and it is the case most
+likely to be mistaken for one that needs a route. The instinct is an upload
+endpoint the browser posts a file to — but a Server Action caps its request body
+at 1MB, and raising that only moves a photograph the artist is uploading through
+a function billed by the second. So the file goes **from the browser to the
+image host directly**, and the two halves that must be ours are Server Actions:
+one signs the upload, one records what arrived. Neither has a URL, both are POST
+only, and each verifies the session itself.
+
+The rule that generalises: **"the browser needs an answer mid-form" is not by
+itself a reason for a route handler.** A client component can call a Server
+Action directly and await what it returns, which is exactly what these two do.
+
+That is worth stating because `/admin/api/translate` above reads as a precedent
+for the opposite, and it is not one — it could have been an action on the same
+grounds. It is a route, it works, and forward-only applies to habits as much as
+to migrations: **do not copy it for the next thing the browser has to ask.**
+Reach for a route when a *third party* must have a URL to call.
+
 **Anything under the admin must live under `/admin`.** The session cookie is
 scoped to that path, so a handler at `/api/admin/...` would never receive it and
 would look unauthenticated no matter how correct its guard. See security.md.

@@ -14,6 +14,24 @@
   margin-block-end: var(--space-6);
 }
 
+/**
+ * "That saved" — the confirmation the work form used to show, now that a save
+ * ends here instead.
+ *
+ * Same treatment as the form's own success band and the delete page's outcome:
+ * bordered and worded on the clay tint, never colour alone. The palette has one
+ * accent and it belongs to interaction, not to status. See frontend/styles.md.
+ */
+.saved {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-block-end: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--surface-tint);
+}
+
 /* Matches the heading treatment the other admin pages use. */
 .title {
   font-size: var(--text-xl);

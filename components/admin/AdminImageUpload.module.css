@@ -1,0 +1,265 @@
+/**
+ * The main-image panel, above the work form.
+ *
+ * Logical properties throughout, so it lays out correctly in the Hebrew
+ * right-to-left shell without a direction-specific rule. It borrows the form's
+ * field, hint and band treatment on purpose: it sits directly above that form
+ * and two panels that look different read as two different products.
+ */
+.panel {
+  max-width: 44rem;
+  margin-block-start: var(--space-6);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  transition:
+    border-color var(--duration) var(--ease),
+    background-color var(--duration) var(--ease);
+}
+
+/**
+ * A file is being dragged over the panel.
+ *
+ * The whole panel is the target rather than a small marked-out square: it is a
+ * bigger thing to hit, and a drop zone you can miss is worse than none. Dashed
+ * because that is what this project already uses for "something goes here",
+ * and the tint is a background only — see frontend/styles.md.
+ */
+.dragging {
+  border-color: var(--accent);
+  border-style: dashed;
+  background-color: var(--surface-tint);
+}
+
+.heading {
+  font-family: var(--font-body), var(--font-fallback-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * The thumbnail beside its controls, stacking on a phone. Flex rather than
+ * grid: one row of two that becomes two rows of one needs no column
+ * definitions, and `align-items: start` keeps the frame from stretching to the
+ * height of a column of messages.
+ */
+.body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: var(--space-5);
+  margin-block-start: var(--space-4);
+}
+
+.thumbnail {
+  flex: 0 0 auto;
+  inline-size: 9rem;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  /* Enough to hold a sentence; below that the panel stacks instead. */
+  flex: 1 1 16rem;
+}
+
+/**
+ * The label wrapping the wording and the input.
+ *
+ * **No cursor here.** It is a block, full width of the column and two rows
+ * tall, so a pointer on it puts a hand over a large empty rectangle — pressable
+ * as far as the browser is concerned, since clicking anywhere in a label
+ * activates its control, but reading as though the whole panel were a button.
+ *
+ * The cursor goes on the two things that look like controls instead, so the
+ * hand appears over the words and over the input and nowhere else — the way it
+ * behaves on the preview link beside the work's name, whose box is only as wide
+ * as its text.
+ *
+ * `align-items: start` is what keeps those two boxes hugging their contents;
+ * stretched, each would be as wide as the column and the problem comes back one
+ * level down.
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: var(--space-2);
+}
+
+/**
+ * The wording, and only the wording — a flex item, so this box is the text.
+ *
+ * Underlined at the same offset as the preview link beside the work's name, so
+ * the two pressable pieces of text on this page are marked the same way. The
+ * colour is left alone: the underline says "this does something", the single
+ * accent stays where frontend/styles.md put it.
+ */
+.label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Inert while an upload runs. `:has` reads the real disabled state off the
+   input rather than threading a second copy of it through the markup. */
+.field:has(.input:disabled) .label {
+  cursor: progress;
+}
+
+/**
+ * The native file input, styled through its own button pseudo-element rather
+ * than hidden behind a replacement.
+ *
+ * The control keeps its keyboard behaviour, its accessible name from the
+ * wrapping label, and the chosen filename the browser prints beside the button
+ * — all of which a hidden input plus a fake button has to rebuild, usually
+ * incompletely.
+ *
+ * **The pointer belongs on the whole input, not only on its button.** A file
+ * input is one control: the button and the "no file chosen" text beside it both
+ * open the picker when clicked, so an arrow over the text and a hand over the
+ * button say the area is two different things. Browsers give the whole control
+ * a default arrow, which reads as inert — this is the line that makes it look
+ * like what it is.
+ */
+.input {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/**
+ * The button's own label is not underlined.
+ *
+ * A decoration set on a box propagates to the text inside it, and a filled
+ * button with an underlined label reads as a link someone has painted over.
+ * The underline is for the two pieces of plain text — the wording above and
+ * the filename beside this button — so it is turned off here explicitly rather
+ * than left to whether a given engine propagates into a button.
+ */
+.input::file-selector-button {
+  text-decoration: none;
+  margin-inline-end: var(--space-3);
+  min-block-size: 2.5rem;
+  padding-inline: var(--space-5);
+  padding-block: var(--space-2);
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-on-accent);
+  background-color: var(--accent);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--ease);
+}
+
+/* Inert while an upload runs, and both halves have to say so. */
+.input:disabled,
+.input:disabled::file-selector-button {
+  cursor: progress;
+}
+
+.input:disabled::file-selector-button {
+  background-color: var(--text-muted);
+}
+
+@media (hover: hover) {
+  .input:not(:disabled)::file-selector-button:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/**
+ * The line that says a file can be dragged in, hidden where it would be a lie.
+ *
+ * Dragging needs a pointing device: on the phone she is most likely to be
+ * holding, there is no way to perform it, and copy describing an interaction
+ * that cannot happen is worse than a feature nobody found. `pointer: fine`
+ * rather than `hover: hover` because a stylus hovers but does not drag files.
+ */
+.dragHint {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dragHint {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+}
+
+/* While a file is over the panel the same line says what releasing will do. */
+.dragging .dragHint {
+  color: var(--text-primary);
+}
+
+/**
+ * The three outcomes. Bordered and worded rather than carried by colour, like
+ * every other band in the admin — the palette has one accent and it belongs to
+ * interaction, not to status. See frontend/styles.md.
+ */
+.progress,
+.done,
+.error {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.done,
+.error {
+  background-color: var(--surface-tint);
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/**
+ * Sized and coloured explicitly, because a bare <progress> is drawn by the
+ * platform in the system accent — the one colour on the page nobody here chose.
+ */
+.bar {
+  inline-size: 100%;
+  block-size: var(--space-2);
+  appearance: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-sunk);
+  overflow: hidden;
+}
+
+.bar::-webkit-progress-bar {
+  background-color: var(--surface-sunk);
+}
+
+.bar::-webkit-progress-value {
+  background-color: var(--accent);
+  transition: inline-size var(--duration) var(--ease);
+}
+
+.bar::-moz-progress-bar {
+  background-color: var(--accent);
+}

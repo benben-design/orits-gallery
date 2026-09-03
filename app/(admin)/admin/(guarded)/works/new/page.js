@@ -1,13 +1,28 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
-import AdminWorkForm from '@/components/admin/AdminWorkForm';
+import AdminWorkForm, { FORM_ID } from '@/components/admin/AdminWorkForm';
+import AdminImageUpload from '@/components/admin/AdminImageUpload';
+import { interpolate } from '@/lib/i18n/interpolate';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
 import { isTranslationConfigured } from '@/lib/translate';
-import { createWork } from '@/app/(admin)/admin/actions';
+import { createWork, signMainImageUpload } from '@/app/(admin)/admin/actions';
+import {
+  isImageHostConfigured,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_PIXELS,
+  MAX_UPLOAD_MEGABYTES,
+  MAX_UPLOAD_MEGAPIXELS,
+} from '@/lib/image-host';
 import { WORK_STATUSES, WORK_CATEGORIES } from '@/lib/data/works-repository';
-import { WORK_MEDIA, MANUAL_SALE_CHANNELS, AUTOMATIC_SALE_CHANNEL, SOLD_STATUS } from '@/lib/data/work-input';
+import {
+  WORK_MEDIA,
+  MANUAL_SALE_CHANNELS,
+  AUTOMATIC_SALE_CHANNEL,
+  SOLD_STATUS,
+  IMAGE_PUBLIC_ID_FIELD,
+} from '@/lib/data/work-input';
 import styles from './page.module.css';
 
 /**
@@ -62,6 +77,35 @@ export default async function AdminNewWorkPage() {
             field. See lib/translate.js.
           */
           translationAvailable={isTranslationConfigured()}
+          imagePanel={
+            isImageHostConfigured() ? (
+              <AdminImageUpload
+                labels={dictionary.admin.workForm.image}
+                /*
+                  The work has no title yet, so the alt text a saved work would
+                  derive cannot be built. This describes what the frame holds:
+                  a photograph she is attaching, on a page nobody else sees.
+                */
+                alt={interpolate(dictionary.artwork.imageAlt, {
+                  title: dictionary.admin.newWork.title,
+                  artist: dictionary.site.artistName,
+                })}
+                signAction={signMainImageUpload}
+                /*
+                  No saveAction, and that absence is the whole difference: a
+                  work has no id until this form is saved, so the upload waits
+                  in the field below and is written with the record. The panel
+                  says so rather than claiming the photograph is stored.
+                */
+                fieldName={IMAGE_PUBLIC_ID_FIELD}
+                formId={FORM_ID}
+                maxBytes={MAX_UPLOAD_BYTES}
+                maxPixels={MAX_UPLOAD_PIXELS}
+                maxMegabytes={MAX_UPLOAD_MEGABYTES}
+                maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+              />
+            ) : null
+          }
           labels={dictionary.admin.workForm}
           options={{
             categories: toOptions(WORK_CATEGORIES, dictionary.category),

@@ -248,4 +248,9 @@ policy that 004 deferred.
   page to someone without a session. Whether a given database has any admin
   rows is a question for that database, not for this file.
 - **The payment provider**, and therefore what actually writes `orders`.
-- **Image hosting.** `image_ref` holds local paths today.
+- **Image hosting is connected**, for the main image. `image_ref` now holds
+  either kind: a local path under `public/paintings/` for the sixteen seeded
+  works, or an absolute delivery URL for anything the artist uploaded. Nothing
+  in the column distinguishes them and nothing should — that agnosticism is why
+  swapping delivery was a change of value rather than a migration. The
+  application tells them apart by the leading slash; see images.md.

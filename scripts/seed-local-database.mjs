@@ -64,11 +64,28 @@ function assertLocalDatabase() {
     );
   }
 
-  // Also refuse on the markers of a deployed environment, before even looking
-  // at the host. A correct hostname in the wrong place is still the wrong
-  // place, and Vercel sets these on every build and every function.
+  /**
+   * Also refuse on the markers of a deployed environment, before even looking
+   * at the host. A correct hostname in the wrong place is still the wrong
+   * place, and a build host sets these on every build and every function.
+   *
+   * **Every platform the project might run on has to be named here**, because
+   * the failure mode of missing one is silent: an unrecognised host sets none
+   * of the variables this looks for, so the check simply passes and the next
+   * line of defence is the hostname allowlist alone. That is what nearly
+   * happened when hosting moved from Vercel to Netlify — `VERCEL` does not
+   * exist on Netlify, so this guard would have gone quiet with nothing to say
+   * it had. Both are listed, and Vercel stays listed: a guard that costs one
+   * comparison is not worth pruning for tidiness.
+   *
+   * What is behind it: this script writes deliberately absurd placeholder
+   * prices over whatever it is pointed at.
+   */
   if (process.env.NODE_ENV === 'production') {
     refuse('NODE_ENV is "production".');
+  }
+  if (process.env.NETLIFY || process.env.NETLIFY_LOCAL) {
+    refuse('This is running on Netlify (NETLIFY is set in the environment).');
   }
   if (process.env.VERCEL || process.env.VERCEL_ENV) {
     refuse('This is running on Vercel (VERCEL is set in the environment).');

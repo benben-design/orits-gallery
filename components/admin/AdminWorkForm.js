@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useActionState, useRef, useState } from 'react';
 import styles from './AdminWorkForm.module.css';
 
@@ -12,6 +11,17 @@ import styles from './AdminWorkForm.module.css';
  * time. The handler itself is app/(admin)/admin/api/translate/route.js.
  */
 const TRANSLATE_ENDPOINT = '/admin/api/translate';
+
+/**
+ * The form's id, so a control rendered outside it can still be submitted with
+ * it via the `form` attribute.
+ *
+ * Exported because the image panel is the thing that needs it, and a literal
+ * repeated in two components is how the association quietly stops working —
+ * silently, because a `form` attribute naming nothing is not an error, it just
+ * leaves the field out of the post.
+ */
+export const FORM_ID = 'work-form';
 
 /**
  * The sentence under a field the server rejected.
@@ -254,11 +264,16 @@ function readValue(ref) {
  * form will not save while anything is in that state. See `useTranslatedField`
  * above for the two rules that make it bearable rather than infuriating.
  *
- * Two things are deliberately absent:
+ * **The main image is attached above the form, not inside it** — see the
+ * `imagePanel` prop. It saves on its own the moment a file finishes uploading,
+ * because the file never travels with this form: a Server Action caps its
+ * request body at 1MB and a photograph is several times that. Keeping it
+ * outside the `<form>` element is not tidiness — a file input with a name
+ * inside it would be serialised into the save and break every save with a body
+ * that is too large.
  *
- *   - **No image field.** Upload is not built — Vercel's filesystem is
- *     read-only, so it needs image hosting first. A work is created without a
- *     photograph and gets one later, which is the order she works in anyway.
+ * One thing is still deliberately absent:
+ *
  *   - **No "featured" control.** At most one work may be featured and the
  *     database enforces it, so setting it means clearing the previous one in
  *     the same transaction. That is its own action, not a checkbox here.
@@ -275,7 +290,7 @@ export default function AdminWorkForm({
    * are shown but not editable — see the note rendered beside them.
    */
   slugsLocked = false,
-  /** 'create' or 'edit', which picks the button and the success wording. */
+  /** 'create' or 'edit', which picks the button's wording. */
   mode = 'create',
   /**
    * Whether a translation key is configured, answered on the server.
@@ -287,6 +302,20 @@ export default function AdminWorkForm({
    * not like a broken one.
    */
   translationAvailable = false,
+  /**
+   * The main-image panel, rendered above the form.
+   *
+   * A slot rather than something this component builds, for the same reason the
+   * save action is a prop: it is the **edit** page that can offer it. A work has
+   * no id until it is first saved, and an upload has nowhere to be recorded
+   * without one — which is the flow the notice below already describes. The
+   * new-work page passes nothing and gets that notice instead.
+   *
+   * It is also what the notice is replaced *by*, so the two can never both
+   * appear: one says "attach a photograph later" and the other is where she
+   * does it.
+   */
+  imagePanel = null,
 }) {
   const [state, formAction, isPending] = useActionState(action, {
     status: 'idle',
@@ -400,455 +429,463 @@ export default function AdminWorkForm({
         .join(' ') || undefined,
   });
 
-  // Creating: the form is done with, and replacing it is the clearest possible
-  // "that worked". Editing: she may well want to change something else, so the
-  // form stays and the confirmation sits above it.
-  if (state.status === 'created') {
-    return (
-      <p className={styles.success} role="status">
-        {state.published ? labels.createdPublished : labels.createdDraft}
-        {/*
-          The moment she most wants to look at the work is the one just after
-          saving it, and until now this message was a dead end. The action
-          returns the new work's id for exactly this.
-        */}
-        {state.workId ? (
-          <Link
-            className={styles.successLink}
-            href={'/admin/works/' + encodeURIComponent(state.workId) + '/preview'}
-          >
-            {labels.preview}
-          </Link>
-        ) : null}
-      </p>
-    );
-  }
-
+  /**
+   * **A successful save is not rendered here any more.** Both actions redirect
+   * to the works list, so `status` only ever comes back `'error'` — there is no
+   * `'created'` or `'saved'` branch because neither could be reached, and a
+   * branch that cannot run is a claim about the code that is not true.
+   *
+   * The confirmation moved with the save: `app/(admin)/admin/(guarded)/page.js`
+   * shows it, chosen by a code in the URL. Ending on the list is what the
+   * artist asked for and it is also the better answer — the work is visible
+   * there in the state she just gave it, and she cannot save the same thing
+   * twice by sitting on a form that is finished with.
+   */
   return (
-    <form action={formAction} className={styles.form}>
-      {state.status === 'saved' ? (
-        <p className={styles.success} role="status">
-          {state.published ? labels.savedPublished : labels.savedDraft}
-        </p>
-      ) : null}
-      {state.status === 'error' ? (
-        <p className={styles.formError} role="alert">
-          {errors.form ? labels.errors[errors.form] : labels.errors.summary}
-        </p>
-      ) : null}
-
-      <p className={styles.notice}>{labels.imageNotice}</p>
-
-      {/* ---- The painting ------------------------------------------ */}
-      <fieldset className={styles.group}>
-        <legend className={styles.legend}>{labels.sections.painting}</legend>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="titleHe">
-            {labels.titleHe}
-          </label>
-          {/*
-            Translated when she leaves the field, and never while she is inside
-            it. A title translated at every keystroke would be a flickering box
-            and a hundred paid calls for one line of Hebrew.
-          */}
-          <input
-            className={styles.input}
-            type="text"
-            required
-            ref={titleHeRef}
-            onBlur={(event) => titleTranslation.onSourceBlur(event.target.value)}
-            {...field('titleHe')}
-          />
-          <FieldError name="titleHe" message={errorFor('titleHe')} />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="titleEn">
-            {labels.titleEn}
-          </label>
-          {/* Latin text inside a right-to-left page, like the login fields. */}
-          <input
-            type="text"
-            dir="ltr"
-            required
-            {...translatedField('titleEn', titleTranslation, styles.input)}
-          />
-          {translationAvailable ? (
-            <TranslationControls
-              name="titleEn"
-              labels={labels.translation}
-              translation={titleTranslation}
-              onRequest={() => titleTranslation.onRequest(readValue(titleHeRef))}
-            />
-          ) : null}
-          <FieldError name="titleEn" message={errorFor('titleEn')} />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="descriptionHe">
-            {labels.descriptionHe}
-          </label>
-          <textarea
-            className={styles.textarea}
-            rows={4}
-            ref={descriptionHeRef}
-            onBlur={(event) => descriptionTranslation.onSourceBlur(event.target.value)}
-            {...field('descriptionHe')}
-          />
-          <FieldError name="descriptionHe" message={errorFor('descriptionHe')} />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="descriptionEn">
-            {labels.descriptionEn}
-          </label>
-          <textarea
-            rows={4}
-            dir="ltr"
-            {...translatedField('descriptionEn', descriptionTranslation, styles.textarea)}
-          />
-          {translationAvailable ? (
-            <TranslationControls
-              name="descriptionEn"
-              labels={labels.translation}
-              translation={descriptionTranslation}
-              onRequest={() =>
-                descriptionTranslation.onRequest(readValue(descriptionHeRef))
-              }
-            />
-          ) : null}
-          <FieldError name="descriptionEn" message={errorFor('descriptionEn')} />
-        </div>
-      </fieldset>
-
-      {/* ---- Details ------------------------------------------------ */}
-      <fieldset className={styles.group}>
-        <legend className={styles.legend}>{labels.sections.details}</legend>
-
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="category">
-              {labels.category}
-            </label>
-            <select className={styles.input} required {...field('category')}>
-              {options.categories.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <FieldError name="category" message={errorFor('category')} />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="medium">
-              {labels.medium}
-            </label>
-            <select className={styles.input} {...field('medium')}>
-              <option value="">{labels.mediumNone}</option>
-              {options.media.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <FieldError name="medium" message={errorFor('medium')} />
-          </div>
-        </div>
-
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="widthCm">
-              {labels.widthCm}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              inputMode="decimal"
-              dir="ltr"
-              required
-              {...field('widthCm')}
-            />
-            <FieldError name="widthCm" message={errorFor('widthCm')} />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="heightCm">
-              {labels.heightCm}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              inputMode="decimal"
-              dir="ltr"
-              required
-              {...field('heightCm')}
-            />
-            <FieldError name="heightCm" message={errorFor('heightCm')} />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="year">
-              {labels.year}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              inputMode="numeric"
-              dir="ltr"
-              {...field('year')}
-            />
-            <FieldError name="year" message={errorFor('year')} />
-          </div>
-        </div>
-      </fieldset>
-
-      {/* ---- Price and availability --------------------------------- */}
-      <fieldset className={styles.group}>
-        <legend className={styles.legend}>{labels.sections.pricing}</legend>
-
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="price">
-              {labels.price}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              inputMode="decimal"
-              dir="ltr"
-              required
-              {...field('price')}
-            />
-            <FieldError name="price" message={errorFor('price')} />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="priceReduced">
-              {labels.priceReduced}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              inputMode="decimal"
-              dir="ltr"
-              {...field('priceReduced')}
-            />
-            <p className={styles.hint}>{labels.priceReducedHint}</p>
-            <FieldError name="priceReduced" message={errorFor('priceReduced')} />
-          </div>
-        </div>
-
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="status">
-              {labels.status}
-            </label>
-            <select
-              className={styles.input}
-              required
-              {...field('status')}
-              onChange={(event) => setStatus(event.target.value)}
-            >
-              {options.statuses.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <FieldError name="status" message={errorFor('status')} />
-          </div>
-        </div>
-
-        {/* ---- Where it sold, which is a question only "sold" asks ----- *
-          Not a field sitting beside status: it follows from status, and only
-          the sold status has an answer. Choosing anything else unmounts it,
-          so the channel is simply absent from the submission and the record
-          comes back null — an available work carrying "sold on under1000" is
-          not a state that should be reachable by forgetting to clear a box.
-
-          The database still does not tie the two columns, deliberately, so a
-          work can be edited in either order. This is the form guiding her,
-          not a new rule in the schema.
-        */}
-        {status === options.soldStatus ? (
-          <div className={styles.followUp}>
-            {channelIsAutomatic ? (
-              <>
-                <p className={styles.hint}>{labels.saleChannelAutomatic}</p>
-                {/*
-                  Carried through untouched. A sale recorded by checkout is not
-                  hers to retype, and dropping it because the form declines to
-                  offer it would quietly rewrite an order's history.
-                */}
-                <input type="hidden" name="saleChannel" value={options.automaticSaleChannel} />
-              </>
-            ) : (
-              <fieldset className={styles.choices}>
-                <legend className={styles.choicesLegend}>
-                  {labels.saleChannelQuestion}
-                </legend>
-
-                {options.manualSaleChannels.map((option) => (
-                  <label key={option.value} className={styles.choice}>
-                    <input
-                      type="radio"
-                      name="saleChannel"
-                      value={option.value}
-                      defaultChecked={values.saleChannel === option.value}
-                    />
-                    {option.label}
-                  </label>
-                ))}
-
-                <label className={styles.choice}>
-                  <input
-                    type="radio"
-                    name="saleChannel"
-                    value=""
-                    defaultChecked={!values.saleChannel}
-                  />
-                  {labels.saleChannelNotRecorded}
-                </label>
-              </fieldset>
-            )}
-            <FieldError name="saleChannel" message={errorFor('saleChannel')} />
-          </div>
-        ) : null}
-      </fieldset>
-
-      {/* ---- Publishing --------------------------------------------- */}
-      <fieldset className={styles.group}>
-        <legend className={styles.legend}>{labels.sections.publishing}</legend>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="addedAt">
-            {labels.addedAt}
-          </label>
-          <input
-            className={styles.input}
-            type="date"
-            dir="ltr"
-            required
-            id="addedAt"
-            name="addedAt"
-            defaultValue={values.addedAt ?? today}
-            aria-invalid={errors.addedAt ? 'true' : undefined}
-            aria-describedby={errors.addedAt ? 'addedAt-error' : undefined}
-          />
-          <FieldError name="addedAt" message={errorFor('addedAt')} />
-        </div>
-
-        <div className={styles.checkboxField}>
-          <input
-            className={styles.checkbox}
-            type="checkbox"
-            id="publish"
-            name="publish"
-            defaultChecked={values.publish === 'on'}
-          />
-          <label className={styles.checkboxLabel} htmlFor="publish">
-            {/*
-              "Publish now" is a thing you do once. On an existing work the same
-              checkbox is a statement about where it currently is, and unticking
-              it is how she takes a painting off the site without deleting it.
-            */}
-            {mode === 'edit' ? labels.publishedLabel : labels.publish}
-          </label>
-        </div>
-        <p className={styles.hint}>
-          {mode === 'edit' ? labels.publishedHint : labels.publishHint}
-        </p>
-      </fieldset>
-
-      {/* ---- The web address ---------------------------------------- *
-        Folded away in a <details>, which needs no JavaScript. She should
-        almost never open it — the address is made from the title — but it has
-        to be reachable, because it is permanent once published and a bad one
-        cannot be fixed afterwards without breaking links.
+    <>
+      {/*
+        Outside the <form>, and that placement is load-bearing rather than
+        stylistic: the panel holds a file input, and a named file control inside
+        this form would be serialised into the Server Action that saves the
+        record — whose request body is capped at 1MB. The image saves itself the
+        moment it uploads; this form saves everything else.
       */}
-      <details className={styles.advanced}>
-        <summary className={styles.summary}>{labels.sections.address}</summary>
+      {imagePanel ?? <p className={styles.notice}>{labels.imageNotice}</p>}
 
-        <p className={styles.hint}>
-          {/*
-            Two different explanations, because the situation is genuinely
-            different. On a draft the address can still be changed; once the
-            work is public it cannot, and saying so is the point — silently
-            discarding her edit would leave her believing it had been saved.
-          */}
-          {slugsLocked ? labels.addressLockedHint : labels.addressHint}
-        </p>
-
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="slugHe">
-              {labels.slugHe}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              readOnly={slugsLocked}
-              {...field('slugHe')}
-            />
-            <FieldError name="slugHe" message={errorFor('slugHe')} />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="slugEn">
-              {labels.slugEn}
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              dir="ltr"
-              readOnly={slugsLocked}
-              {...field('slugEn')}
-            />
-            <FieldError name="slugEn" message={errorFor('slugEn')} />
-          </div>
-        </div>
-      </details>
-
-      {/* ---- Saving -------------------------------------------------- *
-        The gate. While a translation is unapproved the button is disabled and
-        the band above it says so and names the fields, each one a link that
-        jumps to it — the form is long, and "you cannot save" without "here is
-        where to go" is how someone ends up phoning her son.
-
-        A disabled button is the whole mechanism on purpose. Letting the submit
-        through and refusing it inside the action would run React's form reset
-        on the way past and empty every uncontrolled box on this form, which is
-        a far worse outcome than a button she cannot press.
+      {/*
+        The id exists so the image panel above can put a hidden field **into**
+        this form from outside it, using the `form` attribute — see
+        AdminImageUpload. That is how a photograph chosen before the work exists
+        travels with the save without the panel having to move inside the form
+        and drag its file input in with it.
       */}
-      <div className={styles.submitRow}>
-        {awaitingApproval.length > 0 ? (
-          <p className={styles.blocked} role="status">
-            {labels.translation.blocked}{' '}
-            {awaitingApproval.map((entry, index) => (
-              <span key={entry.id}>
-                {index > 0 ? labels.translation.listSeparator : null}
-                <a className={styles.blockedLink} href={'#' + entry.id}>
-                  {entry.label}
-                </a>
-              </span>
-            ))}
+      <form id={FORM_ID} action={formAction} className={styles.form}>
+        {state.status === 'error' ? (
+          <p className={styles.formError} role="alert">
+            {errors.form ? labels.errors[errors.form] : labels.errors.summary}
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          className={styles.submit}
-          disabled={isPending || awaitingApproval.length > 0}
-        >
-          {isPending
-            ? labels.submitting
-            : mode === 'edit'
-              ? labels.save
-              : labels.submit}
-        </button>
-      </div>
-    </form>
+        {/* ---- The painting ------------------------------------------ */}
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>{labels.sections.painting}</legend>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="titleHe">
+              {labels.titleHe}
+            </label>
+            {/*
+              Translated when she leaves the field, and never while she is inside
+              it. A title translated at every keystroke would be a flickering box
+              and a hundred paid calls for one line of Hebrew.
+            */}
+            <input
+              className={styles.input}
+              type="text"
+              required
+              ref={titleHeRef}
+              onBlur={(event) => titleTranslation.onSourceBlur(event.target.value)}
+              {...field('titleHe')}
+            />
+            <FieldError name="titleHe" message={errorFor('titleHe')} />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="titleEn">
+              {labels.titleEn}
+            </label>
+            {/* Latin text inside a right-to-left page, like the login fields. */}
+            <input
+              type="text"
+              dir="ltr"
+              required
+              {...translatedField('titleEn', titleTranslation, styles.input)}
+            />
+            {translationAvailable ? (
+              <TranslationControls
+                name="titleEn"
+                labels={labels.translation}
+                translation={titleTranslation}
+                onRequest={() => titleTranslation.onRequest(readValue(titleHeRef))}
+              />
+            ) : null}
+            <FieldError name="titleEn" message={errorFor('titleEn')} />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="descriptionHe">
+              {labels.descriptionHe}
+            </label>
+            <textarea
+              className={styles.textarea}
+              rows={4}
+              ref={descriptionHeRef}
+              onBlur={(event) => descriptionTranslation.onSourceBlur(event.target.value)}
+              {...field('descriptionHe')}
+            />
+            <FieldError name="descriptionHe" message={errorFor('descriptionHe')} />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="descriptionEn">
+              {labels.descriptionEn}
+            </label>
+            <textarea
+              rows={4}
+              dir="ltr"
+              {...translatedField('descriptionEn', descriptionTranslation, styles.textarea)}
+            />
+            {translationAvailable ? (
+              <TranslationControls
+                name="descriptionEn"
+                labels={labels.translation}
+                translation={descriptionTranslation}
+                onRequest={() =>
+                  descriptionTranslation.onRequest(readValue(descriptionHeRef))
+                }
+              />
+            ) : null}
+            <FieldError name="descriptionEn" message={errorFor('descriptionEn')} />
+          </div>
+        </fieldset>
+
+        {/* ---- Details ------------------------------------------------ */}
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>{labels.sections.details}</legend>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="category">
+                {labels.category}
+              </label>
+              <select className={styles.input} required {...field('category')}>
+                {options.categories.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError name="category" message={errorFor('category')} />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="medium">
+                {labels.medium}
+              </label>
+              <select className={styles.input} {...field('medium')}>
+                <option value="">{labels.mediumNone}</option>
+                {options.media.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError name="medium" message={errorFor('medium')} />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="widthCm">
+                {labels.widthCm}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                required
+                {...field('widthCm')}
+              />
+              <FieldError name="widthCm" message={errorFor('widthCm')} />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="heightCm">
+                {labels.heightCm}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                required
+                {...field('heightCm')}
+              />
+              <FieldError name="heightCm" message={errorFor('heightCm')} />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="year">
+                {labels.year}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                inputMode="numeric"
+                dir="ltr"
+                {...field('year')}
+              />
+              <FieldError name="year" message={errorFor('year')} />
+            </div>
+          </div>
+        </fieldset>
+
+        {/* ---- Price and availability --------------------------------- */}
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>{labels.sections.pricing}</legend>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="price">
+                {labels.price}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                required
+                {...field('price')}
+              />
+              <FieldError name="price" message={errorFor('price')} />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="priceReduced">
+                {labels.priceReduced}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                {...field('priceReduced')}
+              />
+              <p className={styles.hint}>{labels.priceReducedHint}</p>
+              <FieldError name="priceReduced" message={errorFor('priceReduced')} />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="status">
+                {labels.status}
+              </label>
+              <select
+                className={styles.input}
+                required
+                {...field('status')}
+                onChange={(event) => setStatus(event.target.value)}
+              >
+                {options.statuses.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError name="status" message={errorFor('status')} />
+            </div>
+          </div>
+
+          {/* ---- Where it sold, which is a question only "sold" asks ----- *
+            Not a field sitting beside status: it follows from status, and only
+            the sold status has an answer. Choosing anything else unmounts it,
+            so the channel is simply absent from the submission and the record
+            comes back null — an available work carrying "sold on under1000" is
+            not a state that should be reachable by forgetting to clear a box.
+
+            The database still does not tie the two columns, deliberately, so a
+            work can be edited in either order. This is the form guiding her,
+            not a new rule in the schema.
+          */}
+          {status === options.soldStatus ? (
+            <div className={styles.followUp}>
+              {channelIsAutomatic ? (
+                <>
+                  <p className={styles.hint}>{labels.saleChannelAutomatic}</p>
+                  {/*
+                    Carried through untouched. A sale recorded by checkout is not
+                    hers to retype, and dropping it because the form declines to
+                    offer it would quietly rewrite an order's history.
+                  */}
+                  <input type="hidden" name="saleChannel" value={options.automaticSaleChannel} />
+                </>
+              ) : (
+                <fieldset className={styles.choices}>
+                  <legend className={styles.choicesLegend}>
+                    {labels.saleChannelQuestion}
+                  </legend>
+
+                  {options.manualSaleChannels.map((option) => (
+                    <label key={option.value} className={styles.choice}>
+                      <input
+                        type="radio"
+                        name="saleChannel"
+                        value={option.value}
+                        defaultChecked={values.saleChannel === option.value}
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+
+                  <label className={styles.choice}>
+                    <input
+                      type="radio"
+                      name="saleChannel"
+                      value=""
+                      defaultChecked={!values.saleChannel}
+                    />
+                    {labels.saleChannelNotRecorded}
+                  </label>
+                </fieldset>
+              )}
+              <FieldError name="saleChannel" message={errorFor('saleChannel')} />
+            </div>
+          ) : null}
+        </fieldset>
+
+        {/* ---- Publishing --------------------------------------------- */}
+        <fieldset className={styles.group}>
+          <legend className={styles.legend}>{labels.sections.publishing}</legend>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="addedAt">
+              {labels.addedAt}
+            </label>
+            <input
+              className={styles.input}
+              type="date"
+              dir="ltr"
+              required
+              id="addedAt"
+              name="addedAt"
+              defaultValue={values.addedAt ?? today}
+              aria-invalid={errors.addedAt ? 'true' : undefined}
+              aria-describedby={errors.addedAt ? 'addedAt-error' : undefined}
+            />
+            <FieldError name="addedAt" message={errorFor('addedAt')} />
+          </div>
+
+          <div className={styles.checkboxField}>
+            <input
+              className={styles.checkbox}
+              type="checkbox"
+              id="publish"
+              name="publish"
+              defaultChecked={values.publish === 'on'}
+              aria-invalid={errors.publish ? 'true' : undefined}
+              aria-describedby={errors.publish ? 'publish-error' : undefined}
+            />
+            <label className={styles.checkboxLabel} htmlFor="publish">
+              {/*
+                "Publish now" is a thing you do once. On an existing work the same
+                checkbox is a statement about where it currently is, and unticking
+                it is how she takes a painting off the site without deleting it.
+              */}
+              {mode === 'edit' ? labels.publishedLabel : labels.publish}
+            </label>
+          </div>
+          {/*
+            The only error this box can carry: a work cannot be published
+            without a photograph. It is refused on the act of publishing, so it
+            never fires while saving a work that is already live — see the
+            action.
+          */}
+          <FieldError name="publish" message={errorFor('publish')} />
+          <p className={styles.hint}>
+            {mode === 'edit' ? labels.publishedHint : labels.publishHint}
+          </p>
+        </fieldset>
+
+        {/* ---- The web address ---------------------------------------- *
+          Folded away in a <details>, which needs no JavaScript. She should
+          almost never open it — the address is made from the title — but it has
+          to be reachable, because it is permanent once published and a bad one
+          cannot be fixed afterwards without breaking links.
+        */}
+        <details className={styles.advanced}>
+          <summary className={styles.summary}>{labels.sections.address}</summary>
+
+          <p className={styles.hint}>
+            {/*
+              Two different explanations, because the situation is genuinely
+              different. On a draft the address can still be changed; once the
+              work is public it cannot, and saying so is the point — silently
+              discarding her edit would leave her believing it had been saved.
+            */}
+            {slugsLocked ? labels.addressLockedHint : labels.addressHint}
+          </p>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="slugHe">
+                {labels.slugHe}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                readOnly={slugsLocked}
+                {...field('slugHe')}
+              />
+              <FieldError name="slugHe" message={errorFor('slugHe')} />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="slugEn">
+                {labels.slugEn}
+              </label>
+              <input
+                className={styles.input}
+                type="text"
+                dir="ltr"
+                readOnly={slugsLocked}
+                {...field('slugEn')}
+              />
+              <FieldError name="slugEn" message={errorFor('slugEn')} />
+            </div>
+          </div>
+        </details>
+
+        {/* ---- Saving -------------------------------------------------- *
+          The gate. While a translation is unapproved the button is disabled and
+          the band above it says so and names the fields, each one a link that
+          jumps to it — the form is long, and "you cannot save" without "here is
+          where to go" is how someone ends up phoning her son.
+
+          A disabled button is the whole mechanism on purpose. Letting the submit
+          through and refusing it inside the action would run React's form reset
+          on the way past and empty every uncontrolled box on this form, which is
+          a far worse outcome than a button she cannot press.
+        */}
+        <div className={styles.submitRow}>
+          {awaitingApproval.length > 0 ? (
+            <p className={styles.blocked} role="status">
+              {labels.translation.blocked}{' '}
+              {awaitingApproval.map((entry, index) => (
+                <span key={entry.id}>
+                  {index > 0 ? labels.translation.listSeparator : null}
+                  <a className={styles.blockedLink} href={'#' + entry.id}>
+                    {entry.label}
+                  </a>
+                </span>
+              ))}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            className={styles.submit}
+            disabled={isPending || awaitingApproval.length > 0}
+          >
+            {isPending
+              ? labels.submitting
+              : mode === 'edit'
+                ? labels.save
+                : labels.submit}
+          </button>
+        </div>
+      </form>
+    </>
   );
 }

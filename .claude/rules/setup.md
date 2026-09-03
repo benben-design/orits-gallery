@@ -15,6 +15,7 @@ npm run dev:placeholders  # regenerate the /dev placeholder images
 npm run check:contrast    # WCAG check over every permitted colour pairing
 npm run check:guard       # every guarded admin page calls the guard
 npm run check:sitemap     # the sitemap offers built pages only, and all of them
+npm run check:crop        # no image transformation crops a painting
 
 npm run seed:local        # fill a LOCAL database with the sixteen works
 npm run admin:create      # create an admin account, or change its password
@@ -38,12 +39,16 @@ It needs no database and no real content, so it stays reviewable however little
 of the site is built — and it is the fastest way to see whether a token change
 broke something. It is a permanent developer tool, not a scratch page.
 
-It is reachable in production builds and on Vercel previews, deliberately: a
+It is reachable in production builds and on deploy previews, deliberately: a
 preview URL is where a design change is easiest to review on a real device. It
 is kept out of search results three ways — `noindex` metadata on its own root
-layout, a disallow in `app/robots.js`, and an `X-Robots-Tag` header in
-`vercel.json` — and it is unreachable from any navigation because it sits
-outside `app/(site)/[locale]` entirely.
+layout, a disallow in `app/robots.js`, and an `X-Robots-Tag` header — and it is
+unreachable from any navigation because it sits outside `app/(site)/[locale]`
+entirely.
+
+The third of those is currently missing: the header is in `vercel.json` and the
+project deploys to Netlify, which does not read it. The first two still hold.
+See deployment.md.
 
 To make it developer-only instead, add an `export const dynamic` guard or a
 `notFound()` on `process.env.NODE_ENV === 'production'` in its page. That also
@@ -51,18 +56,24 @@ removes it from previews, which is the trade.
 
 ## Linting
 
-`npm run lint` does four things in order: `eslint .` over every JS/MJS file in
+`npm run lint` does five things in order: `eslint .` over every JS/MJS file in
 the project — including `proxy.js`, the config files and `scripts/` — then
 `scripts/check-contrast.mjs`, the palette guard, then
 `scripts/check-admin-guard.mjs`, which fails if any page in the guarded admin
 group does not call `requireAdminSession`, then `scripts/check-sitemap.mjs`,
-which fails if the sitemap offers a stub or omits a finished page.
+which fails if the sitemap offers a stub or omits a finished page, then
+`scripts/check-image-crop.mjs`, which fails if the image loader would ask the
+host to crop a painting.
 
-All three guards are advisory in the same way lint is: they are **not** in the
+All four guards are advisory in the same way lint is: they are **not** in the
 build and cannot fail a deploy. That is deliberate for the palette. For the
-other two it is a real limitation worth knowing — a page added without the
-guard ships, and a stub listed in the sitemap ships, and the checks only
-complain when someone runs them.
+other three it is a real limitation worth knowing — a page added without the
+guard ships, a stub listed in the sitemap ships, and a cropping transformation
+ships, and the checks only complain when someone runs them.
+
+The crop guard is the one whose absence would be hardest to notice. The other
+three protect against something a person could eventually see; a cropped
+painting delivered into a correctly-built frame looks entirely right.
 
 ## The sitemap guard
 
@@ -137,7 +148,7 @@ never ship a stale manifest — but the dev server will happily use an old one.
 dummy values. Copy it to `.env.local` and fill that in; `.env.local` is
 git-ignored by the `.env*.local` rule and never committed.
 
-**Three keys are read today, and one of them is optional.** `DATABASE_URL`, by
+**Seven keys are read today, and four of them are optional.** `DATABASE_URL`, by
 `lib/db.js` and so by every page that reads a painting, and separately by the
 seed script. And `ADMIN_SESSION_SECRET`, by `lib/auth/session.js`, which signs
 the admin session cookie — it must be at least 32 characters, and signing refuses outright below
@@ -167,12 +178,22 @@ URL pointing somewhere else and nobody notices for weeks. On a laptop it falls
 back to the dev server's own address, so `npm run dev` works without it and
 `npm run build` does not.
 
-The remaining keys in the example are forecasts: Cloudinary and the payment
-provider's keys, whose names will change once a provider is chosen.
-Uncomment nothing into use before something reads it, and add a key to the
-example in the same change that starts reading it.
+The fifth, sixth and seventh are `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`
+and `CLOUDINARY_API_SECRET`, read by `lib/image-host.js` — where the artist's
+own photographs are uploaded to and served from. They are needed **as a set**,
+and optional in the same way the translation key is: with any of them missing
+the work form shows a notice where the upload panel would be, rather than
+offering a control that fails. All three are read at request time and by the admin only: **delivery needs none
+of them.** A hosted painting is resized by the host, from a URL
+`lib/image-loader.js` builds out of the reference stored in the database, so a
+work already uploaded goes on rendering for visitors whatever these keys say.
 
-As each arrives, add it to `.env.local` locally and to the Vercel project for
+Only the payment provider's keys are still forecasts, and their names will
+change once a provider is chosen. Uncomment nothing into use before something
+reads it, and add a key to the example in the same change that starts reading
+it.
+
+As each arrives, add it to `.env.local` locally and to the Netlify site for
 deployment. Never commit real credentials.
 
 ## Database

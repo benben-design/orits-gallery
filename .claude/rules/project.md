@@ -53,12 +53,12 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | Language | JavaScript, ES modules. No TypeScript |
 | React | React 19 |
 | Styling | Plain CSS — `app/tokens.css` + `app/globals.css`, co-located CSS Modules per component. No framework, no component library |
-| Images | `public/paintings/` + Next's built-in image pipeline today; **Cloudinary later** |
+| Images | Two sources, deliberately, and two resizers. The sixteen seeded paintings are files in `public/paintings/`, resized by Next's own optimiser; anything the artist attaches herself is on **Cloudinary**, uploaded from the browser straight to the host under a signature this app produces, and resized **by the host** so the work is not done and metered twice. `lib/image-loader.js` picks per image; every component renders both identically. No transformation may crop — `npm run check:crop` |
 | Database | PostgreSQL. **The site reads it** — every painting comes from Postgres through `lib/data/works-repository.js`. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, so production has no database at all |
 | Auth | **Built.** Two accounts with equal rights, the artist's and the developer's. scrypt password hashing, accounts created by `npm run admin:create`, sign-in and sign-out through a signed httpOnly cookie with no session table, and every guarded admin page redirecting a visitor without a session to the login form. The guard covers **rendering only** — mutations verify the session themselves, see security.md |
 | Translation | Google's Gemini, behind `lib/translate.js`, called only from `/admin/api/translate`. Fills the admin form's English fields in from the Hebrew, unapproved until she reads them. **Optional** — with no key the English is typed by hand |
 | Payments | Provider not chosen yet — Stripe vs an Israeli provider that issues a tax invoice |
-| Host | Vercel, one deployment, region `fra1` |
+| Host | **Netlify**, one site, one deployment. `vercel.json` is still in the repo from the previous decision and is **not** read by Netlify — replacing it, carrying over its noindex headers, and finding out whether a region can be pinned near Israel are open tasks in deployment.md. Free tier while building, paid tier the day the site can take money |
 
 Frontend and backend are the same app. There is no `client/` or `server/` split
 and there must not be one — a previous project of the owner's used that shape and
@@ -83,6 +83,8 @@ it does not apply here.
 │   ├── data/             the data access layer — see data-layer.md
 │   ├── auth/             password hashing, the session cookie, the page guard
 │   ├── db.js             the pooled Postgres connection, used by the repository
+│   ├── image-host.js     signs an upload, and reads the asset back afterwards
+│   ├── image-loader.js   which service resizes an image, decided per image
 │   └── format.js         locale-aware price and dimension formatting
 ├── database/migrations/  plain SQL, applied by hand, forward-only
 ├── scripts/              operational scripts, no dependencies
@@ -151,7 +153,8 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 
 | Area | Status |
 |---|---|
-| Project scaffold, Next config, Vercel config | Done |
+| Project scaffold, Next config | Done |
+| Host configuration | **Not done.** `vercel.json` describes a host this project no longer deploys to. Nothing is deployed, so no replacement can be verified yet — see deployment.md |
 | i18n config, dictionary loader, `he`/`en` locale files | Done |
 | Data access layer + seed fixture + image manifest | Done |
 | Design tokens, global styles, the two faces via `next/font` | Done |
@@ -163,8 +166,8 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Gallery | Built — the full catalogue, filtered by category through the URL. **Pagination deliberately not built** at sixteen works |
 | Deleting a painting | Built — from the works list, behind a confirmation that asks a **different question** of a draft and of a published work, and offers taking it off the site instead of breaking a permanent address. One click never deletes. A work on an order cannot be deleted at all |
 | Finding a painting in the admin | Built — `/admin` **is** the works list: every work with its publication state, sale status and sale channel, drafts sorted first, each row opening its edit page. It reads `getWorksForAdmin`, the admin-scoped list added for it |
-| Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **No image upload**: that needs hosting first |
-| Editing a painting from the admin | Built — `/admin/works/[id]` shares the same form. Publishing and unpublishing happen here; a published work's address is read-only. **No delete, no featured control** |
+| Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **Its photograph can be attached here too**, in the same save: the upload waits in a hidden field and the work and its image are written in one transaction, so a painting can arrive complete and published in one step |
+| Editing a painting from the admin | Built — `/admin/works/[id]` shares the same form. Saving on either page ends on the works list, with a line saying what happened; only a rejected save stays on the form. Publishing and unpublishing happen here; a published work's address is read-only. **No delete, no featured control** |
 | Seeing a work before it is public | Built — `/admin/works/[id]/preview` renders the public artwork body from the admin-scoped read, in either language, behind the guard. A dashed band says whether the work is published; the public route stays published-only |
 | English written for her | Built — leaving a Hebrew title or description translates it and fills the English twin, marked unapproved, and **the form does not save while anything is unapproved**. Her own English is never overwritten, and a failure leaves her typing it herself and saving as usual |
 | Artwork page body | **Built** — one painting large beside its details, reusing the grid's frame, price, badge and status table. The frame's `bare` mount finally has its caller. No buy button while the cart does not exist |
@@ -179,16 +182,24 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Admin sign-in and sign-out | Done — signed httpOnly cookie, no session table. See security.md |
 | Rate limiting on sign-in | Done — counters in Postgres (migration 006), five failures then an escalating block. Paired with the eight-character password minimum |
 | The admin route guard | Done — every page under `(guarded)/` redirects without a session, and signing in returns to the page that was asked for |
-| Payments, Cloudinary | Not started |
+| Publishing without a photograph | Refused, with a message saying why — on the site the work would be an empty frame. On the **act of publishing** only: a work already public still saves any field, and a new work therefore cannot be created already published. See commerce.md |
+| Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
+| Payments | Not started |
 
-Exactly **four client components** exist — the language switcher, the hero's
-studio loop, and the admin's login and new-work forms. Everything else is a
-server component, including the gallery and its filters, which are links and a
-query parameter rather than state. All four are leaves, and the hero's poster is
-server-rendered so nothing above the fold waits on JavaScript. Both admin forms
-are client components for one reason: a rejected submission has to come back
-with its errors and the typed values intact, without either travelling through
-a URL. See app-files.md.
+Exactly **five client components** exist — the language switcher, the hero's
+studio loop, the admin's login and work forms, and the admin's image upload.
+Everything else is a server component, including the gallery and its filters,
+which are links and a query parameter rather than state. All five are leaves,
+and the hero's poster is server-rendered so nothing above the fold waits on
+JavaScript. The two admin forms are client components for one reason: a rejected
+submission has to come back with its errors and the typed values intact, without
+either travelling through a URL.
+
+The image upload is the exception to that pattern and the **one thing in the
+admin that genuinely does not work without JavaScript** — reading a file,
+watching a percentage climb and posting to another host has no server-rendered
+form. It is why the upload sits outside the work form rather than inside it: the
+record still saves with no script at all. See app-files.md.
 
 ## Placeholder data — read before touching content
 

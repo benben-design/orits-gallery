@@ -155,6 +155,12 @@
     },
     "works": {
       "title": "Works",
+      "outcomes": {
+        "createdDraft": "Saved as a draft.",
+        "createdPublished": "Added and published to the site.",
+        "savedDraft": "Changes saved. The work is a draft and is not on the site.",
+        "savedPublished": "Changes saved. The work is on the site."
+      },
       "draft": "Draft",
       "published": "On the site",
       "soldThrough": "Sold through",
@@ -241,11 +247,35 @@
       "slugHe": "Hebrew address",
       "slugEn": "English address",
       "addressHint": "Generated from the title. Once published it must not change — links already shared would break.",
-      "imageNotice": "Image upload is not built yet. Add the work now and attach its photograph later.",
+      "imageNotice": "The image service is not configured, so no photograph can be attached right now. Save the work and attach one later.",
+      "image": {
+        "legend": "The work's image",
+        "none": "No image",
+        "choose": "Choose an image",
+        "replace": "Replace the image",
+        "hint": "Up to {megabytes} MB and {megapixels} megapixels. The image is saved as soon as the upload finishes, separately from the rest of the form.",
+        "hintPending": "Up to {megabytes} MB and {megapixels} megapixels. The photograph is attached to the work when the form is saved.",
+        "dragHint": "You can also drag a photograph here from your computer.",
+        "dropNow": "Release here and the photograph will start uploading.",
+        "uploading": "Uploading the image: {percent}%",
+        "saving": "Saving the image...",
+        "done": "The image has been saved.",
+        "donePending": "The photograph is ready, and will be attached when the work is saved.",
+        "errors": {
+          "notAnImage": "That file is not an image. Choose a JPG or a PNG.",
+          "unreadable": "The file could not be opened. It may be damaged, or in a format the browser does not recognise.",
+          "tooLarge": "The file is {size} MB, and the largest allowed is {max} MB. Save it again at a lower quality and try once more.",
+          "tooManyPixels": "The image is {pixels} megapixels, and the most allowed is {max}. Reduce its dimensions and try once more.",
+          "uploadFailed": "The upload did not finish. Check the internet connection and try again.",
+          "notSignedIn": "The session has expired. Sign in again and try once more.",
+          "notFound": "That work was not found. Refresh the page.",
+          "notConfigured": "The image service is not configured. Ask whoever maintains the site.",
+          "hostUnreachable": "The image uploaded, but it could not be saved. Upload it again.",
+          "unexpected": "Something went wrong saving the image. Try again."
+        }
+      },
       "submit": "Add the work",
       "submitting": "Saving…",
-      "createdDraft": "Saved as a draft.",
-      "createdPublished": "Added and published to the site.",
       "errors": {
         "summary": "Could not save. Check the marked fields.",
         "required": "This field is required.",
@@ -260,11 +290,12 @@
         "unexpected": "Something went wrong and the work was not saved. Try again.",
         "notSignedIn": "Your session expired. Sign in again and retry.",
         "slugLocked": "A published work's address cannot be changed.",
+        "imageRequiredToPublish": "A work cannot be published without a photograph — on the site it would appear as an empty frame. Attach one at the top of this page, then tick publish and save.",
+        "imageRequiredToPublishNew": "A work cannot be published without a photograph — on the site it would appear as an empty frame. Attach one above and save, or save without ticking publish. The work has not been saved yet.",
+        "imageNotConfirmed": "The photograph uploaded, but it could not be confirmed with the image service — so the work was not saved. Upload it again and save.",
         "notFound": "That work was not found. It may have been deleted."
       },
       "save": "Save changes",
-      "savedPublished": "Changes saved. The work is on the site.",
-      "savedDraft": "Changes saved. The work is a draft and is not on the site.",
       "publishedLabel": "Shown on the site",
       "publishedHint": "Unticking takes the work off the site and keeps it as a draft. Nothing is deleted.",
       "addressLockedHint": "This work is published, so its address cannot change. Changing it would break every link already shared and its place in Google.",
@@ -280,8 +311,7 @@
         "noSource": "There is no Hebrew text to translate.",
         "blocked": "A translation is waiting for your approval, so this cannot be saved yet:",
         "listSeparator": ", "
-      },
-      "preview": "Preview the work"
+      }
     }
   },
   "medium": {

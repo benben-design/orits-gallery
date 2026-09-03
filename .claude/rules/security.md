@@ -66,6 +66,45 @@
   path-scoped cookie actually arrives, and the provider key is read only in
   `lib/translate.js`, on the server. A key the page can reach is a key anyone
   can spend.
+- **Image upload is signed, and there is no unsigned preset.** The file goes
+  from the browser to the image host without passing through this server — a
+  Server Action's request body is capped at 1MB and a photograph is several
+  times that — so the thing to get right is what authorises it.
+
+  The provider offers an *unsigned upload preset*, which needs no server at all
+  and is therefore a public write endpoint into the artist's media library:
+  named in the page source, usable by anyone who views it, for as long as it
+  exists. **Do not add one.** `signMainImageUpload` verifies the session and
+  then signs one upload, and the signature covers **every** parameter the host
+  receives — so a browser that adds a `public_id`, a tag or a transformation of
+  its own invalidates it rather than sneaking it past. Only the folder and a
+  timestamp are signed, and the timestamp is an expiry: the host refuses a
+  signature older than an hour, so one that leaks out of the page stops working
+  on its own.
+
+  **Nothing the browser reports about the finished upload is believed.** It
+  hands back an identifier; the server asks the host for the asset under its own
+  credentials and stores the width, the height and the URL from that answer.
+  This is the ordinary rule — never trust a value from the client — applied to a
+  case where it is easy to forget, because the client just did the work and
+  obviously knows the answer. It also has a concrete failure mode rather than a
+  theoretical one: pixel dimensions reserve the box a painting is drawn in, so a
+  wrong pair from a hostile or simply buggy client is a broken public page.
+
+  **There are two call sites, and the second is the one to be careful about.**
+  Editing a work binds its id into `saveMainImage` server-side, so a finished
+  upload cannot be repointed. *Creating* one has no id to bind, so the uploaded
+  reference travels as an ordinary form field — which the browser can edit to
+  name any asset in the account, or something that is not an asset at all. That
+  is fine, and it is fine for exactly the same reason: the identifier is all
+  that is taken from it. `createWork` calls `readUploadedImage` on it too, and a
+  reference the host does not recognise stops the save rather than writing a
+  broken row. **Do not add a third path that skips that call.**
+
+  The credentials are read only in `lib/image-host.js`, on the server, and the
+  API secret never reaches the browser. The API key does, in the signed fields,
+  and that is by the provider's design — it names whose secret to check against
+  and authorises nothing on its own.
 - **`generateMetadata` runs even when the guard redirects**, because it is a
   separate export from the page component and Next calls it either way. It was
   measured: a signed-out request to `/admin/orders` returns a 307 whose body
@@ -94,8 +133,8 @@
     differently for an address that exists, which is precisely what the shared
     error message and the decoy hash in `admin-users.js` are arranged to avoid
     saying.
-  - **It must never move into memory.** Vercel runs many short-lived instances,
-    so an in-memory counter is per-instance and resets at random: it would pass
+  - **It must never move into memory.** Serverless hosting runs many short-lived
+    instances, so an in-memory counter is per-instance and resets at random: it would pass
     every test on one laptop and do almost nothing in production. That is the
     worst kind of security control, the kind that reports success.
 
@@ -168,5 +207,9 @@ they are already inside it.
   an order paid from a client redirect or callback.
 - Errors shown to a user say what to do next; stack traces and internal detail go
   to the server log only.
-- The admin is excluded from indexing in two places — `robots` and the
-  `X-Robots-Tag` header in `vercel.json`. Keep both.
+- The admin is excluded from indexing in two places — `robots` and an
+  `X-Robots-Tag` header. Keep both. **Only the first is currently in effect:**
+  the header lives in `vercel.json`, and this project deploys to Netlify, which
+  does not read it. `app/robots.js` still covers the admin, so nothing is open —
+  but the redundancy is missing until the header is carried over, and that is a
+  recorded task in deployment.md rather than something already handled.

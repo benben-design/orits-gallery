@@ -169,7 +169,6 @@
  * message, and for the same reason: bordered and worded, never colour alone.
  */
 .formError,
-.success,
 .notice {
   border: var(--border-hairline) solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -182,15 +181,19 @@
   background-color: var(--surface-tint);
 }
 
-.success {
-  background-color: var(--surface-tint);
-  margin-block-start: var(--space-6);
-}
 
-/* The image-upload caveat: dashed, like every other "not built yet" band. */
+/**
+ * What stands where the image panel goes on a work that has no id yet.
+ *
+ * Dashed, like every other band on this project that says something is not
+ * available here. It carries the form s own top margin because it now sits
+ * outside the <form> element, in the panel s place - see the imagePanel prop.
+ */
 .notice {
   border-style: dashed;
   color: var(--text-muted);
+  max-width: 44rem;
+  margin-block-start: var(--space-6);
 }
 
 /**
@@ -363,16 +366,3 @@
  * it, because it is part of the same sentence: the work is saved, and here is
  * how to look at it.
  */
-.successLink {
-  display: inline-block;
-  margin-inline-start: var(--space-3);
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-@media (hover: hover) {
-  .successLink:hover {
-    color: var(--accent-hover);
-  }
-}

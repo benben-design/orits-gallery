@@ -31,11 +31,13 @@ import {
   updateWork as updateWorkRecord,
   deleteWork as deleteWorkRecord,
   unpublishWork as unpublishWorkRecord,
+  setMainImage as setMainImageRecord,
   getWorkById,
   DuplicateSlugError,
   WorkHasOrdersError,
 } from '@/lib/data/works-repository';
-import { validateWorkInput, workToFormValues } from '@/lib/data/work-input';
+import { validateWorkInput, IMAGE_PUBLIC_ID_FIELD } from '@/lib/data/work-input';
+import { signImageUpload, readUploadedImage } from '@/lib/image-host';
 import { safeReturnTo, ADMIN_LOGIN_PATH } from '@/lib/auth/admin-guard';
 import { readClientIp } from '@/lib/auth/client-ip';
 import {
@@ -127,6 +129,26 @@ export async function signOut() {
  * ------------------------------------------------------------------ */
 
 /**
+ * Where a successful save lands: the works list, carrying what just happened.
+ *
+ * **Saving ends on the list rather than on the form.** The record is written,
+ * so the form has nothing left to say, and leaving her on it invites a second
+ * save of the same thing. The list is where she can see the work sitting among
+ * the others in the state she just gave it — which is a better confirmation
+ * than a sentence claiming it worked.
+ *
+ * The outcome travels in the URL rather than through `useActionState`, exactly
+ * as the delete flow carries its own — that is what lets the list stay a server
+ * component, and it survives the redirect, which action state does not. It is a
+ * code, and the list ignores one it has no sentence for.
+ *
+ * Not exported: a `'use server'` module may only export async functions.
+ */
+function savedPath(outcome) {
+  return '/admin?saved=' + outcome;
+}
+
+/**
  * Creates a painting.
  *
  * **This verifies the session itself, and that is not belt-and-braces.** The
@@ -154,10 +176,65 @@ export async function createWork(previousState, formData) {
     return { status: 'error', errors: validated.errors, values: submitted };
   }
 
+  /**
+   * The photograph, if she chose one while filling the form in.
+   *
+   * **This is the one place an image reference reaches the server as an
+   * ordinary form field, and it is not trusted.** On the edit page the work's
+   * id is a bound argument that Next signs, so a finished upload cannot be
+   * repointed; a work being created has no id to bind, so the reference travels
+   * in the form — where the browser can edit it to name any asset in the
+   * account, or something that is not an asset at all.
+   *
+   * What makes that safe is the same thing that makes the edit path safe: the
+   * identifier is all we take. The width, the height and the URL are read back
+   * from the host under our own credentials, and a reference the host does not
+   * recognise stops the save here rather than writing a broken row.
+   */
+  const publicId = formData.get(IMAGE_PUBLIC_ID_FIELD);
+  let image = null;
+
+  if (typeof publicId === 'string' && publicId.trim() !== '') {
+    const asset = await readUploadedImage(publicId);
+
+    if (!asset.ok) {
+      console.error('[admin] createWork could not confirm the upload', asset.error);
+      return {
+        status: 'error',
+        errors: { form: 'imageNotConfirmed' },
+        values: submitted,
+      };
+    }
+
+    image = asset.image;
+  }
+
+  /**
+   * A painting cannot be published without a photograph.
+   *
+   * The same rule the edit page applies, and it can be satisfied here now: the
+   * create form carries the image panel, so she can attach one and publish in a
+   * single save. It refuses rather than quietly saving a draft — ignoring the
+   * tick would leave her believing the work is live.
+   *
+   * Checked against the image that was actually **confirmed** above, not
+   * against whether the form claimed one, so a reference the host could not
+   * recognise cannot publish an empty frame.
+   */
+  if (validated.value.publish && !image) {
+    return {
+      status: 'error',
+      errors: { publish: 'imageRequiredToPublishNew' },
+      values: submitted,
+    };
+  }
+
   let created;
 
   try {
-    created = await createWorkRecord(validated.value);
+    // One transaction: the work and its photograph land together, or neither
+    // does. See createWork in the repository.
+    created = await createWorkRecord(validated.value, image);
   } catch (error) {
     if (error instanceof DuplicateSlugError) {
       return {
@@ -177,11 +254,9 @@ export async function createWork(previousState, formData) {
   // reasonably concludes the save did not work.
   revalidatePath('/', 'layout');
 
-  return {
-    status: 'created',
-    published: Boolean(created.publishedAt),
-    workId: created.id,
-  };
+  // redirect() works by throwing, so it must sit outside any try/catch that
+  // would swallow it — the one above closed before this line.
+  redirect(savedPath(created.publishedAt ? 'createdPublished' : 'createdDraft'));
 }
 
 /**
@@ -211,6 +286,34 @@ export async function updateWork(workId, previousState, formData) {
 
   if (!validated.ok) {
     return { status: 'error', errors: validated.errors, values: submitted };
+  }
+
+  /**
+   * A painting cannot be **published** without a photograph.
+   *
+   * Now that she can attach one, a published work with an empty frame is a
+   * mistake rather than a state the admin forces on her, so it is refused.
+   *
+   * **The rule is about the act of publishing, not about saving.** It fires
+   * only on the transition — publish ticked on a work that is not yet public —
+   * and never on a work that is already live. That distinction is the whole
+   * design: a rule written as "a published work must have an image" would stop
+   * her fixing a typo on a work published before this existed, on a field
+   * nobody touched. This project has met that trap before, in the 100cm size
+   * limit that had to be deferred for exactly the same reason.
+   *
+   * The consequence, accepted: works already published without a photograph
+   * stay published and stay editable. This closes the door; it does not go
+   * back through it.
+   */
+  const isPublishing = validated.value.publish && !existing.publishedAt;
+
+  if (isPublishing && !existing.images.some((image) => image.type === 'main')) {
+    return {
+      status: 'error',
+      errors: { publish: 'imageRequiredToPublish' },
+      values: submitted,
+    };
   }
 
   /**
@@ -260,13 +363,10 @@ export async function updateWork(workId, previousState, formData) {
   // reasonably concludes it did not work.
   revalidatePath('/', 'layout');
 
-  return {
-    status: 'saved',
-    published: Boolean(saved.publishedAt),
-    // Echo the saved values back, so the form redraws from what was actually
-    // stored rather than from what was typed — normalised slugs included.
-    values: workToFormValues(saved),
-  };
+  // As in createWork: outside the try/catch, which has already closed. Nothing
+  // is echoed back to the form because the form is not what she sees next —
+  // normalised slugs and all are rendered by the list she lands on.
+  redirect(savedPath(saved.publishedAt ? 'savedPublished' : 'savedDraft'));
 }
 
 /**
@@ -359,4 +459,79 @@ export async function unpublishWork(workId) {
   // Back to the list, where it now reads as a draft. That is the confirmation:
   // she can see the state she asked for rather than being told about it.
   redirect('/admin');
+}
+
+/* ------------------------------------------------------------------ *
+ * The main image
+ *
+ * Two actions rather than one, because the file never passes through this
+ * server. A Server Action's request body is capped at 1MB and the photographs
+ * this exists for are several times that, so the browser uploads straight to
+ * the image host and these two bracket it: one authorises the upload, the
+ * other records what the host says arrived.
+ *
+ * Both verify the session in their own first lines. The page guard has no say
+ * over an action — see security.md — and neither of these is an exception:
+ * signing is a write endpoint into the artist's media library, and saving
+ * writes a row.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Hands the browser a signature for one upload.
+ *
+ * Takes no work id, deliberately. Nothing about the signature names a work —
+ * the folder is fixed and it is the only parameter signed besides the
+ * timestamp — so accepting one would be an argument that reads as though it
+ * constrained something and does not. Which work the file belongs to is
+ * settled when it is saved, by `saveMainImage`, whose id **is** bound.
+ *
+ * @returns {Promise<{ok: true, endpoint: string, fields: object} |
+ *                   {ok: false, error: string}>}
+ */
+export async function signMainImageUpload() {
+  if (!(await readAdminSession())) return { ok: false, error: 'notSignedIn' };
+
+  return signImageUpload();
+}
+
+/**
+ * Records an upload against a work, after asking the host what it actually is.
+ *
+ * @param {string} workId - Bound server-side by the page that renders the form.
+ *   Next signs bound arguments, so the browser cannot repoint a finished upload
+ *   at a different painting.
+ * @param {string} publicId - Reported by the browser when the upload finished.
+ *   An identifier and nothing more: the width, the height and the URL are read
+ *   from the host under our own credentials, because a value from the client is
+ *   not evidence about a file we are about to publish. See lib/image-host.js.
+ *
+ * Replaces the work's existing main image if it has one, and leaves the
+ * previous file on the host — see `setMainImage`.
+ */
+export async function saveMainImage(workId, publicId) {
+  if (!(await readAdminSession())) return { ok: false, error: 'notSignedIn' };
+
+  const work = await getWorkById(workId);
+  if (!work) return { ok: false, error: 'notFound' };
+
+  const asset = await readUploadedImage(publicId);
+  if (!asset.ok) return asset;
+
+  let image;
+
+  try {
+    image = await setMainImageRecord(workId, asset.image);
+  } catch (error) {
+    console.error('[admin] saveMainImage failed', error);
+    return { ok: false, error: 'unexpected' };
+  }
+
+  if (!image) return { ok: false, error: 'notFound' };
+
+  // The painting has just appeared on the works list, the gallery, the homepage
+  // grid and its own page. Without this she uploads, looks at the site, sees the
+  // empty frame she was trying to fill, and reasonably concludes it did not work.
+  revalidatePath('/', 'layout');
+
+  return { ok: true, image };
 }

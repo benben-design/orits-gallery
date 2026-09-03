@@ -7,7 +7,20 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
 import { isTranslationConfigured } from '@/lib/translate';
-import { updateWork } from '@/app/(admin)/admin/actions';
+import {
+  isImageHostConfigured,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_PIXELS,
+  MAX_UPLOAD_MEGABYTES,
+  MAX_UPLOAD_MEGAPIXELS,
+} from '@/lib/image-host';
+import AdminImageUpload from '@/components/admin/AdminImageUpload';
+import { interpolate } from '@/lib/i18n/interpolate';
+import {
+  updateWork,
+  signMainImageUpload,
+  saveMainImage,
+} from '@/app/(admin)/admin/actions';
 import { getWorkById, WORK_STATUSES, WORK_CATEGORIES } from '@/lib/data/works-repository';
 import { WORK_MEDIA, MANUAL_SALE_CHANNELS, AUTOMATIC_SALE_CHANNEL, SOLD_STATUS, workToFormValues } from '@/lib/data/work-input';
 import styles from './page.module.css';
@@ -54,6 +67,25 @@ export default async function AdminEditWorkPage({ params }) {
 
   const isPublished = Boolean(work.publishedAt);
 
+  /**
+   * The main image, and the panel that replaces the notice.
+   *
+   * Offered here and not on the new-work page: an upload has to be recorded
+   * against a work, and a work has no id until it is first saved. That is the
+   * order she already works in, and it is what the notice on that page says.
+   *
+   * Absent when the host is not configured, in the same shape translation is:
+   * the notice comes back and nothing else changes. An install with no
+   * credentials should look like the admin did before this existed, not like a
+   * broken one.
+   *
+   * The save action is **bound to this work's id server-side**. Next signs
+   * bound arguments, so a finished upload cannot be repointed at a different
+   * painting from the browser. Signing takes no id at all — nothing about the
+   * signature names a work. See the actions module.
+   */
+  const mainImage = work.images.find((image) => image.type === 'main') ?? null;
+
   return (
     <Section as="div">
       <Container width="measure">
@@ -94,6 +126,34 @@ export default async function AdminEditWorkPage({ params }) {
             carries was approved when it was saved. See lib/translate.js.
           */
           translationAvailable={isTranslationConfigured()}
+          imagePanel={
+            isImageHostConfigured() ? (
+              <AdminImageUpload
+                labels={dictionary.admin.workForm.image}
+                /*
+                  The same alt text every other surface derives, because
+                  work_images.alt_he / alt_en are not read yet and absent means
+                  "derive it from the title". See images.md.
+                */
+                alt={interpolate(dictionary.artwork.imageAlt, {
+                  title: work.title[adminLocale],
+                  artist: dictionary.site.artistName,
+                })}
+                initialImage={mainImage}
+                signAction={signMainImageUpload}
+                saveAction={saveMainImage.bind(null, work.id)}
+                /*
+                  Numbers rather than an import: lib/image-host.js reads
+                  node:crypto, so a client component cannot import it. Same
+                  reason the closed sets below are passed rather than imported.
+                */
+                maxBytes={MAX_UPLOAD_BYTES}
+                maxPixels={MAX_UPLOAD_PIXELS}
+                maxMegabytes={MAX_UPLOAD_MEGABYTES}
+                maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+              />
+            ) : null
+          }
           labels={dictionary.admin.workForm}
           options={{
             categories: toOptions(WORK_CATEGORIES, dictionary.category),
