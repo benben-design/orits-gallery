@@ -13,7 +13,8 @@
     "cart": "עגלת קניות",
     "primaryLabel": "ניווט ראשי",
     "languageLabel": "בחירת שפה",
-    "switchTo": "מעבר לשפה {language}"
+    "switchTo": "מעבר לשפה {language}",
+    "cartWithCount": "עגלת קניות ({count})"
   },
   "home": {
     "hero": {
@@ -75,7 +76,8 @@
     "imageAltDetail": "{title} — מבט מקרוב על משיחות המכחול, ציור מאת {artist}",
     "imageAltInSitu": "{title} — הציור תלוי על קיר, מאת {artist}",
     "moreImages": "תצוגות נוספות של העבודה",
-    "shareDescription": "{title} — ציור מקורי מאת {artist}."
+    "shareDescription": "{title} — ציור מקורי מאת {artist}.",
+    "addToCart": "הוספה לעגלה"
   },
   "about": {
     "title": "אודות",
@@ -87,8 +89,25 @@
   },
   "cart": {
     "title": "עגלת קניות",
-    "body": "[טקסט זמני] העגלה טרם נבנתה.",
-    "itemCount": "פריטים בעגלה: {count}"
+    "itemCount": "פריטים בעגלה: {count}",
+    "listLabel": "הציורים בעגלה",
+    "empty": "העגלה ריקה.",
+    "emptyAction": "לצפייה בציורים",
+    "remove": "הסרה",
+    "removeLabel": "הסרה של {title} מהעגלה",
+    "total": "סך הכול",
+    "unavailableNote": "הציור אינו זמין עוד ואינו נכלל בסכום.",
+    "missingTitle": "ציורים שאינם זמינים עוד",
+    "missingCount": "ציורים שהוסרו מהאתר: {count}",
+    "removeMissing": "הסרה מהעגלה",
+    "checkoutPending": "הרכישה באתר טרם נפתחה.",
+    "noticeUnavailable": "הציור נמכר או אינו זמין עוד, ולכן לא נוסף לעגלה.",
+    "noticeFull": "העגלה מלאה. אפשר להחזיק בה עד {count} ציורים.",
+    "drawerTitle": "העגלה שלי",
+    "close": "סגירה",
+    "loading": "רגע…",
+    "viewCart": "לעמוד העגלה",
+    "checkout": "לתשלום"
   },
   "checkout": {
     "title": "תשלום",

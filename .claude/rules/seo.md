@@ -94,6 +94,13 @@ merely missing. A cart, a checkout and an order page are per-visitor states
 rather than pages with anything to rank, and an order addressed by id has
 nothing to say to anyone but its buyer.
 
+Now that the cart is built, it says so itself as well: its `generateMetadata`
+returns `robots: { index: false, follow: true }`. Being out of the sitemap keeps
+a page from being *offered*; it does not keep it from being *found*, and a link
+to a cart is a link like any other. `follow: true` because the paintings linked
+from it are pages worth reaching. It declares no canonical and no alternates —
+there is no second-language version of somebody's own choices worth pairing.
+
 `robots.txt` points at the sitemap, which is one more URL that cannot be built
 without the base address.
 

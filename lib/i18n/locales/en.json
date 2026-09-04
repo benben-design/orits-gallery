@@ -13,7 +13,8 @@
     "cart": "Cart",
     "primaryLabel": "Primary navigation",
     "languageLabel": "Choose language",
-    "switchTo": "Switch to {language}"
+    "switchTo": "Switch to {language}",
+    "cartWithCount": "Cart ({count})"
   },
   "home": {
     "hero": {
@@ -75,7 +76,8 @@
     "imageAltDetail": "{title} — a close-up of the brushwork, a painting by {artist}",
     "imageAltInSitu": "{title} — the painting hanging on a wall, by {artist}",
     "moreImages": "More views of this work",
-    "shareDescription": "{title} — an original painting by {artist}."
+    "shareDescription": "{title} — an original painting by {artist}.",
+    "addToCart": "Add to cart"
   },
   "about": {
     "title": "About",
@@ -87,8 +89,25 @@
   },
   "cart": {
     "title": "Cart",
-    "body": "[PLACEHOLDER] The cart has not been built yet.",
-    "itemCount": "Items in cart: {count}"
+    "itemCount": "Items in cart: {count}",
+    "listLabel": "Paintings in the cart",
+    "empty": "Your cart is empty.",
+    "emptyAction": "See the paintings",
+    "remove": "Remove",
+    "removeLabel": "Remove {title} from the cart",
+    "total": "Total",
+    "unavailableNote": "This painting is no longer available and is not included in the total.",
+    "missingTitle": "No longer available",
+    "missingCount": "Paintings removed from the site: {count}",
+    "removeMissing": "Remove them",
+    "checkoutPending": "Buying through the site is not open yet.",
+    "noticeUnavailable": "That painting has sold or is no longer available, so it was not added.",
+    "noticeFull": "The cart is full. It holds up to {count} paintings.",
+    "drawerTitle": "Your cart",
+    "close": "Close",
+    "loading": "One moment…",
+    "viewCart": "Open the cart page",
+    "checkout": "Checkout"
   },
   "checkout": {
     "title": "Checkout",

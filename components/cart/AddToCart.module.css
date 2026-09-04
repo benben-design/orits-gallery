@@ -1,0 +1,57 @@
+/**
+ * The buy control.
+ *
+ * It is the sibling of `ButtonLink` rather than a new shape — same height,
+ * same tracking, same radius — and differs in exactly one way: it is filled.
+ * That is the site's whole emphasis scale. `ButtonLink`'s hairline outline
+ * carries "see more of this"; a fill carries "this is the thing to do on this
+ * page", and there is only ever one of those in view.
+ *
+ * The fill is `--accent`, which is permitted here and nowhere decorative: the
+ * accent is reserved for interactive things, and a purchase is the most
+ * interactive thing on the site. `--text-on-accent` over it is one of the
+ * pairings `npm run check:contrast` asserts.
+ */
+.form {
+  margin-block-start: var(--space-6);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  inline-size: 100%;
+  min-block-size: 3rem;
+  padding-inline: var(--space-7);
+  padding-block: var(--space-3);
+  border-radius: var(--radius);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  transition: background-color var(--duration) var(--ease);
+}
+
+/**
+ * Full width on a phone, where it is the action the thumb is reaching for, and
+ * intrinsic from the point the details column stops being the whole screen.
+ * A button stretched across a wide column reads as a banner rather than a
+ * control.
+ */
+@media (min-width: 40rem) {
+  .button {
+    inline-size: auto;
+  }
+}
+
+@media (hover: hover) {
+  .button:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+.button:active {
+  background-color: var(--accent-hover);
+}

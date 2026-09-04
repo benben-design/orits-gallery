@@ -182,6 +182,7 @@
    * ================================================================ */
   --page-max: 80rem;
   --measure: 34rem;      /* comfortable reading width */
+  --measure-list: 52rem; /* a list of items with a picture: the cart */
   --page-gutter: var(--space-5);
   --section-gap: var(--space-11);
 
@@ -209,6 +210,15 @@
    * floating card. Used by ArtworkFrame's "bare" tone; see images.md.
    */
   --shadow-frame-bare: 0 2px 4px rgb(44 39 35 / 9%), 0 16px 44px rgb(44 39 35 / 12%);
+  /**
+   * The cart panel, which sits over the page rather than on the wall.
+   *
+   * Deliberately **not directional**: a shadow offset towards the page would
+   * have to be flipped between Hebrew and English, and a soft even one reads
+   * the same from either edge. Same ink as the frame shadows, so nothing on
+   * the site casts a differently-coloured one.
+   */
+  --shadow-drawer: 0 0 3rem rgb(44 39 35 / 16%);
   --duration-slow: 420ms;
   --duration: 200ms;
   --ease: cubic-bezier(0.2, 0, 0.1, 1);

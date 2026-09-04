@@ -1,0 +1,181 @@
+/**
+ * The cart.
+ *
+ * Read as a gallery hand-list rather than a checkout table: a column of
+ * hairline-separated entries, the way a gallery writes down what you have put
+ * aside. No panels, no boxes, no tinted summary bar. The only two moments of
+ * weight on the page are the buy-side accent (which is not here yet) and the
+ * total, and the total earns it by being the one number that matters.
+ */
+
+/**
+ * The cart reads as a document column rather than a full-width table.
+ *
+ * Measured, not guessed: across the page's 80rem the remove control ends up
+ * roughly forty characters from the painting it removes, with nothing in
+ * between — four rows of that read as a spreadsheet with most of its columns
+ * missing. `--measure-list` is the same idea as `--measure` for prose: the
+ * width at which a list with a picture in it holds together.
+ */
+.column {
+  max-inline-size: var(--measure-list);
+}
+
+/**
+ * The count, directly under the heading. Muted and small: it is orientation,
+ * not information anybody came for.
+ */
+.count {
+  margin-block-start: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/*
+  There is no notice rule here any more. Adding a painting is the only thing
+  that can be refused, and adding now happens in the drawer, which carries its
+  own. The drawer's `.notice` is the same treatment if this page ever needs one
+  back.
+*/
+.lines {
+  margin-block-start: var(--space-4);
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+/**
+ * An empty cart is an invitation, so it gets room and a way out rather than a
+ * single grey sentence against the top of the page.
+ */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  margin-block: var(--space-8) var(--space-9);
+}
+
+.emptyText {
+  font-size: var(--text-md);
+  color: var(--text-muted);
+}
+
+/**
+ * The paintings that no longer resolve to anything. They have no line of their
+ * own — there is no title and no picture left to draw — so this block stands
+ * in for all of them at once.
+ */
+.missing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
+  padding: var(--space-5);
+  background-color: var(--surface-sunk);
+  border-radius: var(--radius);
+}
+
+.missingTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.missingCount {
+  margin-block-start: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.missingAction {
+  min-block-size: 2.75rem;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .missingAction:hover {
+    color: var(--accent-hover);
+  }
+}
+
+/**
+ * The total.
+ *
+ * A stronger rule above it than the hairlines between the lines, because this
+ * is where the list stops and the sum begins — the one place on the page a
+ * heavier line carries meaning instead of decorating.
+ */
+.summary {
+  margin-block-start: var(--space-6);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--border-hairline) solid var(--line-strong);
+}
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.totalLabel {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * The display face, at the section-heading size. It is the largest thing below
+ * the paintings on this page and it should be — this is the number the whole
+ * page adds up to.
+ */
+.totalAmount {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-light);
+  color: var(--text-primary);
+}
+
+/**
+ * The checkout control, matching the one in the drawer so the two surfaces
+ * offer the same thing in the same shape. It does nothing yet — see the note
+ * in the page.
+ */
+.checkout {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 3rem;
+  margin-block-start: var(--space-5);
+  border-radius: var(--radius);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  transition: background-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .checkout:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+/**
+ * Buying is not open yet, said plainly. Not styled as a warning: nothing has
+ * gone wrong, and a page that alarms someone for reading it to the end is
+ * worse than one that simply tells them where things stand. It sits under the
+ * button rather than instead of it, so the control is never the only thing
+ * saying what will happen.
+ */
+.pending {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

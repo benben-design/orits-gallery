@@ -60,6 +60,36 @@ one file.
 Never write a raw colour or a magic pixel value in a component stylesheet. If a
 value is missing, add a token.
 
+There are three content widths, and picking the wrong one is the usual mistake:
+`--page-max` is the page frame, `--measure` is running prose, and
+`--measure-list` is a list of items with a picture in it — the cart. The last
+was added rather than hard-coded, and for a measured reason: across the full
+page width the cart's remove control ended up about forty characters from the
+painting it removes, with nothing in between, and four rows of that read as a
+spreadsheet missing most of its columns.
+
+One button treatment was added with the cart, and it is the site's whole
+emphasis scale rather than a new style: `ButtonLink`'s hairline outline carries
+"see more of this", and a **filled `--accent`** carries "this is the thing to do
+here". There is only ever one of those in view — the buy button on an artwork
+page, the checkout button in the cart. `--text-on-accent` on `--accent` is one
+of the pairings `npm run check:contrast` asserts, so this is a permitted use
+rather than a new liberty with the accent: a purchase is the most interactive
+thing on the site, and the accent is reserved for interactive things.
+
+`--shadow-drawer` is the third and last shadow, for the cart panel, which sits
+over the page rather than on the wall. It is deliberately **not directional**:
+an offset shadow would have to be flipped between Hebrew and English, and a
+soft even one reads the same from either edge. Same ink as the frame shadows,
+so nothing on the site casts a differently-coloured one.
+
+**The cart panel is pinned with `inset-inline-end`**, so it arrives from the
+left in Hebrew and the right in English from one rule. It hides by translating
+by its own width in the direction it is pinned to, which is the one place a
+logical property does not exist — `--drawer-hidden-shift` is set per `[dir]`
+and is the only direction-conditional value in the stylesheets. Everything else
+still falls out of logical properties, as i18n.md requires.
+
 `app/globals.css` holds the reset and base element styles. Nothing component-
 specific belongs there.
 

@@ -52,7 +52,7 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | Framework | Next.js 16, App Router |
 | Language | JavaScript, ES modules. No TypeScript |
 | React | React 19 |
-| Styling | Plain CSS — `app/tokens.css` + `app/globals.css`, co-located CSS Modules per component. No framework, no component library |
+| Styling | Plain CSS — `app/tokens.css` + `app/globals.css`, co-located CSS Modules per component. No framework, no component library. **Icons come from `lucide-react`**, which reverses an earlier decision to hand-draw them; see code-style.md for the reasoning and the one thing to know about it |
 | Images | Two sources, deliberately, and two resizers. The sixteen seeded paintings are files in `public/paintings/`, resized by Next's own optimiser; anything the artist attaches herself is on **Cloudinary**, uploaded from the browser straight to the host under a signature this app produces, and resized **by the host** so the work is not done and metered twice. `lib/image-loader.js` picks per image; every component renders both identically. No transformation may crop — `npm run check:crop` |
 | Database | PostgreSQL. **The site reads it** — every painting comes from Postgres through `lib/data/works-repository.js`. Local Postgres (`art_studio`) in development, schema applied by hand from `database/migrations/`. Neon for production — **not connected yet**, so production has no database at all |
 | Auth | **Built.** Two accounts with equal rights, the artist's and the developer's. scrypt password hashing, accounts created by `npm run admin:create`, sign-in and sign-out through a signed httpOnly cookie with no session table, and every guarded admin page redirecting a visitor without a session to the login form. The guard covers **rendering only** — mutations verify the session themselves, see security.md |
@@ -171,7 +171,9 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Seeing a work before it is public | Built — `/admin/works/[id]/preview` renders the public artwork body from the admin-scoped read, in either language, behind the guard. A dashed band says whether the work is published; the public route stays published-only |
 | English written for her | Built — leaving a Hebrew title or description translates it and fills the English twin, marked unapproved, and **the form does not save while anything is unapproved**. Her own English is never overwritten, and a failure leaves her typing it herself and saving as usual |
 | Artwork page body | **Built** — one painting large beside its details, reusing the grid's frame, price, badge and status table. The frame's `bare` mount finally has its caller. No buy button while the cart does not exist |
-| Cart, checkout and order logic | Not built yet |
+| Cart | Built, **as a panel that slides in from the edge of the screen**. Adding a painting opens it in place and never navigates. A cookie of work ids and nothing else, so **every fact is re-read from the database**: a painting sold elsewhere while it sat there is caught when the cart is drawn and again when anything is added, and is excluded from the total with a sentence saying why. No quantity anywhere. `/cart` is still the whole page, server-rendered, reachable from the foot of the panel, and the one that will grow a real checkout |
+| Checkout button | **Present and deliberately inert**, in both the drawer and on `/cart`. No payment provider is chosen and `/checkout` is a stub, so it is a `<button>` with no handler rather than a link — a stub page would assert that a checkout exists and is broken. `aria-disabled`, so a screen reader is not told it leads somewhere, with a line beneath saying buying is not open yet |
+| Checkout and order logic | Not built yet, and the payment provider is not chosen. commerce.md records a schema gap to settle first: the 14-day cancellation window is not computable without dated status transitions |
 | Sitemap, OG images, hreflang tags | **Built for the artwork page**, which carries its title, description, canonical, both alternates and the painting as its share image. `app/sitemap.js` covers every **built** public page in both languages plus one entry per painting per language, published only — the stubs are kept out by `scripts/check-sitemap.mjs` rather than by memory. **Still missing:** hreflang on the other public pages, and structured data anywhere |
 | Database schema | Written — five migrations in `database/migrations/`, run by hand against a local Postgres |
 | Local seed data | `npm run seed:local` fills a local database from `lib/data/artworks.js` |
@@ -186,14 +188,37 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | Not started |
 
-Exactly **five client components** exist — the language switcher, the hero's
-studio loop, the admin's login and work forms, and the admin's image upload.
-Everything else is a server component, including the gallery and its filters,
-which are links and a query parameter rather than state. All five are leaves,
-and the hero's poster is server-rendered so nothing above the fold waits on
-JavaScript. The two admin forms are client components for one reason: a rejected
-submission has to come back with its errors and the typed values intact, without
-either travelling through a URL.
+**Nine client components exist, and four of them are the cart.** The other five
+are the language switcher, the hero's studio loop, the admin's login and work
+forms, and the admin's image upload. Everything else is a server component,
+including the gallery and its filters — links and a query parameter rather than
+state — and including the `/cart` page, which is server-rendered and works with
+no script at all. The hero's poster is server-rendered too, so nothing above the
+fold waits on JavaScript. The two admin forms are client components for one
+reason: a rejected submission has to come back with its errors and the typed
+values intact, without either travelling through a URL.
+
+The cart's four are `CartProvider`, `CartDrawer`, `CartLink` and `AddToCart`,
+and they are the one place on this site where interactivity was chosen over
+progressive enhancement. **The cart is a panel that slides in over the page and
+never navigates**, which cannot be done without script — so adding a painting
+needs JavaScript, which the first version did not. That was a deliberate trade,
+and `/cart` is what makes it acceptable: the whole cart still exists as an
+ordinary server-rendered page, and the drawer links to it.
+
+Two properties of that arrangement are worth remembering, because they shape
+every decision like it:
+
+- **`CartProvider` wraps the entire public layout without dragging it into the
+  browser.** `children` arrives already rendered from the server and passes
+  straight through — a client component hosting server ones, not converting
+  them.
+- **The count is read from the cookie in the browser, not on the server.** The
+  alternative was not "a bit more server code", it was making *every public
+  page dynamic to draw one numeral*, because reading a cookie in the layout
+  opts the whole subtree out of static rendering. The build output is where
+  that is checked: `/[locale]` and every `/[locale]/art/<slug>` must stay `●`,
+  with only `/[locale]/cart` as `ƒ`.
 
 The image upload is the exception to that pattern and the **one thing in the
 admin that genuinely does not work without JavaScript** — reading a file,

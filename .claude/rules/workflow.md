@@ -137,6 +137,24 @@ If the brief conflicts with what the code actually looks like, say so rather tha
 silently doing something else. The plan was written without the codebase in view;
 you have it in front of you.
 
+## Confirm the approach before writing code
+
+Read enough to have an informed opinion, then **state the approach and wait for
+a go-ahead** — the state shape, the files it touches, what is deliberately left
+out. Ask the questions that would change the work. A confirmed task, or a
+confirmed branch name, is not a confirmed approach.
+
+**Keep that phase cheap.** It must not consume a large share of a session:
+
+- Read what the change touches, and nothing already read this session.
+- No subagents to explore a codebase that is already in context.
+- One question with the real forks in it, recommendation first — not a series
+  of small ones.
+- A short list, not an essay.
+
+Then build the whole thing without checking back at every step. The point is to
+start in the right place, not to narrate the journey.
+
 ## Keeping the rules honest
 
 These rules files are read at the start of every session, so a stale one causes

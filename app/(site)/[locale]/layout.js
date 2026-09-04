@@ -3,6 +3,7 @@ import '@/app/globals.css';
 import { fontVariables } from '@/app/fonts';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
+import CartProvider from '@/components/cart/CartProvider';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
 import { locales, isLocale, getDirection, getLocaleTag } from '@/lib/i18n/config';
@@ -67,17 +68,43 @@ export default async function SiteLayout({ children, params }) {
    */
   const year = new Date().getFullYear();
 
+  /**
+   * The slices of the dictionary the cart drawer needs, and only those.
+   *
+   * The drawer is a client component, so whatever it is handed is serialized
+   * into every page. The whole dictionary would carry the admin's two hundred
+   * strings to every visitor for no reason. The shape is kept — `status`,
+   * `price` and `artwork` sit at the top level — because `Price` and
+   * `StatusBadge` read `dictionary.status[...]` and are shared with the server
+   * components that render them, and a differently-shaped object would mean
+   * two versions of those.
+   */
+  const cartDictionary = {
+    cart: dictionary.cart,
+    status: dictionary.status,
+    price: dictionary.price,
+    artwork: dictionary.artwork,
+  };
+
   return (
     <html lang={getLocaleTag(locale)} dir={getDirection(locale)} className={fontVariables}>
       <body className={styles.body}>
-        <a className="skipLink" href="#main">
-          {dictionary.site.skipToContent}
-        </a>
-        <SiteHeader locale={locale} dictionary={dictionary} />
-        <main id="main" className={styles.main}>
-          {children}
-        </main>
-        <SiteFooter locale={locale} dictionary={dictionary} year={year} />
+        {/*
+          Holds the cart's state and renders the drawer. `children` arrives
+          already rendered on the server and passes straight through, which is
+          what keeps the homepage and every artwork page statically generated —
+          a client component hosting server components, not converting them.
+        */}
+        <CartProvider dictionary={cartDictionary} locale={locale}>
+          <a className="skipLink" href="#main">
+            {dictionary.site.skipToContent}
+          </a>
+          <SiteHeader locale={locale} dictionary={dictionary} />
+          <main id="main" className={styles.main}>
+            {children}
+          </main>
+          <SiteFooter locale={locale} dictionary={dictionary} year={year} />
+        </CartProvider>
       </body>
     </html>
   );

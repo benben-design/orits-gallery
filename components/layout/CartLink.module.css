@@ -1,4 +1,5 @@
 .link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -11,6 +12,56 @@
 .icon {
   inline-size: 1.25rem;
   block-size: 1.25rem;
+}
+
+/**
+ * The item count.
+ *
+ * Terracotta, which is the one place a filled accent belongs in the header:
+ * the accent is reserved for interactive things, and this is the only thing in
+ * the chrome that changes because of something the visitor did. It appears
+ * only when there is something to count, so the quiet header stays quiet until
+ * it has news.
+ *
+ * `inset-inline-end` rather than `right`, so it sits at the correct corner in
+ * both writing directions without a second rule.
+ */
+.count {
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-end: 0.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1.125rem;
+  block-size: 1.125rem;
+  padding-inline: 0.25rem;
+  border-radius: 999px;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-xs);
+  line-height: 1;
+  /* Latin digits inside a right-to-left document: keep them as one run. */
+  unicode-bidi: isolate;
+  animation: countAppear var(--duration) var(--ease);
+}
+
+/**
+ * The count is not in the server-rendered HTML — it is read from a cookie
+ * after hydration, see CartLink.js. A short fade is what turns that into
+ * something that reads as arriving rather than as a flicker. Reduced motion is
+ * handled globally in app/globals.css, which flattens every animation.
+ */
+@keyframes countAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (hover: hover) {

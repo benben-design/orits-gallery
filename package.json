@@ -19,6 +19,7 @@
     "check:crop": "node scripts/check-image-crop.mjs"
   },
   "dependencies": {
+    "lucide-react": "^1.41.0",
     "next": "^16.3.3",
     "pg": "^8.23.0",
     "react": "^19.2.8",

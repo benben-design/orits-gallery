@@ -1,0 +1,287 @@
+/**
+ * The cart panel.
+ *
+ * Pinned to the **inline-end** edge, which is the left in Hebrew and the right
+ * in English — one rule, correct in both, and it matches the reference this was
+ * built from (whose drawer sits on the left of an RTL page).
+ *
+ * It is the gallery's own surface rather than a white overlay: `--surface-mat`,
+ * the same board the paintings are mounted on, with a hairline against the wall
+ * and a shadow doing the separating. No tint, no second accent.
+ */
+.panel {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  inline-size: 22rem;
+  max-inline-size: 100%;
+  background-color: var(--surface-mat);
+  border-inline-start: var(--border-hairline) solid var(--line);
+  box-shadow: var(--shadow-drawer);
+  /*
+    Off-screen by its own width. `translate` in the inline direction rather than
+    translateX, so the panel leaves towards the edge it is pinned to in both
+    writing directions instead of sliding across the page in one of them.
+  */
+  transform: translateX(var(--drawer-hidden-shift));
+  transition: transform var(--duration-slow) var(--ease), visibility var(--duration-slow);
+  /*
+    Off the tab order while shut. A transform alone leaves every control inside
+    focusable but invisible, which is how a keyboard lands somewhere off-screen.
+  */
+  visibility: hidden;
+}
+
+/* The direction the panel hides towards, per writing direction. */
+:global([dir='rtl']) .panel {
+  --drawer-hidden-shift: -100%;
+}
+
+:global([dir='ltr']) .panel {
+  --drawer-hidden-shift: 100%;
+}
+
+.open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: none;
+  }
+}
+
+/**
+ * Full screen on a phone. A 22rem panel over a 24rem viewport is a drawer that
+ * covers everything but a sliver, which reads as a mistake rather than a
+ * choice; below this width it commits and takes the screen.
+ */
+@media (max-width: 48rem) {
+  .panel {
+    inline-size: 100%;
+  }
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-block-end: var(--border-hairline) solid var(--line);
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+  color: var(--text-primary);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 2.75rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .close:hover {
+    color: var(--text-primary);
+  }
+}
+
+/** The list. Scrolls on its own so the total below never leaves the screen. */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.muted {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.notice {
+  padding-inline-start: var(--space-4);
+  border-inline-start: 2px solid var(--accent);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.thumbnail {
+  --frame-inset: var(--space-1);
+  display: block;
+  inline-size: 100%;
+}
+
+/**
+ * A painting that can no longer be bought. The image steps back; the words do
+ * not — the badge and the sentence below carry the state, so this is emphasis
+ * on top of two explicit signals rather than the signal itself.
+ */
+.unavailable .thumbnail {
+  opacity: 0.55;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.itemTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  color: var(--text-primary);
+}
+
+.itemLink {
+  color: inherit;
+}
+
+@media (hover: hover) {
+  .itemLink:hover {
+    color: var(--accent);
+  }
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.itemNote {
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+}
+
+/**
+ * Quiet. Removing is a small correction, not the action the panel is asking
+ * for — the accent belongs to the control at the bottom.
+ */
+.remove {
+  min-block-size: 2.25rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .remove:hover {
+    color: var(--accent);
+  }
+}
+
+.missing {
+  padding: var(--space-4);
+  background-color: var(--surface-sunk);
+  border-radius: var(--radius);
+}
+
+.missingCount {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.missingAction {
+  margin-block-start: var(--space-2);
+  min-block-size: 2.25rem;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/** The total and the way out. Sunk, so it reads as the foot of the panel. */
+.bottom {
+  padding: var(--space-5);
+  border-block-start: var(--border-hairline) solid var(--line);
+  background-color: var(--surface-sunk);
+}
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-4);
+}
+
+.totalLabel {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.totalAmount {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  color: var(--text-primary);
+}
+
+/**
+ * The checkout control — the one filled accent in the panel, and the site's
+ * "this is the thing to do here". It does nothing yet, and looks exactly as it
+ * will when it does; see the note in CartDrawer.js.
+ */
+.checkout {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 3rem;
+  border-radius: var(--radius);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  transition: background-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .checkout:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+.viewCart {
+  display: block;
+  margin-block-start: var(--space-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+@media (hover: hover) {
+  .viewCart:hover {
+    color: var(--text-primary);
+  }
+}

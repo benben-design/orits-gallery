@@ -1,0 +1,188 @@
+/**
+ * One entry in the hand-list.
+ *
+ * A row of hairline-separated entries rather than a table or a panel: the cart
+ * is the same gallery wall as everything else, and a bordered card per line
+ * would put four boxes on a page whose whole aesthetic is the absence of them.
+ * The rule below each line is the only furniture.
+ *
+ * The thumbnail column is a fixed width so that a portrait and a landscape
+ * painting start their text at the same place — the grid's alignment rule
+ * applied to a list.
+ */
+.line {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: var(--space-3) var(--space-5);
+  align-items: start;
+  padding-block: var(--space-5);
+  border-block-end: var(--border-hairline) solid var(--line);
+}
+
+/**
+ * The mat is tightened here, and only here.
+ *
+ * `--frame-inset` is `clamp(1rem, 2.2vw, 2.5rem)`, sized for a grid card that
+ * is 15rem or wider. On a 6rem thumbnail on a desktop screen that resolves to
+ * about 28px a side and leaves the painting under half the box — measured on
+ * the rendered page, not guessed.
+ *
+ * The rule the mount serves is that a painting must never meet the warm wall
+ * without separation (images.md), and it is about *having* a margin rather
+ * than about a particular size. Eight pixels around a thumbnail is a mat; two
+ * thirds of the box is not.
+ */
+.thumbnail {
+  --frame-inset: var(--space-2);
+  display: block;
+  inline-size: 100%;
+}
+
+/**
+ * A painting that can no longer be bought.
+ *
+ * The image steps back; the words do not. Status here is already carried by
+ * the badge and by the sentence under the price, so this is emphasis on top of
+ * two explicit signals rather than the signal itself — nothing on this site
+ * says "unavailable" by appearance alone. See commerce.md.
+ */
+.unavailable .thumbnail {
+  opacity: 0.55;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+  color: var(--text-primary);
+}
+
+.titleLink {
+  color: inherit;
+}
+
+@media (hover: hover) {
+  .titleLink:hover {
+    color: var(--accent);
+  }
+}
+
+.spec,
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.separator {
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--line-strong);
+  flex: none;
+}
+
+/**
+ * Why this painting is not in the total. Primary ink, not muted: it is the one
+ * thing on the line a buyer must not skim past, and it is short enough that
+ * full contrast does not shout.
+ */
+.note {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.meta,
+.removeForm {
+  grid-column: 2;
+}
+
+/**
+ * Quiet by design. Removing a painting is a small correction, not an action the
+ * page is asking for — the filled accent belongs to buying, and a second
+ * emphatic control per line would compete with it five times over.
+ */
+.remove {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* A touch target that clears the 44px guideline without drawing a box. */
+  min-block-size: 2.75rem;
+  padding-inline-end: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .remove:hover {
+    color: var(--accent);
+  }
+}
+
+/**
+ * From the point there is room, the line becomes the four columns an invoice
+ * has: picture, work, price, action. Below that width the last two fold back
+ * under the details rather than squeezing a phone into four columns.
+ *
+ * The price column is what makes the list add up visually — it puts every
+ * amount on the same vertical line above the total. `justify-self: end` is
+ * writing-direction aware, so that line lands correctly in both languages
+ * without a second rule.
+ */
+@media (min-width: 40rem) {
+  .line {
+    grid-template-columns: 6rem 1fr auto auto;
+    gap: var(--space-5) var(--space-6);
+    align-items: center;
+  }
+
+  .details {
+    align-self: center;
+  }
+
+  .meta {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    /* Stacked rather than inline, so the badge sits under its own amount and
+       the amounts stay on one vertical line whether or not there is a badge. */
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+  }
+
+  .meta .separator {
+    display: none;
+  }
+
+  /**
+   * The "sample price" marker moves under the amount rather than sitting
+   * beside it. Inline, it pushes the figure along by its own width, so a work
+   * with a marker and one without end up with their amounts in different
+   * places — which is the one thing a column of prices above a total must not
+   * do. Passed in as a class because Price owns its own markup; see Price.js.
+   */
+  .price {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+  }
+
+  .removeForm {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .remove {
+    padding-inline-end: 0;
+  }
+}

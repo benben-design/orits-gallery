@@ -1,6 +1,7 @@
 import ArtworkFrame from './ArtworkFrame';
 import StatusBadge from './StatusBadge';
 import Price from './Price';
+import AddToCart from '@/components/cart/AddToCart';
 import { getStatusPresentation } from './statusPresentation';
 import { mediumLabel } from './mediumLabel';
 import { interpolate } from '@/lib/i18n/interpolate';
@@ -28,8 +29,16 @@ import styles from './ArtworkDetail.module.css';
  * The supporting images below keep the surface mount, because several small
  * works warm-on-warm each need their own edge. Both halves are in images.md.
  *
- * **There is no buy button**, and its absence is the honest state: the cart is
- * not built, and a button leading nowhere costs more trust than no button.
+ * **The buy button is here now**, and `AddToCart` decides for itself whether to
+ * draw one. That is what keeps this component honest across its two callers:
+ * the preview renders a *draft* through an admin-scoped read, and a draft is
+ * not for sale at any status, so the control removes itself rather than the
+ * page having to know which route it is on. A published work previews with the
+ * button, because that is what a visitor will see.
+ *
+ * It sits below the placeholder notice on purpose. The notice disclaims the
+ * price directly above it, and a call to action reading past a disclaimer it
+ * has not met yet is how a stand-in figure gets treated as real.
  *
  * Two things this must never do:
  *
@@ -180,6 +189,13 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
           {work.hasPlaceholderData ? (
             <p className={styles.placeholder}>{dictionary.placeholder.notice}</p>
           ) : null}
+
+          {/*
+            Draws itself only for a published, buyable work — so a draft in the
+            admin preview, a sold painting and a work that is not for sale all
+            simply have no button, rather than one that leads to a refusal.
+          */}
+          <AddToCart work={work} dictionary={dictionary} />
 
           {description ? (
             <div className={styles.description}>

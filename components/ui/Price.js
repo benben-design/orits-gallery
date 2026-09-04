@@ -17,19 +17,38 @@ import styles from './Price.module.css';
  * While `isPlaceholder` is set the figure is rendered alongside a visible
  * "sample price" marker, so a dummy number cannot quietly pass for a real one
  * if this ships before the real prices land.
+ *
+ * `className` exists for one caller and one reason. The cart lays its prices
+ * out in a column above a total, which only reads as a column if the amounts
+ * share an edge — and they cannot while the marker sits inline beside them.
+ * The cart passes a class that stacks the two. A prop rather than a selector
+ * reaching in from another stylesheet: this component owns its own markup, and
+ * the day the real prices land and the marker disappears, nothing outside here
+ * has to know.
  */
-export default function Price({ price, locale, dictionary, isPlaceholder = false, status }) {
+export default function Price({
+  price,
+  locale,
+  dictionary,
+  isPlaceholder = false,
+  status,
+  className = '',
+}) {
   const { price: mode } = getStatusPresentation(status);
 
   if (mode === 'replaced') {
-    return <span className={styles.unavailable}>{dictionary.status['not-for-sale']}</span>;
+    return (
+      <span className={[styles.unavailable, className].filter(Boolean).join(' ')}>
+        {dictionary.status['not-for-sale']}
+      </span>
+    );
   }
 
   const formatted = formatPrice(price, locale);
   if (!formatted) return null;
 
   return (
-    <span className={styles.price}>
+    <span className={[styles.price, className].filter(Boolean).join(' ')}>
       <span className={[styles.amount, mode === 'struck' ? styles.struck : ''].filter(Boolean).join(' ')}>
         {formatted}
       </span>

@@ -9,7 +9,10 @@ import styles from './SiteHeader.module.css';
  * The public top navigation: the artist's name as the home link, three
  * destinations, the language switcher and the cart.
  *
- * A server component. Only the language switcher inside it runs on the client.
+ * A server component. Two leaves inside it run on the client: the language
+ * switcher, which needs the current path, and the cart link, which reads the
+ * cart cookie to show a count — see CartLink.js for why that is not done on
+ * the server.
  */
 export default function SiteHeader({ locale, dictionary }) {
   const links = [
@@ -43,7 +46,10 @@ export default function SiteHeader({ locale, dictionary }) {
             groupLabel={dictionary.nav.languageLabel}
             switchToTemplate={dictionary.nav.switchTo}
           />
-          <CartLink locale={locale} label={dictionary.nav.cart} />
+          <CartLink
+            label={dictionary.nav.cart}
+            labelWithCount={dictionary.nav.cartWithCount}
+          />
         </div>
       </Container>
     </header>

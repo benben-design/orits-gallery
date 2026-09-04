@@ -53,6 +53,25 @@ at all to a model, on our key.
 The gallery, the homepage grid and the artwork page need **no** API. The admin's
 save actions should be Server Actions. The payment webhook must be a route.
 
+**The cart added no endpoint either**, and it is the clearest example of the
+rule so far because a cart is the shape of thing that usually gets one — and
+because the cart is a **drawer**, which is exactly the case that normally
+justifies a route handler. Four Server Actions in `lib/cart/actions.js` — read,
+add, remove, sweep up what has vanished — and the drawer awaits what they
+return. That is the sentence above made real: *a client component can call a
+Server Action directly and await what it returns.* There is no `/api/cart`, and
+there must not be one.
+
+**They return the cart rather than redirecting**, which is the property to
+copy. A panel that opens in place cannot navigate, so it needs the new contents
+back — and the `/cart` page keeps working unchanged, because a form whose action
+returns a value still re-renders the route it posted from. One set of actions,
+two surfaces, no duplication.
+
+`notice` comes back as a **code**, never a sentence, so the Hebrew stays in the
+locale files and the component picks the wording — the same arrangement as the
+admin's `?saved=`. A code the caller has no sentence for renders nothing.
+
 **Image upload added no endpoint of ours at all**, and it is the case most
 likely to be mistaken for one that needs a route. The instinct is an upload
 endpoint the browser posts a file to — but a Server Action caps its request body

@@ -103,6 +103,18 @@ painting.
 below covers status only. Whatever is chosen, it must not be carried by colour
 alone, for the same reason as everything else here.
 
+That is no longer only a gap — it is now a **latent disagreement**, and it wants
+settling before a work carries a discount rather than after. The cart's total is
+computed from `chargeableAmount`, which takes the reduced price, because a total
+must be what would actually be charged. `components/ui/Price.js` renders
+`amount` and says nothing about a reduction. So the day a work is discounted,
+its artwork page and its cart line will show one figure and the cart's total
+another, and nothing will complain. No work carries a reduced price today, which
+is the only reason this is dormant.
+
+**Which status a discount does not change is settled**: a reduced work is still
+`available`, so it is still buyable, and `isBuyable` never consults the price.
+
 ### The four presentations (decided)
 
 Each state gets its own treatment, and **none of them is carried by colour
@@ -129,9 +141,18 @@ in a screenshot.
   does not borrow the visual language of the other three. No badge; the price is
   replaced.
 
-The table lives in code at `components/ui/statusPresentation.js`, read by both
-`StatusBadge` and `Price` so the two halves of a state cannot drift apart. Add a
-status there and in both locale files, never in a component.
+The table lives in code at `components/ui/statusPresentation.js`, read by
+`StatusBadge`, `Price` **and the cart** so the halves of a state cannot drift
+apart. Add a status there and in both locale files, never in a component.
+
+It carries a fourth column that is not about looks: **`buyable`, and exactly one
+status has it.** `reserved` deliberately does not — it means someone else is
+mid-purchase, and letting a second buyer queue behind them is a second front
+door onto the double-sale problem. An unrecognised status is **not** buyable,
+which is the safe direction: a state nobody has thought about yet must not be
+purchasable by default. Adding a fifth status is therefore a decision about
+whether it can be bought, taken in the same place as the decision about how it
+looks.
 
 ## The double-sale problem
 
@@ -143,16 +164,33 @@ Mitigations, all required:
 
 1. **Checkout re-verifies status server-side at the moment of payment**, not when
    the item was added to the cart. A cart is a wish, not a hold.
+   **Not built** — there is no checkout. This stays a requirement.
 2. **A cart may hold a work, but must never be trusted as a reservation.** If a
    work's status changed while it sat in a cart, the user is told clearly before
    any money moves.
+   **Built, and built structurally rather than by discipline.** The cart cookie
+   holds work ids and nothing else — no title, no price, no status — so there is
+   no stale copy of anything to trust. Both surfaces that draw a cart, the
+   drawer and `/[locale]/cart`, re-read every work through the public-scoped
+   `getWorksByIds` each time; a work that is no longer buyable keeps its line,
+   says so in a sentence, and is left out of the total. One that has been
+   unpublished or deleted stops resolving entirely and is reported as a count
+   with a control that clears it.
+   The same check runs again when anything is added, so a painting that sold
+   between the page rendering and the button being pressed is refused with a
+   message rather than added.
+   Note what this does **not** do: it changes nothing about a work that sold on
+   under1000 and was never marked sold here. The site can only re-verify what it
+   has been told, which is why item 3 matters more than it looks.
 3. **Marking a work sold is the single most prominent action in the admin.** One
    click from the works list, with no need to open an edit screen. If the artist
    has to hunt for it, she will not do it, and the site will sell air.
-   **Not built.** The works list exists now and shows the status of every work,
-   but changing one still means opening the edit form and saving it. That is
-   the next thing to build here, and it needs its own Server Action with its own
-   session check — see security.md.
+   **Not built**, and it is now the weakest link rather than one of three. The
+   works list exists and shows the status of every work, but changing one still
+   means opening the edit form and saving it. Item 2 above is built and re-reads
+   the database constantly — which is worth exactly as much as the status in
+   that database is current. **This is the next thing to build here**, and it
+   needs its own Server Action with its own session check — see security.md.
 4. **A record created automatically is never publicly visible.** Any future
    import or folder-watching automation creates a **draft**. The schema makes
    this the default rather than a discipline: `published_at` has no default, so
@@ -168,6 +206,28 @@ Never folder-to-live. A folder is a messy place — duplicates, work-in-progress
 shots, wrong crops, screenshots — and publishing straight from one to a public
 shop will eventually publish something wrong. The automation feeds her inbox,
 not the website.
+
+## The checkout button exists and does nothing
+
+**Both the drawer and `/cart` end in a checkout button that is deliberately
+inert**, and this is the one place the project knowingly breaks its own rule
+that a control leading nowhere costs more trust than an absence. The artwork
+page went without a buy button for months on exactly that reasoning.
+
+It was reversed on purpose, for one reason: the purchase flow has to be
+showable end to end before a payment provider is chosen. Three things keep it
+honest rather than misleading:
+
+- It is a `<button>` with no handler, **not a link to `/checkout`.** A stub page
+  would assert that a checkout exists and is broken, which is worse than one
+  that plainly has not opened.
+- It carries `aria-disabled`, so a screen reader is not told it leads somewhere.
+- The line beneath it says buying is not open yet, so the button is never the
+  only thing saying what will happen.
+
+**This is a demo affordance, not a decision about launch.** It must become real
+or become absent before anything is deployed to a real customer — a button that
+silently does nothing on a live shop is worse than either.
 
 ## Israeli consumer law
 
