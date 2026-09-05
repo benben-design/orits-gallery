@@ -93,6 +93,36 @@
 }
 
 /**
+ * The two row actions, which share everything but their ink.
+ *
+ * Both lead to a question and neither performs anything, so both are links and
+ * both stretch the full height of the row — a target the size of the row is a
+ * target she hits with a painting under one arm.
+ */
+.sale,
+.delete {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--space-4);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/**
+ * Marking a painting sold, and the reason the inks differ.
+ *
+ * This is the most frequent thing she does on this page and the one the row
+ * could not do at all before — so it carries the accent, which on this site
+ * means "interactive" and nothing else. See frontend/styles.md.
+ */
+.sale {
+  color: var(--accent);
+}
+
+/**
  * The way to the delete question, and only to the question — nothing here
  * deletes anything.
  *
@@ -101,20 +131,16 @@
  * as an invitation.
  */
 .delete {
-  flex: none;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  padding-inline: var(--space-4);
-  font-size: var(--text-sm);
   color: var(--text-muted);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 @media (hover: hover) {
   .row:hover {
     background-color: var(--surface-mat);
+  }
+
+  .sale:hover {
+    color: var(--accent-hover);
   }
 
   .delete:hover {

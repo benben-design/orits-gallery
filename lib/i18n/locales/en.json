@@ -178,13 +178,17 @@
         "createdDraft": "Saved as a draft.",
         "createdPublished": "Added and published to the site.",
         "savedDraft": "Changes saved. The work is a draft and is not on the site.",
-        "savedPublished": "Changes saved. The work is on the site."
+        "savedPublished": "Changes saved. The work is on the site.",
+        "markedSold": "The work is marked sold and is no longer offered for sale on the site.",
+        "returnedToSale": "The work is back on sale, and its sale channel has been cleared."
       },
       "draft": "Draft",
       "published": "On the site",
       "soldThrough": "Sold through",
       "noImage": "No image",
       "empty": "No works have been added yet.",
+      "markSold": "Mark as sold",
+      "returnToSale": "Return to sale",
       "delete": "Delete"
     },
     "login": {
@@ -218,6 +222,24 @@
         "ordered": "A work that sold through the site cannot be deleted — it appears on an order. Take it off the site instead.",
         "notFound": "That work was not found. It may already have been deleted.",
         "unexpected": "Something went wrong and the work was not deleted. Try again."
+      }
+    },
+    "saleState": {
+      "title": "Sale",
+      "markTitle": "Mark this work sold",
+      "returnTitle": "Return this work to sale",
+      "markWarning": "Where did it sell? The status becomes sold, and the work stops being available to buy on the site.",
+      "markAction": "Sold through",
+      "returnWarning": "The work becomes available again, and the site shows it as such.",
+      "returnClearsChannel": "This also clears the sale channel that was recorded, so no available work is left saying where it sold.",
+      "returnAction": "Return to sale",
+      "siteSaleWarning": "This work sold through the site, which means an order exists for it.",
+      "siteSaleNote": "Returning such a work to sale says the money went back — and that is a decision about the order, not about the painting. It cannot be done from here.",
+      "cancel": "Cancel and go back to editing",
+      "outcomes": {
+        "notFound": "That work was not found. It may already have been deleted.",
+        "siteSale": "A work that sold through the site cannot be changed from here.",
+        "unknownChannel": "Unknown sale channel. Nothing was changed."
       }
     },
     "preview": {

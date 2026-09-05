@@ -702,15 +702,39 @@ export default function AdminWorkForm({
           {status === options.soldStatus ? (
             <div className={styles.followUp}>
               {channelIsAutomatic ? (
-                <>
-                  <p className={styles.hint}>{labels.saleChannelAutomatic}</p>
-                  {/*
-                    Carried through untouched. A sale recorded by checkout is not
-                    hers to retype, and dropping it because the form declines to
-                    offer it would quietly rewrite an order's history.
-                  */}
+                /*
+                  A sale through this site, shown as the answer to the same
+                  question rather than as a sentence standing where the options
+                  should be.
+
+                  It is the one channel the admin never writes — checkout does,
+                  and it is a claim that an order exists — so the radio is
+                  `disabled`: checked, legible, and not hers to move. The
+                  sentence below says why, because a control that cannot be used
+                  and does not explain itself reads as one that is broken.
+
+                  A disabled input submits nothing, which is exactly why the
+                  hidden field beside it is load-bearing rather than belt and
+                  braces: without it the channel would be absent from the
+                  submission and the save would quietly erase it. A sale
+                  recorded by checkout is not hers to retype, and dropping it
+                  because the form declines to offer it would rewrite an order's
+                  history.
+                */
+                <fieldset className={styles.choices}>
+                  <legend className={styles.choicesLegend}>
+                    {labels.saleChannelQuestion}
+                  </legend>
+
+                  <label className={[styles.choice, styles.choiceFixed].join(' ')}>
+                    <input type="radio" checked disabled readOnly />
+                    {options.automaticSaleChannelLabel}
+                  </label>
+
+                  <p className={styles.choicesNote}>{labels.saleChannelAutomatic}</p>
+
                   <input type="hidden" name="saleChannel" value={options.automaticSaleChannel} />
-                </>
+                </fieldset>
               ) : (
                 <fieldset className={styles.choices}>
                   <legend className={styles.choicesLegend}>

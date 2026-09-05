@@ -171,6 +171,31 @@ export default async function AdminWorksPage({ searchParams }) {
                   </Link>
 
                   {/*
+                    Marking a painting sold, which is the thing she does here
+                    most often and the thing this row could not do at all until
+                    now — the only labelled action on it was the destructive
+                    one. It leads to the question rather than performing it, so
+                    it takes the accent without being able to change anything:
+                    a link that acts is a link a prefetch can trigger.
+
+                    Not offered on a work she is keeping. `not-for-sale` is the
+                    absence of a transaction rather than a stage of one, so
+                    selling one starts with her deciding it is for sale — which
+                    is the edit form, not this.
+
+                    A sale through this site *is* offered, and leads to a page
+                    that refuses it and says why. Hiding it would leave the row
+                    differing from its neighbours with no way to find out how.
+                  */}
+                  {work.status === 'not-for-sale' ? null : (
+                    <Link className={styles.sale} href={workPath + '/sale'}>
+                      {work.status === 'sold'
+                        ? dictionary.admin.works.returnToSale
+                        : dictionary.admin.works.markSold}
+                    </Link>
+                  )}
+
+                  {/*
                     A link, not a button. Getting to the question changes
                     nothing, so nothing here can be triggered by a prefetch, a
                     stray click or a scanner — and the deletion itself is a form

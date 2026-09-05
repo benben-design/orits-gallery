@@ -74,6 +74,35 @@ button {
   cursor: pointer;
 }
 
+/**
+ * Fieldsets, which the reset above skipped and which cost a real bug.
+ *
+ * A `<fieldset>` with no border declared does not draw nothing — it draws the
+ * browser's default `2px groove`, a bevelled box from 1996 that no token on
+ * this project can produce. It appeared around the sale-channel radios in the
+ * work form, looking enough like a designed container that the fix reached for
+ * was moving the legend to sit on it.
+ *
+ * So the default is cleared here rather than at each call site. A fieldset that
+ * genuinely wants a box says so — `AdminWorkForm.module.css`'s `.group` already
+ * does, and its legend still sits in the notch, because that is a property of
+ * the fieldset having a border rather than of the border being the default one.
+ *
+ * `legend` keeps its own padding reset for the same reason: the UA gives it an
+ * inline padding nobody asked for, which is why every legend that wants breathing
+ * room states it.
+ */
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+legend {
+  padding: 0;
+}
+
 address {
   font-style: normal;
 }

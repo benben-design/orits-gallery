@@ -93,6 +93,15 @@ still falls out of logical properties, as i18n.md requires.
 `app/globals.css` holds the reset and base element styles. Nothing component-
 specific belongs there.
 
+**The reset clears `fieldset` and `legend`, and that is not tidiness.** A
+`<fieldset>` with no border declared does not draw nothing — it draws the
+browser's default `2px groove`, a bevelled box no token here can produce. It
+appeared around the work form's sale-channel radios and read enough like a
+designed container that the instinct was to move the legend onto it. A fieldset
+that genuinely wants a box says so: `AdminWorkForm.module.css`'s `.group` does,
+and its legend still sits in the border notch, because that follows from the
+fieldset having a border rather than from the border being the default one.
+
 ## Component styles
 
 Co-located CSS Modules — one `*.module.css` next to each component. No global

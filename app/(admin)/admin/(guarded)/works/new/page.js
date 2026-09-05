@@ -125,6 +125,12 @@ export default async function AdminNewWorkPage() {
             */
             soldStatus: SOLD_STATUS,
             automaticSaleChannel: AUTOMATIC_SALE_CHANNEL,
+            /*
+              Its wording, so the form can show the channel as a checked,
+              unchangeable choice rather than as a sentence where the
+              options would be. Same dictionary the other three read.
+            */
+            automaticSaleChannelLabel: dictionary.saleChannel[AUTOMATIC_SALE_CHANNEL],
           }}
         />
       </Container>

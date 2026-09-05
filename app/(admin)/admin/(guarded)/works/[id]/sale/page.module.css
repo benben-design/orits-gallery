@@ -1,0 +1,146 @@
+/**
+ * The sale question — marking a painting sold, and putting it back.
+ *
+ * Deliberately the same furniture as the delete confirmation next door: same
+ * heading, same subject line, same outcome band, same footer rule. This is the
+ * other page in the admin that changes one fact about a work from outside its
+ * form, and two pages that do the same kind of thing should not look like two
+ * different products.
+ *
+ * The difference from delete is which control is filled. There the destructive
+ * option is outlined on purpose; here nothing is destructive — every action is
+ * reversible by the other half of this same page — so the thing to do is the
+ * filled accent button, which is the site's whole emphasis scale. See
+ * frontend/styles.md.
+ */
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-2);
+}
+
+/* Which painting, below the heading — an admin <title> never names one. */
+.subject {
+  color: var(--text-muted);
+  margin-block-end: var(--space-6);
+}
+
+/* Why the last attempt did nothing. Bordered and worded, never colour alone. */
+.outcome {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-tint);
+  padding: var(--space-4);
+  margin-block-end: var(--space-5);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * The question, at reading size. On the refused case this is the entire answer
+ * the page gives, so it is not fine print.
+ */
+.warning {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * The part she did not ask about — that returning a work to sale also clears
+ * where it sold, and on the refused case where the decision actually belongs.
+ * Indented behind a rule like the delete page's alternative and the work form's
+ * sale-channel follow-up, so it reads as a consequence of the sentence above
+ * rather than as a second sentence.
+ */
+.note {
+  border-inline-start: 2px solid var(--line-strong);
+  padding-inline-start: var(--space-5);
+  margin-block-start: var(--space-5);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+/**
+ * One button per channel, stacked.
+ *
+ * Stacked rather than side by side, and at full available width, because these
+ * two are the same weight of decision and a row invites reading the first as
+ * the recommended one. On a phone at a fair they are also the only thing on the
+ * screen worth hitting.
+ */
+.channels {
+  display: grid;
+  /*
+    One column, as wide as the widest button, with both stretched to fill it.
+    Two choices of identical weight should be the same size — sized to their own
+    text they come out ragged, which reads as one being the main one. A grid
+    column gets that without naming a width, so adding a third channel needs no
+    new number here.
+  */
+  grid-template-columns: max-content;
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
+}
+
+/*
+  Each channel is its own form, so the form is the grid item and the button
+  inside it would otherwise still size to its own text. This is what carries the
+  column's width down to the control the eye actually sees.
+*/
+.channels form {
+  display: grid;
+}
+
+.decision {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+  margin-block-start: var(--space-8);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+/**
+ * The thing to do here. Filled accent, the site's "this is the action"
+ * treatment — text-on-accent over accent is one of the pairings
+ * `npm run check:contrast` asserts.
+ *
+ * Three rem tall like every other button in the admin: a control that is
+ * deliberately small is a control someone mis-hits, and this one is used with a
+ * painting under one arm.
+ */
+.primary {
+  min-block-size: 3rem;
+  padding-inline: var(--space-7);
+  padding-block: var(--space-3);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-on-accent);
+  background-color: var(--accent);
+  transition: background-color var(--duration) var(--ease);
+}
+
+.cancel {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  padding-block: var(--space-2);
+}
+
+@media (hover: hover) {
+  .primary:hover {
+    background-color: var(--accent-hover);
+  }
+
+  .cancel:hover {
+    color: var(--accent-hover);
+  }
+}

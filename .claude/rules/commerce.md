@@ -185,12 +185,49 @@ Mitigations, all required:
 3. **Marking a work sold is the single most prominent action in the admin.** One
    click from the works list, with no need to open an edit screen. If the artist
    has to hunt for it, she will not do it, and the site will sell air.
-   **Not built**, and it is now the weakest link rather than one of three. The
-   works list exists and shows the status of every work, but changing one still
-   means opening the edit form and saving it. Item 2 above is built and re-reads
-   the database constantly — which is worth exactly as much as the status in
-   that database is current. **This is the next thing to build here**, and it
-   needs its own Server Action with its own session check — see security.md.
+   **Built.** Every row on the works list links to `/admin/works/[id]/sale`,
+   which asks where it sold and marks it in one gesture — two buttons, one per
+   channel, and pressing one *is* the answer. Its own Server Action with its own
+   session check, per security.md.
+   **The reason it is not a control on the row itself** is that a page can name
+   the painting before anything changes. Marking the wrong row sold pulls a live
+   painting off sale and nothing announces it; on a phone at a fair, adjacent
+   rows are one mis-tap apart. It is reversible, unlike deleting, which is why
+   one link and one button is the whole ceremony.
+   **What makes this worth more than the clicks it saves** is that it does not
+   go through the edit form. That form refuses to save while any machine
+   translation is unapproved — so before this existed, a painting sold at a fair
+   could fail to be marked sold because an English description generated a
+   fortnight ago had never been read. A one-field change about money, blocked by
+   a field she never touched, at the moment the site is still offering a
+   painting that is gone. The action parses no form and validates no record:
+   two columns move.
+
+### The way back is the same shape as the way in
+
+A hand-marked sale can be marked wrongly, and a mistake that is harder to undo
+than it was to make is a mistake that stays. So the same page returns a sold
+work to sale, and the same row links to it.
+
+- **Returning a work to sale clears the channel, in the same statement.** A work
+  that is `available` while still recording where it sold is a contradiction the
+  schema permits, nothing complains about, and everything later reads as true.
+  Status and channel are one fact and they move together in both directions.
+- **It returns the work to `available`**, not to whatever it held before. The
+  previous status is not recorded anywhere, and guessing `reserved` or
+  `not-for-sale` back would be a guess about the field that decides whether a
+  stranger can buy the painting.
+- **A sale through this site is refused, not confirmed harder.** `this-site`
+  means an order exists, so returning such a work to sale asserts that money
+  went back — a claim about an order rather than a correction of a click. A
+  heavier confirmation would still let her do it from a list of paintings, and
+  nothing which later happens to the catalogue may change what an order says.
+  The row still links to the page, and the page says why rather than the control
+  quietly being absent.
+- **The refusal is a `where` clause, not a read-then-decide.** Both writes
+  exclude `sale_channel is distinct from 'this-site'` in SQL, so there is no
+  window between checking and writing — the same reasoning that has `deleteWork`
+  catch the foreign-key violation instead of counting order lines first.
 4. **A record created automatically is never publicly visible.** Any future
    import or folder-watching automation creates a **draft**. The schema makes
    this the default rather than a discipline: `published_at` has no default, so

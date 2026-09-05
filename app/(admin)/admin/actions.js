@@ -31,12 +31,18 @@ import {
   updateWork as updateWorkRecord,
   deleteWork as deleteWorkRecord,
   unpublishWork as unpublishWorkRecord,
+  markWorkSold as markWorkSoldRecord,
+  returnWorkToSale as returnWorkToSaleRecord,
   setMainImage as setMainImageRecord,
   getWorkById,
   DuplicateSlugError,
   WorkHasOrdersError,
 } from '@/lib/data/works-repository';
-import { validateWorkInput, IMAGE_PUBLIC_ID_FIELD } from '@/lib/data/work-input';
+import {
+  validateWorkInput,
+  IMAGE_PUBLIC_ID_FIELD,
+  MANUAL_SALE_CHANNELS,
+} from '@/lib/data/work-input';
 import { signImageUpload, readUploadedImage } from '@/lib/image-host';
 import { safeReturnTo, ADMIN_LOGIN_PATH } from '@/lib/auth/admin-guard';
 import { readClientIp } from '@/lib/auth/client-ip';
@@ -386,6 +392,18 @@ function confirmationPath(workId, outcome) {
 }
 
 /**
+ * Back to the sale question, carrying why it did not happen.
+ *
+ * Same arrangement as the delete confirmation: a *code* in the query string,
+ * never a sentence, so the Hebrew stays in the locale files and the page picks
+ * the wording. A code the page has no sentence for renders nothing.
+ */
+function salePath(workId, outcome) {
+  const path = '/admin/works/' + encodeURIComponent(workId) + '/sale';
+  return outcome ? path + '?outcome=' + outcome : path;
+}
+
+/**
  * Deletes a painting, permanently.
  *
  * **Verifies the session itself**, like every other mutation here: the page
@@ -459,6 +477,99 @@ export async function unpublishWork(workId) {
   // Back to the list, where it now reads as a draft. That is the confirmation:
   // she can see the state she asked for rather than being told about it.
   redirect('/admin');
+}
+
+/**
+ * Marks a painting sold, and records which channel it went through.
+ *
+ * **This is the mitigation commerce.md calls the most prominent action in the
+ * admin, and the reason it is its own action is the reason it matters.** Before
+ * it, marking a work sold meant saving the whole edit form — and that form
+ * refuses to save while any machine translation is unapproved. So a painting
+ * sold at a fair could fail to be marked sold because an English description
+ * generated a fortnight ago had never been read: a one-field change blocked by
+ * a field she never touched, at exactly the moment the site is still offering a
+ * painting that is gone.
+ *
+ * Nothing here parses a form or validates a record. Two columns move.
+ *
+ * **The channel is checked against `MANUAL_SALE_CHANNELS`, not
+ * `SALE_CHANNELS`.** `this-site` is a claim that an order exists, written by
+ * checkout and never by hand — and this is a POST endpoint the browser can
+ * address directly, so the closed set has to be narrowed *here* rather than
+ * only in the buttons that call it. See commerce.md.
+ *
+ * Its own session check, because the page guard has no say over an action. See
+ * security.md.
+ *
+ * @param {string} workId - Bound server-side by the page, so the browser cannot
+ *   point it at a different painting.
+ * @param {string} channel - Bound the same way, one per button.
+ */
+export async function markWorkSold(workId, channel) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  // A value from outside the set never reaches the database. The page offers
+  // two buttons; this is what makes that a rule rather than a habit.
+  if (!MANUAL_SALE_CHANNELS.includes(channel)) {
+    redirect(salePath(workId, 'unknownChannel'));
+  }
+
+  const marked = await markWorkSoldRecord(workId, channel);
+
+  /*
+    False means one of two things, and they need different sentences: no work
+    with that id, or a work that sold through this site — which this action must
+    not overwrite, because that channel answers for an order.
+  */
+  if (!marked) {
+    const work = await getWorkById(workId);
+    redirect(salePath(workId, work ? 'siteSale' : 'notFound'));
+  }
+
+  // The gallery, the homepage grid and the artwork page all render this work's
+  // status. Without this they keep serving their cached render and the site
+  // goes on offering a painting that has gone.
+  revalidatePath('/', 'layout');
+
+  redirect(savedPath('markedSold'));
+}
+
+/**
+ * Puts a painting back on sale after it was marked sold by hand.
+ *
+ * **The way back has to be as easy as the way in, or the mistake is harder to
+ * undo than it was to make.** Without this the only route back is the edit
+ * form — the same form, behind the same translation gate the action above
+ * exists to get around.
+ *
+ * **It clears the channel**, which the repository does in the same statement:
+ * an `available` work that still records where it sold is a contradiction
+ * nothing complains about and everything later reads as true.
+ *
+ * **A sale through this site is refused, not confirmed harder.** Undoing a
+ * hand-marked sale corrects a click; undoing one that went through checkout
+ * asserts that money went back, against an order row saying it did not. A
+ * heavier confirmation would still let her do it from a list of paintings, and
+ * commerce.md is explicit that nothing which later happens to the catalogue may
+ * change what an order says. The refusal is a sentence rather than a control
+ * that silently does nothing.
+ *
+ * @param {string} workId - Bound server-side by the page.
+ */
+export async function returnWorkToSale(workId) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  const returned = await returnWorkToSaleRecord(workId);
+
+  if (!returned) {
+    const work = await getWorkById(workId);
+    redirect(salePath(workId, work ? 'siteSale' : 'notFound'));
+  }
+
+  revalidatePath('/', 'layout');
+
+  redirect(savedPath('returnedToSale'));
 }
 
 /* ------------------------------------------------------------------ *

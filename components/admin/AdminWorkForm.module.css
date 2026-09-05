@@ -238,6 +238,32 @@
   cursor: pointer;
 }
 
+/**
+ * The channel checkout wrote, which she may read and not change.
+ *
+ * Not the pointer cursor, because there is nothing to click — the cursor is the
+ * cheapest signal a control is inert, and the one people trust before they have
+ * tried it. It keeps the primary ink rather than dropping to the muted one: this
+ * is a fact about the work, not a disabled thing she might have been allowed to
+ * use, and greying it out would read as "unavailable to you" instead of
+ * "already answered".
+ */
+.choiceFixed {
+  cursor: default;
+}
+
+/**
+ * Why that answer cannot be changed. Sits under the option it explains, on its
+ * own line — the fieldset is a flex row, so full width is what breaks it onto
+ * one.
+ */
+.choicesNote {
+  inline-size: 100%;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
 .choice input {
   accent-color: var(--accent);
   inline-size: 1.1rem;
