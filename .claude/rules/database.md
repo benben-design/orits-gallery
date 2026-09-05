@@ -123,11 +123,18 @@ correctly and is the reference.
 An order is a historical record: it says what was true when money moved, and
 nothing that later happens to the catalogue may change what it says.
 
-`orders` carries `status` (`pending`, `paid`, `shipped`, `cancelled`,
-`refunded`, required with no default), an optional `payment_reference` that is
-unique where present, required `buyer_name` / `buyer_email` / `buyer_phone`, a
-required `shipping_address` as a single text field, `total_agorot`, `currency`,
-a required `buyer_locale`, and `created_at` / `updated_at`.
+`orders` carries `status` (`pending`, `paid`, `shipped`, `delivered`,
+`cancelled`, `refunded`, required with no default), an optional
+`payment_reference` that is unique where present, required `buyer_name` /
+`buyer_email` / `buyer_phone`, a required `shipping_address` as a single text
+field, `total_agorot`, `currency`, a required `buyer_locale`, the five dates
+below, and `created_at` / `updated_at`.
+
+`paid_at`, `shipped_at`, `delivered_at`, `cancelled_at` and `refunded_at` are
+all nullable, each absent until the thing it records has happened. Which of
+them must be present is a question about the status, and migration 007 answers
+it in constraints rather than in `not null` — a `not null` would make a pending
+order unstorable.
 
 `order_lines` carries `order_id` (**cascade**), `work_id` (**restrict**), and
 `price_agorot`.
@@ -154,11 +161,45 @@ a required `buyer_locale`, and `created_at` / `updated_at`.
   nothing about which language someone reads. See i18n.md for what this costs.
 - `payment_reference` is unique where present because payment webhooks retry,
   and that index is the last defence against one payment being processed twice.
-- **The 14-day cancellation window is not computable from this schema.** Only
-  `created_at` and `updated_at` exist, so once status moves `paid -> shipped`
-  the payment date is gone. Israeli law counts the window from receipt. This is
-  a known gap, not a decision — it needs `paid_at` / `shipped_at` or a status
-  history table before checkout is built.
+- **`delivered` is a status, not only a date, and that is what makes the 14-day
+  cancellation window computable.** Israeli law counts the window from
+  *receipt*, and dispatch is not receipt — computing it from `shipped_at` would
+  close the window earlier than the law does, which is the direction that
+  shortens the buyer's rights. It also gives `shipped` somewhere to resolve to:
+  with `shipped` terminal, "which orders are still on the way" accumulates
+  everything ever sent and stops being read.
+- **Each status carries the date it happened, and the database enforces the
+  pair — but only forwards.** Migration 007 requires `paid_at` for every status
+  at or past paid (**`refunded` included**: a refund does not erase the payment
+  that preceded it), `shipped_at` for `shipped` and `delivered`, `delivered_at`
+  for `delivered`, `cancelled_at` for `cancelled`, `refunded_at` for
+  `refunded`, and all five absent for `pending`. Ordering is enforced too:
+  `paid_at <= shipped_at <= delivered_at`.
+- **Two things are deliberately *not* constrained**, and both are exits rather
+  than steps in the chain. Whether a `cancelled` order carries a `paid_at` —
+  the payment provider documents authorization separately from capture, so an
+  order authorised and then voided before capture is a real state, and forcing
+  it to be a refund would be the constraint fighting the provider. And whether
+  a `refunded` order carries `shipped_at` / `delivered_at` — refunding before
+  dispatch and after delivery are both legitimate, so a constraint picking one
+  would be wrong half the time. The line 007 draws: **enforce what is
+  unrecoverable if lost, stay silent where the provider may legitimately be
+  right.**
+- **This is the one place the schema ties a status to another column, and
+  `works` deliberately does the opposite.** `works.sale_channel` is *not* tied
+  to `status = 'sold'`, because it is typed by hand into a form the artist
+  fills in any order, and a constraint firing on a half-filled form is one she
+  fights. These dates are written by a webhook and by one deliberate click,
+  never mid-edit, and a missing `paid_at` cannot be typed in later — the moment
+  is gone and it decides a legal deadline. The two tables are not
+  inconsistent; the difference is whether the loss is permanent, and 007's
+  comment says so at length so neither is read as the house rule.
+- **Known consequence, recorded rather than solved: an order whose receipt is
+  never marked has no computable window.** Its status stays `shipped` and
+  `delivered_at` stays null, indistinguishable from a parcel still in transit.
+  No constraint can make somebody confirm a delivery, and a default would
+  invent a date nobody observed — which would be believed and counted from. The
+  remedy belongs to the admin's orders list, surfacing dispatches never closed.
 
 ### `admin_users`
 

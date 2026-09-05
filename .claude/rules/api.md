@@ -108,7 +108,7 @@ would look unauthenticated no matter how correct its guard. See security.md.
 - Validate input at the boundary. Reject unknown values against the exported
   constants rather than writing whatever arrived. The closed sets are wider than
   they were: the four sale statuses, the two categories, the two image types,
-  the two medium keys, the five order statuses, the three sale channels, and the
+  the two medium keys, the six order statuses, the three sale channels, and the
   supported locales. Each is also constrained in the database, so an unvalidated
   write fails there — but as a constraint violation the user cannot act on,
   which is not an error message.

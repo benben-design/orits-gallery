@@ -95,6 +95,7 @@ anywhere — ask the database.
 | `004_create_admin_users_table.sql` | `admin_users`. Hash only, case-insensitive email uniqueness, no role column, no reset fields |
 | `005_add_order_buyer_locale.sql` | Adds `orders.buyer_locale`, required, constrained to the locales in `lib/i18n/config.js` |
 | `006_add_admin_login_throttle.sql` | `admin_login_attempts`. The sign-in rate limit's counter — the policy 004 deferred. References nothing on purpose, two partial unique indexes, no thresholds in the SQL |
+| `007_add_order_status_dates.sql` | Adds `delivered` as a sixth order status and the five dates each status happened. **The 14-day cancellation window, made computable** — the law counts from receipt, so `shipped_at` alone could never answer it. Enforces the forward chain (`paid` needs `paid_at`, `refunded` too; `delivered` needs all three; `pending` needs none) and their order, and is deliberately silent on the two exits. The one place the schema ties a status to another column, where `works.sale_channel` deliberately does not — the comment says why at length |
 
 ## Assets
 

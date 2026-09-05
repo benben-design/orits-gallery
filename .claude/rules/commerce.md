@@ -278,13 +278,53 @@ nothing that later happens to the catalogue may change what it says.
   default, and an Israeli address says nothing about which language someone
   reads.
 
-Known gap, and it matters legally: **the 14-day cancellation window cannot be
-computed from the schema as it stands.** Only creation and last-update
-timestamps exist, so once an order moves from paid to shipped the payment date
-is gone. Israeli law counts the window from receipt. This needs dated status
-transitions before checkout is built.
+### The order statuses, and the date each one happened
 
-Nothing writes orders yet — no cart, no checkout, no payment provider.
+`pending` · `paid` · `shipped` · `delivered` · `cancelled` · `refunded`
+
+**`delivered` exists because the 14-day window runs from receipt.** This was
+the schema gap 003 left and migration 007 closed: with only creation and
+last-update timestamps, the moment an order moved from paid to shipped its
+payment date was gone, and the statutory window could not be computed or
+reconstructed. Dispatch is not receipt — counting from `shipped_at` closes the
+window *earlier* than the law does, which is the direction that shortens the
+buyer's rights.
+
+It earns its place twice over. **"Which orders are still on the way" only has
+an answer if there is a state after shipped**; with `shipped` terminal, an
+order posted in March is still on the way in September and the list stops being
+read. The cost is one click when a buyer says it arrived — which is the click
+that starts a clock the business is bound by.
+
+**Every status carries the date it happened, and the database enforces it
+forwards.** A status at or past paid must carry `paid_at`, *including
+`refunded`*, because a refund does not erase the payment before it. Shipped and
+delivered must carry `shipped_at`; delivered must carry `delivered_at`;
+pending must carry none of them. The dates must be in order.
+
+**Two exits are deliberately unconstrained**, and the reasoning is worth
+copying: a `cancelled` order may or may not carry `paid_at`, because the
+payment provider documents authorization separately from capture and an
+authorised-then-voided order is real; a `refunded` order may or may not carry
+dispatch and receipt, because refunding before dispatch and after delivery are
+both legitimate. **Enforce what is unrecoverable if lost, stay silent where the
+provider may legitimately be right.**
+
+Note this is the opposite call from `works.sale_channel`, which is
+deliberately *not* tied to `status = 'sold'` — and the difference is the point,
+not an inconsistency. That one is typed by hand into a form filled in any
+order, and is recoverable by typing it again. These are written by a webhook or
+one deliberate click, and a lost payment date is gone for good.
+
+**Still open, and it is an admin task rather than a schema one: an order whose
+receipt is never marked has no computable window.** It sits at `shipped` with
+`delivered_at` null, indistinguishable from a parcel still in transit. No
+constraint can make somebody confirm a delivery, and a default date would be
+invented and then counted from. The orders list has to surface dispatches that
+were never closed.
+
+Nothing writes orders yet. The cart holds work ids in a cookie and ends in a
+deliberately inert checkout button; no checkout, and no payment provider.
 
 ## Money handling
 
