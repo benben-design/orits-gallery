@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
@@ -12,6 +13,7 @@ import {
   getAllWorkSlugs,
   getSlugsForWork,
 } from '@/lib/data/works-repository';
+import styles from './page.module.css';
 
 /**
  * /[locale]/art/[slug] — one painting, as a visitor sees it.
@@ -233,8 +235,44 @@ export default async function ArtworkPage({ params }) {
   if (!work) notFound();
 
   return (
-    <Section>
+    /*
+      `snug` rather than the default section rhythm. The default 104px belongs
+      to a page of stacked sections that need separating from one another; this
+      route is a single object and its own top gap is the only thing between the
+      navigation and the painting. At the default the work was pushed against
+      the bottom of a laptop screen and the page had to be scrolled to see a
+      painting that otherwise fits — 64px fixed that, and 32px is where it was
+      settled by eye.
+    */
+    <Section size="snug">
       <Container>
+        {/*
+          The way back, and the only thing on this page that is navigation
+          rather than the work.
+
+          It lives here rather than in `ArtworkDetail` on purpose. That
+          component is rendered by the admin's preview too, where these links
+          would lead out of the admin and where the surrounding chrome is
+          deliberately the admin's own — so the breadcrumb belongs to the public
+          route, exactly as the header and the footer do.
+
+          An ordered list because the steps are a sequence, and the current page
+          is text rather than a link to itself.
+        */}
+        <nav aria-label={dictionary.artwork.breadcrumb} className={styles.breadcrumb}>
+          <ol className={styles.crumbs}>
+            <li>
+              <Link href={localeHref(locale, '/')}>{dictionary.nav.home}</Link>
+            </li>
+            <li>
+              <Link href={localeHref(locale, '/gallery')}>{dictionary.nav.gallery}</Link>
+            </li>
+            <li aria-current="page" className={styles.current}>
+              {work.title[locale]}
+            </li>
+          </ol>
+        </nav>
+
         <ArtworkDetail work={work} locale={locale} dictionary={dictionary} />
       </Container>
     </Section>

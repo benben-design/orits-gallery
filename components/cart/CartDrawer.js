@@ -1,18 +1,27 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { X } from 'lucide-react';
+import { X, Trash2, CreditCard } from 'lucide-react';
 import ArtworkFrame from '@/components/ui/ArtworkFrame';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Price from '@/components/ui/Price';
 import { getStatusPresentation, isBuyable } from '@/components/ui/statusPresentation';
 import { useCart } from './cart-context';
-import { localeHref } from '@/lib/i18n/config';
+import { localeHref, getDirection } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { formatPrice } from '@/lib/format';
 import { MAX_CART_ITEMS } from '@/lib/cart/cart-contents';
 import styles from './CartDrawer.module.css';
+
+/** How far across the panel a drag must get before letting go closes it. */
+const DRAG_CLOSE_FRACTION = 0.35;
+
+/** Movement before a press is treated as a drag rather than a click. */
+const DRAG_CLAIM_PX = 8;
+
+/** A flick this fast closes whatever distance it covered, in px per ms. */
+const DRAG_FLICK_VELOCITY = 0.5;
 
 /**
  * The cart, as a panel that slides in from the edge of the screen.
@@ -36,10 +45,44 @@ import styles from './CartDrawer.module.css';
  * fully formed at the edge. `visibility` is what keeps it off the tab order
  * while closed — `transform` alone leaves it focusable off-screen, which is how
  * a keyboard user ends up somewhere they cannot see.
+ *
+ * **It can also be pushed shut with a finger or the mouse**, which is the
+ * gesture a panel like this is expected to answer on a phone. Four things make
+ * that safe to add rather than a source of accidents:
+ *
+ *   - **It follows the writing direction.** The panel is pinned to the inline
+ *     end, so it dismisses towards the left in Hebrew and the right in English.
+ *     The sign comes from `getDirection(locale)`, the same source `dir` does,
+ *     rather than from reading the DOM.
+ *   - **A gesture is not claimed until it has proved itself horizontal.** The
+ *     body of the panel scrolls, and a drag that moves further down than across
+ *     is abandoned so the scroll happens instead — `touch-action: pan-y` in the
+ *     stylesheet tells the browser the same thing.
+ *   - **A press that never moves is still a click.** Nothing is captured until
+ *     the threshold is passed, so the buttons and links inside go on working.
+ *   - **It closes on distance or on speed**, because a slow drag most of the
+ *     way and a quick flick are both people saying the same thing. Anything
+ *     short of either springs back.
  */
 export default function CartDrawer({ dictionary, locale }) {
   const { open, contents, notice, pending, closeCart, removeWork, clearMissing } = useCart();
   const closeRef = useRef(null);
+  const panelRef = useRef(null);
+
+  /*
+    The live gesture, in a ref rather than state: it changes on every pointer
+    move and none of it should cause a render. Only `dragOffset` does, because
+    only that is drawn.
+  */
+  const gesture = useRef(null);
+  const [dragOffset, setDragOffset] = useState(null);
+
+  /*
+    Which way "away" is. The panel is pinned to the inline end, so it leaves
+    towards the left in Hebrew and the right in English — the same direction
+    `--drawer-hidden-shift` sends it when it closes on its own.
+  */
+  const closingSign = getDirection(locale) === 'rtl' ? -1 : 1;
 
   /* Escape closes, from anywhere — the panel does not hold focus captive. */
   useEffect(() => {
@@ -81,6 +124,87 @@ export default function CartDrawer({ dictionary, locale }) {
     };
   }, [open]);
 
+  /*
+    A drag only moves the panel while the panel is open, which is what makes a
+    reset effect unnecessary — and an effect here would set state during render
+    and cascade. If something else closes the drawer mid-drag (Escape is the
+    real case), `open` goes false, the inline transform stops being applied and
+    the panel leaves under its own transition; the offset that is still in state
+    is cleared by the pointerup or pointercancel that follows, and is never read
+    in between.
+  */
+  const dragging = open && dragOffset !== null;
+
+  const endGesture = () => {
+    gesture.current = null;
+    setDragOffset(null);
+  };
+
+  const onPointerDown = (event) => {
+    /* Secondary mouse buttons open menus; they do not drag panels. */
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    gesture.current = {
+      id: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startedAt: event.timeStamp,
+      claimed: false,
+    };
+  };
+
+  const onPointerMove = (event) => {
+    const active = gesture.current;
+    if (!active || event.pointerId !== active.id) return;
+
+    const dx = event.clientX - active.startX;
+    const dy = event.clientY - active.startY;
+
+    if (!active.claimed) {
+      if (Math.abs(dx) < DRAG_CLAIM_PX && Math.abs(dy) < DRAG_CLAIM_PX) return;
+
+      /*
+        Further down than across: this is the body being scrolled, not the panel
+        being pushed away. Let go of it entirely rather than fighting the scroll.
+      */
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        gesture.current = null;
+        return;
+      }
+
+      active.claimed = true;
+      /* From here the pointer belongs to the panel, so a drag off it still ends. */
+      panelRef.current?.setPointerCapture(event.pointerId);
+    }
+
+    /* Only movement *away* moves the panel; pulling it further open does nothing. */
+    setDragOffset(Math.max(0, dx * closingSign));
+  };
+
+  const onPointerUp = (event) => {
+    const active = gesture.current;
+    if (!active || event.pointerId !== active.id) return;
+    if (!active.claimed) {
+      endGesture();
+      return;
+    }
+
+    const travelled = Math.max(0, (event.clientX - active.startX) * closingSign);
+    const width = panelRef.current?.offsetWidth ?? 0;
+    const elapsed = Math.max(1, event.timeStamp - active.startedAt);
+
+    const farEnough = width > 0 && travelled > width * DRAG_CLOSE_FRACTION;
+    const fastEnough = travelled / elapsed > DRAG_FLICK_VELOCITY;
+
+    /*
+      Clearing the offset first hands the panel back to the stylesheet, so it
+      either springs home or carries on out under the same transition rather
+      than jumping between an inline transform and a class.
+    */
+    endGesture();
+    if (farEnough || fastEnough) closeCart();
+  };
+
   const works = contents?.works ?? [];
   const total = contents?.total ?? null;
   const missingCount = contents?.missingCount ?? 0;
@@ -97,17 +221,56 @@ export default function CartDrawer({ dictionary, locale }) {
 
   return (
     <div
-      className={[styles.panel, open ? styles.open : ''].filter(Boolean).join(' ')}
+      ref={panelRef}
+      className={[styles.panel, open ? styles.open : '', dragging ? styles.dragging : '']
+        .filter(Boolean)
+        .join(' ')}
       role="dialog"
       aria-label={dictionary.cart.drawerTitle}
       /* Hidden from tab order and from assistive technology while shut. */
       aria-hidden={open ? undefined : 'true'}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={endGesture}
+      /*
+        While a drag is live the panel follows the finger exactly, so the
+        transition is off — with it on, every move would be chasing a 420ms
+        animation and the panel would lag behind the pointer. Letting go removes
+        both and the stylesheet takes it from there.
+      */
+      style={
+        dragging
+          ? { transform: `translateX(${closingSign * dragOffset}px)`, transition: 'none' }
+          : undefined
+      }
     >
+      {/*
+        The grip: the only thing that says the panel can be pushed shut, since a
+        gesture leaves no trace on the page. Purely a sign — the drag is handled
+        on the panel as a whole, so this is `aria-hidden` and takes no focus.
+        Nothing depends on it: Escape and the close button are the routes that
+        work from a keyboard, and this offers a mouse and a thumb the third.
+      */}
+      <span className={styles.grip} aria-hidden="true" />
+
       <div className={styles.top}>
         <h2 className={styles.title}>{dictionary.cart.drawerTitle}</h2>
-        <button ref={closeRef} type="button" className={styles.close} onClick={closeCart}>
-          <X size={16} strokeWidth={1.5} aria-hidden="true" />
-          <span>{dictionary.cart.close}</span>
+        {/*
+          The glyph alone, with the wording carried as the accessible name. A
+          close control is the one place an icon needs no label beside it: the
+          ✕ is unambiguous, it is where every panel puts it, and the word
+          repeated next to it was reading as a second thing to decide. Nothing
+          is lost to a screen reader, which announces `aria-label`.
+        */}
+        <button
+          ref={closeRef}
+          type="button"
+          className={styles.close}
+          onClick={closeCart}
+          aria-label={dictionary.cart.close}
+        >
+          <X size={18} strokeWidth={1.5} aria-hidden="true" />
         </button>
       </div>
 
@@ -188,7 +351,8 @@ export default function CartDrawer({ dictionary, locale }) {
                   onClick={() => removeWork(work.id)}
                   aria-label={interpolate(dictionary.cart.removeLabel, { title })}
                 >
-                  {dictionary.cart.remove}
+                  <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+                  <span>{dictionary.cart.remove}</span>
                 </button>
               </div>
             </article>
@@ -205,7 +369,8 @@ export default function CartDrawer({ dictionary, locale }) {
               {interpolate(dictionary.cart.missingCount, { count: missingCount })}
             </p>
             <button type="button" className={styles.missingAction} onClick={clearMissing}>
-              {dictionary.cart.removeMissing}
+              <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+              <span>{dictionary.cart.removeMissing}</span>
             </button>
           </div>
         ) : null}
@@ -229,7 +394,8 @@ export default function CartDrawer({ dictionary, locale }) {
           told it leads somewhere. See commerce.md.
         */}
         <button type="button" className={styles.checkout} aria-disabled="true">
-          {dictionary.cart.checkout}
+          <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+          <span>{dictionary.cart.checkout}</span>
         </button>
 
         <Link href={localeHref(locale, '/cart')} className={styles.viewCart} onClick={closeCart}>

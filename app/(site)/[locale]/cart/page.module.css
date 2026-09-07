@@ -89,12 +89,19 @@
 }
 
 .missingAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   min-block-size: 2.75rem;
   color: var(--accent);
   font-size: var(--text-sm);
+  transition: color var(--duration) var(--ease);
+}
+
+/* The rule belongs to the words, not to the glyph beside them. */
+.missingAction span {
   text-decoration: underline;
   text-underline-offset: 0.25em;
-  transition: color var(--duration) var(--ease);
 }
 
 @media (hover: hover) {
@@ -148,7 +155,10 @@
  * in the page.
  */
 .checkout {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   inline-size: 100%;
   min-block-size: 3rem;
   margin-block-start: var(--space-5);

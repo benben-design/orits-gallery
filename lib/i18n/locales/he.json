@@ -77,7 +77,9 @@
     "imageAltInSitu": "{title} — הציור תלוי על קיר, מאת {artist}",
     "moreImages": "תצוגות נוספות של העבודה",
     "shareDescription": "{title} — ציור מקורי מאת {artist}.",
-    "addToCart": "הוספה לעגלה"
+    "addToCart": "הוספה לעגלה",
+    "breadcrumb": "מסלול ניווט",
+    "buyNow": "לקנייה מהירה"
   },
   "about": {
     "title": "אודות",

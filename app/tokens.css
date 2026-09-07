@@ -61,6 +61,26 @@
    */
   --surface-tint: #EBD9CE;
 
+  /**
+   * The tint pressed. Hover and active for a control filled with the clay —
+   * today the artwork page's "buy now".
+   *
+   * It exists so the secondary control answers the pointer the way the primary
+   * one does. `--accent` darkens to `--accent-hover` on hover, and a button
+   * beside it that stayed put read as the one thing on the page that was not
+   * listening. The step is matched to that pair rather than guessed: accent to
+   * accent-hover is 1.30:1, and this is 1.25:1 against `--surface-tint` — the
+   * closest a light surface gets before it stops looking like the same colour.
+   *
+   * Derived the same way too. `--accent-hover` is `--accent` with each channel
+   * at roughly 0.81; this is `--surface-tint` at 0.90, so the hue and the
+   * warmth survive and only the level moves.
+   *
+   * **The rule above still applies**: text on this is `--text-primary`
+   * (8.66:1) or `--status-sold-text`. Nothing else, and never `--text-muted`.
+   */
+  --surface-tint-hover: #D4C3B9;
+
   /* ================================================================ *
    * TEXT
    *

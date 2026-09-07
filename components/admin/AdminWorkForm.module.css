@@ -140,6 +140,10 @@
 }
 
 .submit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: center;
   align-self: start;
   min-block-size: 3rem;
   padding-inline: var(--space-7);
@@ -316,6 +320,10 @@
  * thing beside it.
  */
 .approve {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: center;
   min-block-size: 2.75rem;
   padding-inline: var(--space-5);
   padding-block: var(--space-2);
@@ -327,14 +335,21 @@
 }
 
 .textButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   min-block-size: 2.75rem;
   padding-block: var(--space-2);
   font-size: var(--text-sm);
   color: var(--accent);
   background: none;
+  transition: color var(--duration) var(--ease);
+}
+
+/* The rule belongs to the words, not to the glyph beside them. */
+.textButton span {
   text-decoration: underline;
   text-underline-offset: 0.2em;
-  transition: color var(--duration) var(--ease);
 }
 
 .textButton:disabled {

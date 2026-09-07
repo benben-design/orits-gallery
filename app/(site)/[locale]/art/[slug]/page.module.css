@@ -1,0 +1,70 @@
+/**
+ * Chrome for the artwork route. The work itself is ArtworkDetail's.
+ *
+ * Only the breadcrumb lives here, and only because it is navigation rather than
+ * part of the painting — the admin preview renders the same body inside the
+ * admin's own chrome and must not inherit a way out of the admin.
+ */
+
+/**
+ * Quiet by construction.
+ *
+ * It follows the footer's link treatment rather than the accent: muted, lifting
+ * to the primary ink on hover. The accent is reserved for interactive things,
+ * and it is spent on this page in exactly one place — the buy control. A
+ * terracotta breadcrumb over every painting would be the second, and the first
+ * thing a visitor sees would be chrome rather than the work.
+ */
+/*
+  Tighter on a phone, where every pixel above the painting is a pixel of the
+  price pushed below the fold, and generous once there is height to spend.
+*/
+.breadcrumb {
+  margin-block-end: var(--space-5);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+@media (min-width: 60rem) {
+  .breadcrumb {
+    margin-block-end: var(--space-7);
+  }
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+/*
+  The separator sits on each item after the first, so it is never left dangling
+  at the end of a wrapped row. It is drawn in the line colour rather than the
+  text colour: it is a rule between two words, not a third word.
+*/
+.crumbs li + li::before {
+  content: '/';
+  margin-inline-end: var(--space-2);
+  color: var(--line-strong);
+}
+
+.crumbs a {
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .crumbs a:hover {
+    color: var(--text-primary);
+  }
+}
+
+/*
+  The work's own title, which is where you already are. It carries the primary
+  ink so the trail ends somewhere definite, and it is the only crumb that is not
+  a link.
+*/
+.current {
+  color: var(--text-primary);
+}

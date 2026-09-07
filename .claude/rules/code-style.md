@@ -34,6 +34,32 @@ glyph already was, and one icon system beats two the moment a second icon is
 needed. Icons are set at `strokeWidth={1.5}` to sit with the site's hairlines
 rather than lucide's default 2.
 
+## Buttons carry icons
+
+**Every button on the site pairs a lucide glyph with its label**, and an
+icon-only button carries the label as `aria-label` instead. Set at
+`strokeWidth={1.5}`, at 14px beside small text, 16px in navigation and 18px on a
+full-size control.
+
+One glyph means one action, everywhere it appears:
+
+| Action | Icon | Where |
+|---|---|---|
+| Add to cart | `ShoppingBag` | the artwork page, and the header's cart |
+| Buy now / checkout | `CreditCard` | the artwork page, the drawer, `/cart` |
+| Remove a work | `Trash2` | the drawer, the cart line, the missing-works control |
+| Close a panel | `X` | the drawer, icon-only |
+| Sign in / out | `LogIn` / `LogOut` | the admin |
+| Save | `Save` | the work form |
+| Translate / approve | `Languages` / `Check` | the work form |
+
+**`X` means close and nothing else.** Removal was `X` until the drawer's close
+control lost its label and became the glyph alone — one symbol cannot mean both
+"shut this panel" and "delete this thing" on the same screen.
+
+Where a label is underlined, **the underline moves onto a `<span>` around the
+words**: a rule running under an icon reads as a mistake.
+
 Two things to know before using it:
 
 - **Every lucide icon is a client component.** Its base `Icon` carries

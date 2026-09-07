@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { X } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import ArtworkFrame from '@/components/ui/ArtworkFrame';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Price from '@/components/ui/Price';
@@ -143,7 +143,9 @@ export default function CartLine({ work, locale, dictionary }) {
           */
           aria-label={interpolate(dictionary.cart.removeLabel, { title })}
         >
-          <X size={15} strokeWidth={1.5} aria-hidden="true" />
+          {/* Trash2, not X: the drawer's close control is the X now, and one
+              glyph must not mean both "shut this panel" and "remove this work". */}
+          <Trash2 size={15} strokeWidth={1.5} aria-hidden="true" />
           <span>{dictionary.cart.remove}</span>
         </button>
       </form>

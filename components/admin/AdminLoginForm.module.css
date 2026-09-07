@@ -40,6 +40,10 @@
  * accent is exactly what the palette reserves for an interactive thing.
  */
 .submit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: center;
   align-self: start;
   min-block-size: 3rem;
   padding-inline: var(--space-7);

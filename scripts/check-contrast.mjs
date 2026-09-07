@@ -74,6 +74,7 @@ const PERMITTED = [
   ['text-primary', 'surface-mat', 'Body on a card or artwork mat'],
   ['text-primary', 'surface-sunk', 'Body in the footer or filter bar'],
   ['text-primary', 'surface-tint', 'Text on a tinted panel'],
+  ['text-primary', 'surface-tint-hover', 'The clay control, hovered'],
   ['text-primary', 'status-sold-bg', 'The reserved badge'],
 
   ['text-muted', 'surface-wall', 'Medium, dimensions, captions'],

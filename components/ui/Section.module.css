@@ -19,6 +19,16 @@
   padding-block: var(--space-9);
 }
 
+/*
+  The step below tight, and the smallest that still holds a section apart from
+  what follows it. For a route that renders a single object rather than a stack
+  of sections, where the padding is only the distance from the navigation to the
+  content — the artwork page is the one that wanted it.
+*/
+.snug {
+  padding-block: var(--space-6);
+}
+
 .flush {
   padding-block: 0;
 }

@@ -1,11 +1,11 @@
 /**
- * The buy control.
+ * The buy controls: the one that works, and the one that is not open yet.
  *
- * It is the sibling of `ButtonLink` rather than a new shape — same height,
- * same tracking, same radius — and differs in exactly one way: it is filled.
- * That is the site's whole emphasis scale. `ButtonLink`'s hairline outline
- * carries "see more of this"; a fill carries "this is the thing to do on this
- * page", and there is only ever one of those in view.
+ * They are siblings of `ButtonLink` rather than a new shape — same height, same
+ * tracking, same radius — and they differ from each other in colour only. That
+ * difference is the site's whole emphasis scale: a filled `--accent` carries
+ * "this is the thing to do on this page", and there is only ever one of those
+ * in view.
  *
  * The fill is `--accent`, which is permitted here and nowhere decorative: the
  * accent is reserved for interactive things, and a purchase is the most
@@ -13,10 +13,22 @@
  * pairings `npm run check:contrast` asserts.
  */
 .form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   margin-block-start: var(--space-6);
 }
 
-.button {
+/**
+ * The shape both controls share — everything except colour.
+ *
+ * The transparent border is not decoration. The secondary control below carries
+ * a real one, and although `box-sizing: border-box` keeps the boxes the same
+ * height, a bordered and an unbordered button put their labels on baselines two
+ * pixels apart. Giving both the same border makes the pair identical in
+ * everything the eye can measure, so only the colour separates them.
+ */
+.control {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -25,25 +37,26 @@
   min-block-size: 3rem;
   padding-inline: var(--space-7);
   padding-block: var(--space-3);
+  border: var(--border-hairline) solid transparent;
   border-radius: var(--radius);
-  background-color: var(--accent);
-  color: var(--text-on-accent);
   font-size: var(--text-sm);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  transition: background-color var(--duration) var(--ease);
+  transition: background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
 }
 
-/**
- * Full width on a phone, where it is the action the thumb is reaching for, and
- * intrinsic from the point the details column stops being the whole screen.
- * A button stretched across a wide column reads as a banner rather than a
- * control.
- */
-@media (min-width: 40rem) {
-  .button {
-    inline-size: auto;
-  }
+/*
+  It used to go intrinsic from 40rem up, on the reasoning that a button
+  stretched across a wide column reads as a banner rather than a control. That
+  reasoning was sound and its premise is gone: the artwork page's details column
+  is now a bounded label of about 26rem rather than a half-page of text, so full
+  width here is the width of a label and not of a page.
+*/
+.button {
+  composes: control;
+  background-color: var(--accent);
+  color: var(--text-on-accent);
 }
 
 @media (hover: hover) {
@@ -54,4 +67,77 @@
 
 .button:active {
   background-color: var(--accent-hover);
+}
+
+/**
+ * Buying in one step, and inert until there is a payment provider.
+ *
+ * **Its colour was chosen by measurement, not by taste**, and the number that
+ * decided it is how loud each fill is against the wall rather than how legible
+ * its label is:
+ *
+ *   accent fill (the primary)   5.43:1 against --surface-wall
+ *   dark ink fill               12.01:1
+ *   --accent-hover fill         7.05:1
+ *   --surface-tint fill         1.11:1
+ *
+ * The reference store draws both of its buttons near-black, and copying that
+ * here would put a 12:1 control directly beneath a 5.43:1 one — **the inert
+ * button would be more than twice as loud as the working one**, and the eye
+ * would go to it first. `--accent-hover` fails the same way and also reads as a
+ * pressed state.
+ *
+ * So the fill is a surface rather than an ink, and at 1.11:1 it cannot draw its
+ * own edge — which is why the hairline is doing the work here and is not
+ * optional. That is what a secondary control is: quiet ground, defined edge.
+ *
+ * The clay is the one non-neutral surface in the palette, drawn from the same
+ * terracotta family as the accent, so the two controls read as a deep-and-pale
+ * pair rather than as two unrelated buttons. `--text-primary` on it is 10.80:1
+ * and is one of only two pairings the tint is allowed to carry — the other is
+ * `--status-sold-text`, and `--text-muted` is forbidden there at 4.46:1. Do not
+ * soften this label.
+ *
+ * **Known overlap, and it is why this was the second choice rather than the
+ * first:** `--surface-tint` and `--status-sold-bg` are the same value, so the
+ * clay also means "sold" on a badge. The two never meet on this page — a sold
+ * work is not buyable, so it draws no buy controls at all — but one colour is
+ * doing two jobs, and a future surface that shows a badge beside a button will
+ * have to answer for it.
+ *
+ * **Hover darkens the fill, exactly as the primary above it does.** That is the
+ * point of `--surface-tint-hover` existing: `--accent` moves to
+ * `--accent-hover` under the pointer, and a button sitting directly beneath it
+ * that did not move read as the one control on the page that was not
+ * listening. The step is matched to the accent's, so the two answer with the
+ * same weight in their own colours. The border is left alone — one property
+ * moves here, as one property moves there.
+ */
+.buyNow {
+  composes: control;
+  background-color: var(--surface-tint);
+  border: var(--border-hairline) solid var(--line-strong);
+  color: var(--text-primary);
+}
+
+@media (hover: hover) {
+  .buyNow:hover {
+    background-color: var(--surface-tint-hover);
+  }
+}
+
+/* Touch has no hover, so the press is where it answers. */
+.buyNow:active {
+  background-color: var(--surface-tint-hover);
+}
+
+/*
+  Says buying is not open yet, so the inert control above is never the only
+  thing saying what will happen. It reuses the cart's own sentence rather than
+  adding a second translation of it — one wording, two surfaces.
+*/
+.pending {
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
 }

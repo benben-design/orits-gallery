@@ -29,6 +29,13 @@
   transform: translateX(var(--drawer-hidden-shift));
   transition: transform var(--duration-slow) var(--ease), visibility var(--duration-slow);
   /*
+    The panel can be pushed shut with a finger, and this is the half of that
+    which the browser owns: `pan-y` keeps vertical scrolling native inside the
+    body while handing every horizontal gesture to the pointer handlers. Without
+    it a sideways drag on a touch screen scrolls the page underneath instead.
+  */
+  touch-action: pan-y;
+  /*
     Off the tab order while shut. A transform alone leaves every control inside
     focusable but invisible, which is how a keyboard lands somewhere off-screen.
   */
@@ -47,6 +54,59 @@
 .open {
   transform: translateX(0);
   visibility: visible;
+}
+
+/*
+  Only while a drag is actually in progress — selection is left alone the rest
+  of the time, so a title in the panel can still be highlighted and copied.
+*/
+.dragging {
+  user-select: none;
+  cursor: grabbing;
+}
+
+/**
+ * The grip that says the panel can be pushed shut.
+ *
+ * It sits on the **inner** edge — the one facing the page, which is the edge a
+ * hand reaches for and the direction the panel travels. `inset-inline-start`
+ * puts it there in both writing directions without a second rule, so it is on
+ * the right of the panel in Hebrew and the left of it in English, always
+ * pointing at the page rather than at the screen edge.
+ *
+ * It is drawn in the line colour rather than the accent: this is a piece of the
+ * panel's edge, not something to click, and the accent is reserved for things
+ * that are. `--radius-sm` on a 4px bar is as round as this design goes — there
+ * is deliberately no pill token, and a grabber does not warrant inventing one.
+ *
+ * `cursor: grab` is on the grip alone. Putting it on the whole panel would make
+ * every price and title feel draggable, which is the wrong promise.
+ */
+.grip {
+  position: absolute;
+  inset-inline-start: var(--space-2);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  inline-size: 4px;
+  block-size: 2.5rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--line-strong);
+  cursor: grab;
+}
+
+.dragging .grip {
+  cursor: grabbing;
+  background-color: var(--text-muted);
+}
+
+/*
+  A pointer that can hover is the one that needs the hint most — a thumb finds
+  the edge without being shown it.
+*/
+@media (hover: hover) {
+  .grip:hover {
+    background-color: var(--text-muted);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -81,13 +141,25 @@
   color: var(--text-primary);
 }
 
+/*
+  The glyph alone, so the 44px target the label used to provide has to be
+  declared. Square rather than tall: an icon button that is 44px in one axis and
+  18px in the other is a miss waiting to happen on a phone.
+
+  The negative inline-end margin pulls the *box* back over the panel's padding
+  without moving the glyph, so the ✕ sits on the same optical edge as the title
+  opposite it rather than being inset by its own hit area.
+*/
 .close {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: center;
+  flex: none;
   min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  margin-inline-end: calc(var(--space-2) * -1);
+  border-radius: var(--radius);
   color: var(--text-muted);
-  font-size: var(--text-sm);
   transition: color var(--duration) var(--ease);
 }
 
@@ -184,12 +256,20 @@
  * for — the accent belongs to the control at the bottom.
  */
 .remove {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   min-block-size: 2.25rem;
   color: var(--text-muted);
   font-size: var(--text-sm);
+  transition: color var(--duration) var(--ease);
+}
+
+/* The rule belongs to the words, not to the glyph beside them. */
+.remove span,
+.missingAction span {
   text-decoration: underline;
   text-underline-offset: 0.25em;
-  transition: color var(--duration) var(--ease);
 }
 
 @media (hover: hover) {
@@ -210,12 +290,13 @@
 }
 
 .missingAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   margin-block-start: var(--space-2);
   min-block-size: 2.25rem;
   color: var(--accent);
   font-size: var(--text-sm);
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
 }
 
 /** The total and the way out. Sunk, so it reads as the foot of the panel. */
@@ -252,7 +333,10 @@
  * will when it does; see the note in CartDrawer.js.
  */
 .checkout {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   inline-size: 100%;
   min-block-size: 3rem;
   border-radius: var(--radius);

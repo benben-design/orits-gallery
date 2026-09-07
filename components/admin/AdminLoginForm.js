@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { LogIn } from 'lucide-react';
 import { signIn } from '@/app/(admin)/admin/actions';
 import styles from './AdminLoginForm.module.css';
 
@@ -90,7 +91,8 @@ export default function AdminLoginForm({ labels, returnTo }) {
       </div>
 
       <button type="submit" className={styles.submit} disabled={isPending}>
-        {isPending ? labels.submitting : labels.submit}
+        <LogIn size={18} strokeWidth={1.5} aria-hidden="true" />
+        <span>{isPending ? labels.submitting : labels.submit}</span>
       </button>
     </form>
   );

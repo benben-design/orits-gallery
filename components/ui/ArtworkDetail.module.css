@@ -1,107 +1,168 @@
 /**
- * One painting, large, with room around it.
+ * One painting, and the label that names it.
  *
  * Logical properties throughout, so this lays out correctly in Hebrew without a
- * single direction-specific rule — the painting sits at the inline start and the
- * details at the inline end in both languages. That is also what lets the admin
- * preview render the English page inside a Hebrew document: direction is
- * resolved per element, so the preview wrapper sets it and everything below
- * follows.
+ * single direction-specific rule. That is also what lets the admin preview
+ * render the English page inside a Hebrew document: direction resolves per
+ * element, so the preview wrapper sets it and everything below follows.
  */
 
 .work {
-  display: grid;
-  gap: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 
   /**
-   * The tallest the painting may be, and therefore the widest — the frame is
-   * square from 48rem up, so one bound sets both.
+   * The painting's own aspect ratio, as a plain number, written in by the
+   * component from the real pixel dimensions of the file.
    *
-   * Two limits, whichever is smaller. 34rem stops the work sprawling on a large
-   * monitor, where a painting the height of the window reads as a lightbox
-   * rather than as a piece hanging on a wall. The viewport term is what makes
-   * it always fit: the header and the section's own breathing room come off
-   * first, and what is left is the ceiling. `svh` rather than `vh` because on a
-   * phone `vh` is the height with the browser chrome hidden, which is not the
-   * height anything is actually read at.
+   * The value here is only the fallback for a work whose photograph has not
+   * been attached yet — 0.8 is the grid's 4/5. It is a number rather than a
+   * ratio expression because it has to be multiplied by a length below, which
+   * `4 / 5` cannot be.
    */
-  --plate-max: min(34rem, calc(100svh - 15rem));
+  --work-ratio: 0.8;
+
+  /**
+   * The painting is bounded by HEIGHT, never by width, and that is the whole
+   * mechanism of this page.
+   *
+   * Bounding by width would make every portrait tall enough to run off the
+   * screen and every landscape short enough to look incidental. Bounding by
+   * height gives the mixed set — 0.62 to 1.51 on this catalogue — one
+   * consistent visual weight, and lets each work's own shape decide its width.
+   *
+   * On a phone the ceiling is what puts the title and the price on the first
+   * screen, and the number was measured rather than guessed. At 62svh on a
+   * 390x844 phone the title began at y=820 and the price at y=860 — the work
+   * filled the screen and everything that sells it was below the fold. 55svh
+   * brings both up with room to spare and still gives the painting more than
+   * half the viewport.
+   *
+   * `svh` rather than `vh` because `vh` is the height with the browser chrome
+   * hidden, which is not the height anything is actually read at.
+   */
+  --plate-block: 55svh;
 }
 
 /**
- * Side by side once there is width for both. Below this the two stack, and the
- * reading order is already the right one: the work, then what it is, then what
- * it costs.
+ * The box IS the painting.
+ *
+ * Its width is whatever the work's own ratio makes of the height ceiling, so
+ * there is no ground inside the frame that belongs to neither the work nor the
+ * page — which is what a shared square frame produced here, about 209px of it
+ * on a portrait, sitting between the painting and its label.
+ *
+ * The shared square is right for the grid, where equal boxes are what keep rows
+ * aligned. A single work on its own page has no row to align with.
+ *
+ * `min()` with the column is what stops a wide landscape overflowing: whichever
+ * of the two bounds is smaller wins, so height governs a portrait and the
+ * column governs a landscape.
  */
-@media (min-width: 60rem) {
-  .work {
-    /*
-      The painting's column is sized by the ceiling above rather than by a
-      fraction, so the details sit directly beside the work instead of across a
-      gap left by a painting that stopped growing.
-    */
-    grid-template-columns: minmax(0, var(--plate-max)) minmax(0, 1fr);
-    gap: var(--space-9);
-    align-items: start;
-  }
+.plate {
+  inline-size: min(100%, calc(var(--plate-block) * var(--work-ratio)));
+  /* Centred while the two are stacked; released into the row below. */
+  margin-inline: auto;
 }
 
 /*
-  Grid children default to min-content width; this lets the frame shrink. The
-  ceiling is repeated here for the stacked layout, where the plate fills a row
-  of its own rather than sitting in a track sized by it.
+  Only the custom property is set here — ArtworkFrame keeps owning how the
+  ratio is used, and a plain block div inside .plate already takes its width.
 */
-.plate {
-  min-inline-size: 0;
-  max-inline-size: var(--plate-max);
+.mainFrame {
+  --frame-ratio: var(--work-ratio);
 }
 
 /**
- * The window the painting is fitted inside — never cropped to fill it.
+ * The label.
  *
- * The ratio is art direction rather than decoration. On a phone the frame is
- * portrait, because nine of the sixteen works are and a portrait in a square
- * box on a narrow screen loses height it cannot spare. From the width at which
- * the painting stops being the whole viewport it becomes square, which is the
- * fairest window for a set of works running from 0.62 to 1.51: a portrait fits
- * by height, a landscape by width, and neither is squeezed to suit the other.
- *
- * This sets the frame's own custom property rather than its aspect-ratio, so
- * ArtworkFrame keeps owning how the ratio is used.
+ * Spacing is set per block rather than by one gap, because the rhythm carries
+ * the grouping: the category, the title and the price are one unit and sit
+ * close together, and everything after them is a separate thought with air
+ * before it.
  */
-.mainFrame {
-  --frame-ratio: 4 / 5;
-}
-
-@media (min-width: 48rem) {
-  .mainFrame {
-    --frame-ratio: 1 / 1;
-  }
-}
-
-.details {
+.label {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  /* Prose stays readable even when the column is given the whole page. */
-  max-inline-size: var(--measure);
+  min-inline-size: 0;
+}
+
+.label > *:first-child {
+  margin-block-start: 0;
+}
+
+/**
+ * The category, as the eyebrow a wall label carries.
+ *
+ * Tracked and upper-cased, which are Latin devices — `--tracking-wide` is
+ * zeroed for RTL in the token file, and upper-casing does nothing to Hebrew, so
+ * the Hebrew reads as an ordinary small caption and the English as an eyebrow.
+ */
+.eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .title {
+  margin-block-start: var(--space-2);
   font-size: var(--text-xl);
   font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
   color: var(--text-primary);
 }
 
 /**
- * Medium, size and year. A definition list because that is what they are — a
- * label and its value — and because it reads correctly to a screen reader,
- * where a two-column layout of loose spans does not.
+ * Price and availability, directly under the title.
+ *
+ * A step larger than the same row on a card: here it is one of the two things a
+ * visitor came to find out, and on a painting the price is part of the label
+ * rather than a control. The badge beside it answers the other.
+ */
+.availability {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: var(--space-3);
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+}
+
+/* A hairline tick between price and status, as on the card. */
+.separator {
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--line-strong);
+  flex: none;
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * The physical facts, behind the one rule on the page.
+ *
+ * The hairline separates what the work *is* from what it *measures* — the same
+ * division a gallery label makes, and the reason the specs can be quiet without
+ * looking like an afterthought.
  */
 .specs {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  margin-block-start: var(--space-6);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--border-hairline) solid var(--line);
 }
 
 .spec {
@@ -125,52 +186,18 @@
 }
 
 /**
- * Price and availability. A step larger than the same row on a card, because
- * here it is one of the two things a visitor came to find out; the other is
- * whether the painting is still available, which the badge beside it answers.
- *
- * No buy button, deliberately — the cart is not built, and a button that leads
- * nowhere costs more trust than an honest absence. See commerce.md.
- */
-.availability {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-block-start: var(--space-2);
-  font-size: var(--text-base);
-  color: var(--text-muted);
-}
-
-/* A hairline tick between price and status, as on the card. */
-.separator {
-  inline-size: var(--space-3);
-  block-size: var(--border-hairline);
-  background-color: var(--line-strong);
-  flex: none;
-}
-
-/**
  * The stand-in values. Dashed and in the secondary ink, like every other
  * "not real yet" band on the site, so it reads as a note about the data rather
  * than as something the artist wrote.
  */
 .placeholder {
+  margin-block-start: var(--space-6);
   border: var(--border-hairline) dashed var(--line-strong);
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
   color: var(--text-muted);
-}
-
-.description {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  font-size: var(--text-base);
-  line-height: var(--leading-normal);
-  color: var(--text-primary);
 }
 
 /**
@@ -186,4 +213,71 @@
   grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   gap: var(--space-5);
   margin-block-start: var(--space-9);
+}
+
+/**
+ * Side by side once there is room for both.
+ *
+ * `row-reverse` rather than a reordered grid, and it does two jobs at once. The
+ * painting stays first in the DOM — so the phone layout above stacks the work
+ * above its label with nothing reordered — while the label is drawn at the
+ * inline START: on the right in Hebrew, the left in English, from one rule.
+ *
+ * That arrangement follows gitahomedesign.co.il, the artist's own store: the
+ * name and the price where the eye lands first, the photograph beside them.
+ *
+ * The pair is anchored at the page's inline start rather than centred, and that
+ * is what lets the breadcrumb above it line up with the label. Centring the
+ * pair floats it away from the container edge by an amount that changes with
+ * every painting's shape, so nothing else on the page can align to it — the
+ * breadcrumb hung 166px clear of the title at 1440px, which reads as a mistake
+ * rather than as composition.
+ *
+ * The gap between the work and its label therefore stays constant whatever
+ * shape the painting is, the way a wall label hangs a fixed distance from the
+ * piece, and the slack falls at the far edge as the white space this design
+ * asks for anyway.
+ */
+@media (min-width: 60rem) {
+  .work {
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    /*
+      `flex-end`, not `flex-start`, and the difference is the reversal: these
+      two keywords address the flex MAIN axis, which `row-reverse` has already
+      turned around. Main-end is therefore the container's inline start — the
+      edge the breadcrumb is on — in both writing directions.
+
+      This is deliberately **not** `space-between`. Anchoring the painting to
+      the far edge was tried and is too much: with a portrait it opened about
+      320px between the work and its label, which reads as two unrelated things
+      on one page rather than a piece and the card beside it. A fixed distance
+      keeps them a pair, and the slack falls at the far edge as the white space
+      this design asks for anyway.
+    */
+    justify-content: flex-end;
+    /* One step wider than the rest of the page's rhythm: enough to move the
+       painting off the label, not enough to disown it. */
+    gap: var(--space-12);
+    /*
+      40rem is the tallest a work is allowed to hang, and the viewport term is
+      what keeps it on screen: everything above the painting comes off first —
+      the header, the section's top padding, the breadcrumb and its margin,
+      which is 198px together — and whatever is left is the ceiling. 14rem
+      leaves the work clear of the fold rather than resting on it, so the whole
+      page is legible without scrolling. On a laptop this second bound bites.
+    */
+    --plate-block: min(40rem, calc(100svh - 14rem));
+  }
+
+  .plate {
+    flex: 0 1 auto;
+    margin-inline: 0;
+  }
+
+  .label {
+    /* Wants the measure of a label, yields to a wide landscape, never crushed. */
+    flex: 0 1 26rem;
+    min-inline-size: 20rem;
+  }
 }

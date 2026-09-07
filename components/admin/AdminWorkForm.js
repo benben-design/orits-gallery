@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useRef, useState } from 'react';
+import { Check, Languages, Save } from 'lucide-react';
 import styles from './AdminWorkForm.module.css';
 
 /**
@@ -198,7 +199,8 @@ function TranslationControls({ name, labels, translation, onRequest }) {
       <div className={styles.translationActions}>
         {translation.pending ? (
           <button type="button" className={styles.approve} onClick={translation.approve}>
-            {labels.approve}
+            <Check size={14} strokeWidth={1.5} aria-hidden="true" />
+            <span>{labels.approve}</span>
           </button>
         ) : null}
 
@@ -208,7 +210,8 @@ function TranslationControls({ name, labels, translation, onRequest }) {
           onClick={onRequest}
           disabled={translation.phase === 'translating'}
         >
-          {labels.translate}
+          <Languages size={14} strokeWidth={1.5} aria-hidden="true" />
+          <span>{labels.translate}</span>
         </button>
 
         {translation.phase === 'translating' ? (
@@ -902,11 +905,14 @@ export default function AdminWorkForm({
             className={styles.submit}
             disabled={isPending || awaitingApproval.length > 0}
           >
-            {isPending
-              ? labels.submitting
-              : mode === 'edit'
-                ? labels.save
-                : labels.submit}
+            <Save size={18} strokeWidth={1.5} aria-hidden="true" />
+            <span>
+              {isPending
+                ? labels.submitting
+                : mode === 'edit'
+                  ? labels.save
+                  : labels.submit}
+            </span>
           </button>
         </div>
       </form>

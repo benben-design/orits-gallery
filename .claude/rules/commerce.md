@@ -251,6 +251,36 @@ inert**, and this is the one place the project knowingly breaks its own rule
 that a control leading nowhere costs more trust than an absence. The artwork
 page went without a buy button for months on exactly that reasoning.
 
+**There is now a third, and it is on the artwork page: "buy now"**, beneath
+"add to cart". It was asked for deliberately, after the trade above was put and
+restated, and it is held to the same three conditions — a `<button>` rather
+than a link to `/checkout`, `aria-disabled`, and the cart's own
+`checkoutPending` sentence beneath it rather than a second translation of the
+same idea. It becomes real or becomes absent before launch, with the other two.
+
+**Its colour was settled by measurement**, and the number that settled it is
+how loud each fill is against the wall rather than how legible its label is:
+the accent fill is 5.43:1 on `--surface-wall`, a dark ink fill is 12.01:1, and
+`--accent-hover` is 7.05:1. The reference store draws both of its buttons
+near-black, and copying that would have put a 12:1 control directly beneath a
+5.43:1 one — **the inert button would have been more than twice as loud as the
+working one.** It briefly did carry the same accent fill, which had the same
+fault for the same reason.
+
+So it is `--surface-tint` with a `--line-strong` hairline and `--text-primary`
+on it: quiet ground, defined edge, 10.80:1 on the label. The clay is the one
+non-neutral surface in the palette and comes from the same terracotta family as
+the accent, so the two controls read as a deep-and-pale pair. **The
+one-filled-accent rule therefore still holds** — the accent belongs to the
+control that works, and this one is visibly the second option rather than a twin
+of the first.
+
+**One overlap to know about:** `--surface-tint` and `--status-sold-bg` are the
+same value, so the clay also means "sold" on a badge. They never meet on this
+page, because a sold work is not buyable and draws no buy controls at all — but
+one colour is doing two jobs, and a surface that ever shows a badge beside a
+button will have to answer for it.
+
 It was reversed on purpose, for one reason: the purchase flow has to be
 showable end to end before a payment provider is chosen. Three things keep it
 honest rather than misleading:

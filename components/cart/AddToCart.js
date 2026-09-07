@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, CreditCard } from 'lucide-react';
 import { isBuyable } from '@/components/ui/statusPresentation';
 import { useCart } from './cart-context';
 import styles from './AddToCart.module.css';
@@ -66,6 +66,28 @@ export default function AddToCart({ work, dictionary }) {
         <ShoppingBag size={18} strokeWidth={1.5} aria-hidden="true" />
         <span>{dictionary.artwork.addToCart}</span>
       </button>
+
+      {/*
+        Buying in one step, and **it deliberately does nothing yet** — checkout
+        is not built and no payment provider is chosen. It is the same trade the
+        cart drawer's checkout control already makes, kept honest the same three
+        ways: a `<button>` rather than a link to `/checkout`, so it does not
+        assert that a checkout exists and is broken; `aria-disabled`, so a
+        screen reader is not told it leads somewhere; and the line beneath, so
+        the control is never the only thing saying what will happen.
+
+        It is the clay tint rather than a second accent fill, and that was
+        settled by measurement: a dark fill would sit at 12:1 against the wall
+        beneath a primary at 5.43:1, so the inert control would have been the
+        louder of the two. See AddToCart.module.css.
+      */}
+      <button type="button" className={styles.buyNow} aria-disabled="true">
+        {/* The same glyph the cart's checkout carries — one action, one symbol. */}
+        <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+        <span>{dictionary.artwork.buyNow}</span>
+      </button>
+
+      <p className={styles.pending}>{dictionary.cart.checkoutPending}</p>
     </div>
   );
 }

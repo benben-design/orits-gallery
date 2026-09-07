@@ -29,6 +29,7 @@ Defined in `app/tokens.css`. One light theme; no dark mode, no `data-theme`.
 | `--surface-mat` | `#FBFAF7` | Cards, artwork mats, panels |
 | `--surface-sunk` | `#EBDFC1` | Inset areas: footer, filter bar |
 | `--surface-tint` | `#EBD9CE` | Clay tint. Background only |
+| `--surface-tint-hover` | `#D4C3B9` | The clay pressed — hover and active for a control filled with it |
 | `--text-primary` | `#2C2723` | Body and headings. Warm near-black — never `#000` |
 | `--text-muted` | `#6B6058` | Medium, dimensions, captions |
 | `--text-on-accent` | `#FBF7F3` | Text on the accent |
@@ -71,8 +72,22 @@ spreadsheet missing most of its columns.
 One button treatment was added with the cart, and it is the site's whole
 emphasis scale rather than a new style: `ButtonLink`'s hairline outline carries
 "see more of this", and a **filled `--accent`** carries "this is the thing to do
-here". There is only ever one of those in view — the buy button on an artwork
-page, the checkout button in the cart. `--text-on-accent` on `--accent` is one
+here". There is only ever one of those in view — the buy button on an artwork page,
+the checkout button in the cart. The artwork page's second control, the inert
+"buy now", is **not** a second fill: it is `--surface-tint` with a
+`--line-strong` hairline, which is the third step on this scale and the one to
+copy for any future secondary button. A surface fill is only 1.11:1 against the
+wall, so **the hairline is what makes it a button at all** and is not optional.
+Note that the clay is also the sold badge's background, so that one value now
+carries two meanings.
+
+**Every filled control darkens under the pointer, and the steps are matched.**
+`--accent` moves to `--accent-hover` at 1.30:1; `--surface-tint` moves to
+`--surface-tint-hover` at 1.25:1, derived the same way — each channel scaled,
+so hue and warmth survive and only the level moves. A button that sits beside
+one that responds and does not respond itself reads as broken, which is how
+this token came to exist.
+See commerce.md for the measurement that chose it over a dark fill. `--text-on-accent` on `--accent` is one
 of the pairings `npm run check:contrast` asserts, so this is a permitted use
 rather than a new liberty with the accent: a purchase is the most interactive
 thing on the site, and the accent is reserved for interactive things.

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogOut } from 'lucide-react';
 import { signOut } from '@/app/(admin)/admin/actions';
 import styles from './AdminShell.module.css';
 
@@ -55,7 +56,8 @@ export default function AdminShell({ dictionary, signedIn, children }) {
                 */}
                 <form action={signOut}>
                   <button type="submit" className={styles.navLink}>
-                    {dictionary.admin.nav.signOut}
+                    <LogOut size={16} strokeWidth={1.5} aria-hidden="true" />
+                    <span>{dictionary.admin.nav.signOut}</span>
                   </button>
                 </form>
               </li>

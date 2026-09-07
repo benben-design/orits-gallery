@@ -1,4 +1,5 @@
 import Container from '@/components/ui/Container';
+import { Trash2, CreditCard } from 'lucide-react';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ButtonLink from '@/components/ui/ButtonLink';
@@ -126,7 +127,8 @@ export default async function CartPage({ params }) {
 
                 <form action={removeMissingFromCart}>
                   <button type="submit" className={styles.missingAction}>
-                    {dictionary.cart.removeMissing}
+                    <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+                    <span>{dictionary.cart.removeMissing}</span>
                   </button>
                 </form>
               </div>
@@ -153,7 +155,8 @@ export default async function CartPage({ params }) {
                   underneath says plainly where things stand. See commerce.md.
                 */}
                 <button type="button" className={styles.checkout} aria-disabled="true">
-                  {dictionary.cart.checkout}
+                  <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+                  <span>{dictionary.cart.checkout}</span>
                 </button>
 
                 <p className={styles.pending}>{dictionary.cart.checkoutPending}</p>
