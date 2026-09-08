@@ -186,6 +186,12 @@ silently until a form quietly destroys the value.
 
 ## Placeholder data
 
+**Out of date for the database, still true of the fixture.** The sixteen works
+now carry the artist's real dimensions, prices, media, Hebrew titles and Hebrew
+descriptions, taken from her under1000 listings; `year` and `description_en` are
+null rather than stand-ins. `lib/data/artworks.js` still holds everything below,
+which is why `seed:local` is now destructive — see app-files.md.
+
 Dimensions, prices, descriptions, media and years are **not known yet**. The
 stand-in values are deliberately absurd — 999x999 cm, 99,999 shekels, year 1000,
 and copy prefixed `[PLACEHOLDER]` in English and `[טקסט זמני]` or `[ממלא מקום]`

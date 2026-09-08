@@ -64,6 +64,26 @@ a database that production does not have. `lib/db.js` throws when `DATABASE_URL`
 is unset, so a deploy today fails at request time on every page that reads a
 painting, which is all of them. Connecting Neon is what closes that.
 
+**The catalogue has to travel too, and there are two routes.** The migrations
+now include `008_load_catalogue_data.sql`, which carries the sixteen works and
+their images, so applying 001 through 008 in order brings a fresh Neon to the
+catalogue as it stood when 008 was generated. That is the committed backup, and
+it is a snapshot by nature. **When both databases are live, prefer a dump taken
+at the moment of the move:**
+
+```bash
+pg_dump --data-only --table=works --table=work_images "$LOCAL" | psql "$NEON"
+```
+
+It is current by construction, where 008 is current only as of the day it was
+written. 008 exists so that the catalogue is in version control and a fresh
+database needs nothing but the migrations; it is not the thing to run against a
+Neon that already has data.
+
+**008 is the only migration that is not ASCII**, because its data is Hebrew.
+Run it with a UTF-8 client — its header says how — or psql on Windows aborts it
+mid-statement.
+
 When Neon arrives: the connection string is `DATABASE_URL` in the Netlify
 site, and the migrations in `database/migrations/` are applied to it **by
 hand, in numeric order, as a deliberate step of deploying** — never assumed to
@@ -118,10 +138,23 @@ panel. Two things about them are worth knowing before deploying:
 
 Beyond a green build, these are launch blockers and are easy to forget:
 
+- **Real photography — mostly done, not finished.** Fifteen of the sixteen now
+  serve the artist's own originals from the image host rather than the
+  WhatsApp-compressed stand-ins. What is left is that these are marketplace
+  listing photographs, several shot with the frame in view, and `detail` and
+  `in-situ` images still do not exist. The original wording follows.
 - **Real photography.** Every image in the repo today is a compressed stand-in.
   The admin can now replace them one at a time — see images.md — so this is
   sixteen edits by the artist rather than an engineering task, but it is still
   a blocker and it still has to actually happen.
+- **Real content — largely done.** Titles, descriptions, dimensions, prices and
+  media are the artist's own, from her under1000 listings, and the English
+  descriptions are machine translations of her Hebrew, written without passing
+  through the admin's approval gate — **so no human has read them yet.** Still
+  outstanding: `year` is null on every work, and the **sale statuses are still
+  demo data** —
+  two works claim to be sold and two reserved, while under1000 lists all
+  sixteen as available. The original wording follows.
 - **Real content.** The placeholder dimensions, prices, years, media and
   descriptions are deliberately absurd so they cannot ship unnoticed. They must
   all be replaced.

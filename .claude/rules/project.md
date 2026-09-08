@@ -229,6 +229,20 @@ record still saves with no script at all. See app-files.md.
 
 ## Placeholder data — read before touching content
 
+**This section is mostly historical now.** On 2026-09-08 the catalogue was
+filled in from the artist's own under1000 listings: real Hebrew titles,
+descriptions, dimensions, prices and media are in the database for all sixteen
+works, and `has_placeholder_data` is false on every one of them. What follows
+describes the **seed fixture**, which still holds the stand-ins and would
+reimpose them — see the warning in setup.md before running `seed:local`.
+
+One field is still absent rather than fake, which is the schema's own honest
+value: `year` is null on every work. **The English descriptions were machine
+translated and written straight to the database**, which deliberately bypasses
+the admin's approval gate — see the warning in i18n.md. **Sale statuses are
+still demo data** — two sold, two reserved, two not-for-sale — and every one of
+those sixteen paintings is listed as available on under1000.
+
 Titles, categories, slugs and the sixteen images are **real**.
 
 Dimensions, prices, descriptions, media and years are **not known yet**, and are

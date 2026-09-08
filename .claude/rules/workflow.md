@@ -106,6 +106,45 @@ confirmation. `cpm` puts code in front of real buyers, so make sure the commit
 message is one he would want to read back later — and if the spelling rule above
 applies to it, apply it.
 
+## Name the chat after every `cp` and `cpm`
+
+**Both shorthands end with one more step: give this chat a name that fits the
+work done in it.** Not the branch, not the first thing he typed — a short
+descriptive sentence in the same voice as the commit subject, because that is
+what makes a chat findable a fortnight later. Without it a session is listed by
+whatever it opened with, and a year of them reads `sup`, `heyyyy`, `wasuuuppp`.
+
+`cpm` is a superset of `cp` here as well: both end this way, and a second `cp`
+in one session **replaces** the name rather than adding to it, so the last one
+describes the whole session rather than its first hour.
+
+A session's name lives in its own transcript, at
+`~/.claude/projects/<project-slug>/<session-id>.jsonl`, and appending one line
+sets it:
+
+```json
+{"type":"custom-title","customTitle":"Order dates, and marking a painting sold","sessionId":"<session-id>"}
+```
+
+Three things about that line, each of them the reason it is written rather than
+something else:
+
+- **It is byte-for-byte what Claude Code's own `/rename` writes**, key order
+  included. This is the supported shape, not a format invented here — `/rename
+  <name>` by hand is the same write.
+- **The last such line wins**, and it beats the automatic title: the name shown
+  is `agentName || customTitle || aiTitle || summary || firstPrompt`. So a
+  rename is always an append, and nothing in a transcript is ever edited or
+  deleted — the same forward-only discipline as the migrations.
+- **The session id is the transcript's filename**, and for the current session
+  it is the directory named in the scratchpad path. Read it; never guess it.
+
+Two things not to do with it. The name may not appear in the chat list until
+that list refreshes, so a rename that seems not to have worked probably has —
+check the file, not the sidebar. And **the sessions spawned by
+`/security-review` are left alone**: they are not chats anyone worked in, they
+arrive two at a time, and their automatic titles already say what they covered.
+
 ## Never record the current branch in a rules file
 
 **No rules file may state which branch is active.** Not this one, not any other.

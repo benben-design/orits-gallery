@@ -216,13 +216,21 @@ Two operational notes that cost real time when missed:
   migration.** It keeps the previous connection, and the tables land in
   `postgres` with no error.
 
-To fill a fresh local database with the sixteen works, run `npm run seed:local`.
-It refuses to do anything unless `DATABASE_URL` points at loopback, and it is
-safe to run repeatedly.
+**Do not run `npm run seed:local` against a database that holds the real
+catalogue.** It upserts on `slug_en` across every column, so it replaces the
+real titles, prices, sizes, media and descriptions with the deliberately absurd
+stand-ins and reverts the images to the local files. It was safe to re-run when
+the fixture *was* the data; it is not any more. Migration 008 is the way back
+if it happens.
+
+For a genuinely empty local database, the sixteen works now come from
+`database/migrations/008_load_catalogue_data.sql`, applied in numeric order with
+the others. `seed:local` remains for a database with no catalogue in it at all.
 
 **The local database is now a requirement for running the site at all**, not
 just for the seed script. Every page reads paintings from it, so on a fresh
 clone the order is: create `art_studio`, apply the migrations in numeric order,
-copy `.env.example` to `.env.local` and set `DATABASE_URL`, then
-`npm run seed:local`. Skip any of those and the dev server starts and then
+copy `.env.example` to `.env.local` and set `DATABASE_URL`. The
+migrations now include the catalogue: 008 loads the sixteen works, so
+`seed:local` is not part of a fresh clone any more. Skip any of those and the dev server starts and then
 errors on the first page that reads a painting.

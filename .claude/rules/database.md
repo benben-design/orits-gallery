@@ -25,7 +25,11 @@ These apply to every migration from here on.
 - **Forward-only.** Once a file has been applied it is never renamed,
   renumbered or edited. A mistake is corrected by the next numbered file — a
   rename reads as a brand-new migration and runs twice.
-- **ASCII only, comments included.** `psql` on Windows defaults its client
+- **ASCII only, comments included** — with exactly one exception, migration
+  008, which loads the catalogue and whose *data* is Hebrew by definition. Its
+  comments are still ASCII and its header says how to run it. The rule is about
+  SQL text read from a file, so a file whose contents are Hebrew data has to
+  carry the encoding instruction instead of pretending the problem is gone. `psql` on Windows defaults its client
   encoding to WIN1252, and a single character with no WIN1252 equivalent aborts
   the statement it sits inside. One Hebrew character in a comment took out an
   entire `create table` and then cascaded into three misleading

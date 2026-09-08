@@ -151,7 +151,21 @@ different tables**: pixels of a file in `work_images`, centimetres of a canvas
 in `works.width_cm` / `height_cm`. The naming keeps them apart deliberately —
 confusing them produces a layout that is wrong in a way nobody spots by eye.
 
-## Current images are stand-ins
+## Current images — fifteen are hers now, one is still a stand-in
+
+**Superseded for fifteen of the sixteen.** Her own originals were pulled from
+under1000 and uploaded to the image host, carrying between 4x and 25x the data
+of the stand-ins at equal or larger pixel dimensions. `two-pears` kept its local
+file, because her copy of that one is 842x826 against our 1582x1600 — lower
+compression does not buy back resolution that is not there. `tuscan-house` kept
+the hosted file already attached, for the same reason.
+
+That closes most of the launch blocker below, but **not all of it**: these are
+still photographs taken for a marketplace listing rather than studio
+photography, and several are shot with the frame in view.
+
+The paragraph below describes the files still in `public/paintings/`, which
+remain the manifest source and the fallback.
 
 Every file in `public/paintings/` is a WhatsApp-compressed copy capped at 1600px,
 and two of them are far smaller than that. They are fine for development and
