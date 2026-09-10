@@ -1,0 +1,303 @@
+/**
+ * One order.
+ *
+ * The admin's quiet document language: an uppercase muted label per block, a
+ * definition list for facts, hairlines between rows, and the total in the
+ * display face because it is still the number the page adds up to.
+ *
+ * Only one thing on the page raises its voice, and only when it is true: an
+ * order that owes somebody a refund.
+ */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-6);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+}
+
+.back {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  padding-block: var(--space-2);
+}
+
+@media (hover: hover) {
+  .back:hover {
+    color: var(--accent-hover);
+  }
+}
+
+/** What the action she just pressed did. The works list's band, unchanged. */
+.done {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-block-end: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--surface-tint);
+}
+
+/** Money owed. The same treatment the list gives it, so the two agree. */
+.urgent {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-inline-start-width: var(--space-1);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-tint);
+  padding: var(--space-5);
+  margin-block-end: var(--space-5);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.reference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  padding-block: var(--space-4);
+  border-block: var(--border-hairline) solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.referenceLabel {
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.referenceValue {
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.blockTitle {
+  margin-block-start: var(--space-7);
+  margin-block-end: var(--space-3);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * Facts
+ * ------------------------------------------------------------------ */
+
+/**
+ * Label and value in two columns from 30rem, stacked below it. A definition
+ * list because that is what this is, and because it keeps the label attached to
+ * its value for a screen reader.
+ */
+.facts {
+  display: grid;
+  gap: var(--space-2) var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.facts dt {
+  color: var(--text-muted);
+}
+
+.facts dd {
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 30rem) {
+  .facts {
+    grid-template-columns: 10rem 1fr;
+  }
+
+  .facts dt {
+    grid-column: 1;
+  }
+
+  .facts dd {
+    grid-column: 2;
+  }
+}
+
+/**
+ * The sentence that stands in for an address a pickup order does not have.
+ * Muted, because it is an explanation rather than a value.
+ */
+.pickupNote {
+  color: var(--text-muted) !important;
+  line-height: var(--leading-normal);
+}
+
+/* ------------------------------------------------------------------ *
+ * The paintings
+ * ------------------------------------------------------------------ */
+
+.lines {
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-4);
+  border-block-end: var(--border-hairline) solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.lineTitle {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (hover: hover) {
+  .lineTitle:hover {
+    color: var(--accent-hover);
+  }
+}
+
+/** What the painting itself says now — which a refund changes. */
+.lineState {
+  color: var(--text-muted);
+}
+
+.lineAmount {
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-block-start: var(--space-5);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--border-hairline) solid var(--line-strong);
+}
+
+.totalLabel {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.totalAmount {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-light);
+  color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------------ *
+ * Timeline
+ * ------------------------------------------------------------------ */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+.event {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-3);
+  border-block-end: var(--border-hairline) solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.eventLabel {
+  color: var(--text-primary);
+}
+
+.eventDate {
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * Actions
+ * ------------------------------------------------------------------ */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/**
+ * The forward step. A bordered control rather than a filled accent: the admin
+ * has no hierarchy of one loud button per page the way the shop does, and a
+ * filled terracotta on "mark as posted" would shout louder than anything on the
+ * site it manages.
+ */
+.primary {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: var(--border-hairline) solid var(--accent);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-mat);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .primary:hover {
+    background-color: var(--accent);
+    color: var(--text-on-accent);
+  }
+}
+
+/**
+ * The exits. Quiet, in the secondary ink — cancelling and refunding are the
+ * least likely things she wants, and an accent on them reads as an invitation.
+ */
+.quiet {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .quiet:hover {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+  }
+}
+
+/** What the exits do to the paintings, said before she presses one. */
+.releaseNote {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+.noActions {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

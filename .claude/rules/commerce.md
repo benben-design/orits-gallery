@@ -133,7 +133,9 @@ in a screenshot.
 - **Available needs no label.** It is the default, and a badge on every card is
   noise. The visible price is itself the signal that the work can be bought.
 - **Reserved is the state a buyer acts on** — someone else is mid-purchase — so
-  it must be unmistakable at a glance without being alarming.
+  it must be unmistakable at a glance without being alarming. **It is a human
+  state, and checkout never writes it:** the artist sets it when somebody tells
+  her they are taking a painting. See the decision under the double-sale problem.
 - **Sold keeps its price, struck.** The work stays on display: it is part of the
   body of work and evidence of demand, not something to hide. The strike is also
   what separates sold from reserved without relying on the badge's hue.
@@ -164,7 +166,18 @@ Mitigations, all required:
 
 1. **Checkout re-verifies status server-side at the moment of payment**, not when
    the item was added to the cart. A cart is a wish, not a hold.
-   **Not built** — there is no checkout. This stays a requirement.
+   **Built.** It is *one conditional write* at the moment a payment is verified:
+   the statement that marks a work sold requires it to still be available, so
+   winning and losing the race are the same query and there is no check-then-act
+   window between them. The row count is the answer, and it is all-or-nothing
+   across the whole cart.
+   **There is deliberately no reservation during checkout** — a settled decision
+   rather than a gap, recorded below.
+   **And the losing side is built too, because by then the money has moved.** The
+   charge is voided the same day if it can be, and flagged `refund_due_at` if it
+   cannot; the buyer is told the painting sold moments ago and what happens to
+   their money. See api.md, and deployment.md for what that path cannot prove
+   until there is a Hyp account.
 2. **A cart may hold a work, but must never be trusted as a reservation.** If a
    work's status changed while it sat in a cart, the user is told clearly before
    any money moves.
@@ -233,6 +246,29 @@ work to sale, and the same row links to it.
    this the default rather than a discipline: `published_at` has no default, so
    a row inserted without one is a draft whether or not the importer remembered.
 
+### No reservation during checkout (decided)
+
+**Checkout never writes `reserved`.** That status stays exactly what it is
+today: a human state, set by the artist when somebody tells her they are taking
+a work.
+
+Holding a painting the moment a buyer reaches the payment page was considered
+and rejected. It would close the race properly — but it needs a timer, an
+expiry and a sweep to release the holds nobody completed, and that is **three
+new failure modes, every one of which can strand a live painting off sale with
+nothing announcing it**, bought to defend against a race that happens at one or
+two sales a month.
+
+So the race is closed at the other end instead: **one conditional write at the
+moment of payment**, which either matches an available work or does not. A
+second buyer who somehow pays for the same painting is a refund and an
+apology — rare, visible, recoverable. A stuck reservation is none of those: it
+is invisible, and it costs sales until somebody happens to notice.
+
+`reserved` remains not buyable, which is unchanged and still right. If the
+artist has promised a painting to somebody, the site must not sell it to
+somebody else.
+
 ## Automation, when it comes
 
 The intended shape is: a file lands in a folder → a **draft** appears in the
@@ -244,19 +280,31 @@ shots, wrong crops, screenshots — and publishing straight from one to a public
 shop will eventually publish something wrong. The automation feeds her inbox,
 not the website.
 
-## The checkout button exists and does nothing
+## The three checkout controls are real now
 
-**Both the drawer and `/cart` end in a checkout button that is deliberately
-inert**, and this is the one place the project knowingly breaks its own rule
-that a control leading nowhere costs more trust than an absence. The artwork
-page went without a buy button for months on exactly that reasoning.
+**They were inert for months and they are not any more.** The drawer's checkout
+button, `/cart`'s, and "buy now" on the artwork page are all ordinary links into
+`/[locale]/checkout`. The `aria-disabled` attributes and the shared
+`cart.checkoutPending` sentence — "buying through the site is not open yet" —
+went with them, and that locale key is deleted rather than left unused.
 
-**There is now a third, and it is on the artwork page: "buy now"**, beneath
-"add to cart". It was asked for deliberately, after the trade above was put and
-restated, and it is held to the same three conditions — a `<button>` rather
-than a link to `/checkout`, `aria-disabled`, and the cart's own
-`checkoutPending` sentence beneath it rather than a second translation of the
-same idea. It becomes real or becomes absent before launch, with the other two.
+They look exactly as they did, because they always looked the way they would
+when they worked. What follows is the record of why they were inert and how the
+colour was settled, which still governs what the artwork page's two controls
+look like today.
+
+**"Buy now" carries one painting, not the cart.** It links to
+`/checkout?work=<id>`, and the checkout reads that single id from the URL and
+never looks at the cart — so buying the painting in front of you neither adds to
+nor disturbs whatever somebody had already put aside. A plain link rather than a
+second cookie: nothing to expire, nothing to reconcile, shareable, and it
+survives the back button.
+
+**Payment being unconfigured is not an inert button.** With no `HYP_*`
+credentials the checkout page shows the paintings and a sentence saying buying
+is not open, and simply does not render the form — the same arrangement the
+admin's work form makes when the image host has no keys. An absent feature is
+honest; a control that dies under a finger is not.
 
 **Its colour was settled by measurement**, and the number that settled it is
 how loud each fill is against the wall rather than how legible its label is:
@@ -281,20 +329,44 @@ page, because a sold work is not buyable and draws no buy controls at all — bu
 one colour is doing two jobs, and a surface that ever shows a badge beside a
 button will have to answer for it.
 
-It was reversed on purpose, for one reason: the purchase flow has to be
-showable end to end before a payment provider is chosen. Three things keep it
-honest rather than misleading:
+The inert version was reversed on purpose so the purchase flow could be shown end
+to end before a provider was chosen, and it was held honest three ways while it
+lasted: a `<button>` with no handler rather than a link to a stub page, an
+`aria-disabled` so no screen reader was told it led anywhere, and a line beneath
+saying buying was not open. **All three conditions are now satisfied by the
+control simply being real**, which is what that section always said had to
+happen before launch.
 
-- It is a `<button>` with no handler, **not a link to `/checkout`.** A stub page
-  would assert that a checkout exists and is broken, which is worse than one
-  that plainly has not opened.
-- It carries `aria-disabled`, so a screen reader is not told it leads somewhere.
-- The line beneath it says buying is not open yet, so the button is never the
-  only thing saying what will happen.
+## What checkout does, in order
 
-**This is a demo affordance, not a decision about launch.** It must become real
-or become absent before anything is deployed to a real customer — a button that
-silently does nothing on a live shop is worse than either.
+The sequence is the design, and it is the order api.md requires:
+
+1. **Validate what was typed** — `lib/checkout/checkout-input.js`, pure, returning
+   error codes rather than sentences.
+2. **Re-verify every painting and write a `pending` order in one transaction**,
+   with the works locked `for update` so two simultaneous checkouts for one
+   painting queue instead of both being told yes.
+3. **Only then ask Hyp to sign a payment page.**
+4. **Redirect the buyer to it.**
+
+**The order exists before the buyer reaches the payment page**, and that ordering
+is not negotiable on this provider: there is no webhook and no status query, so a
+payment that came back referring to no order would be unrecoverable.
+
+**Nothing is reserved and nothing is marked sold at this point.** A pending order
+is a record that somebody tried; the paintings stay `available` and stay buyable
+by anyone else until a verified payment says otherwise. That is the no-reservation
+decision above, made concrete.
+
+**A painting that has gone stops the checkout and is named.** Not counted, not
+"something in your order" — the title, because at the moment of paying somebody
+should not have to compare four paintings against the gallery to find out which
+one they have lost. The page refuses to offer the form at all while the cart
+holds one, and the transaction refuses again on submit, because a painting can
+sell between the two.
+
+**The cart is not cleared by starting a checkout.** Nothing has been paid for. A
+buyer who abandons the payment page comes back to the paintings they had chosen.
 
 ## Israeli consumer law
 
@@ -306,8 +378,16 @@ touches:
   as real pages, linked from the footer.
 - **An accessibility statement** (הצהרת נגישות), and the site must actually be
   accessible — this is enforced in Israel for commercial sites.
-- If an Israeli payment provider is chosen, a **tax invoice** (חשבונית מס) is
-  issued per order. That is a factor in choosing the provider.
+- A **tax invoice** (חשבונית מס) per order. **Issued by the artist herself, by
+  hand — and that is the decision for v1**, not a gap. At one or two sales a
+  month the volume does not justify automating it, and Hyp Pay does not issue
+  one for us. So nothing in this codebase generates, numbers or sends an
+  invoice.
+  What the site owes that task is the information it needs: the order, its
+  total, and **the language the buyer was reading**, which is why `buyer_locale`
+  is required and captured during checkout rather than inferred later.
+  Automating it later is an integration with an invoicing service; it is not a
+  change to the payment flow.
 
 ## Trust
 
@@ -365,9 +445,13 @@ that starts a clock the business is bound by.
 
 **Every status carries the date it happened, and the database enforces it
 forwards.** A status at or past paid must carry `paid_at`, *including
-`refunded`*, because a refund does not erase the payment before it. Shipped and
-delivered must carry `shipped_at`; delivered must carry `delivered_at`;
-pending must carry none of them. The dates must be in order.
+`refunded`*, because a refund does not erase the payment before it. `shipped`
+must carry `shipped_at`, and so must `delivered` **when the order is being
+shipped** — a self-pickup order never ships and is excused, see Delivery below;
+delivered must carry `delivered_at` either way; pending must carry none of them.
+The dates must be in order, and since migration 009 that includes
+`paid_at <= delivered_at` stated directly, because a pickup order has no
+`shipped_at` for the chain to run through.
 
 **Two exits are deliberately unconstrained**, and the reasoning is worth
 copying: a `cancelled` order may or may not carry `paid_at`, because the
@@ -377,11 +461,20 @@ dispatch and receipt, because refunding before dispatch and after delivery are
 both legitimate. **Enforce what is unrecoverable if lost, stay silent where the
 provider may legitimately be right.**
 
+**We charge directly, and that is decided.** Hyp Pay's J2 — one step, the money
+taken as the buyer confirms — rather than J5 authorize followed by J4 capture.
+We are building against default terminal settings without a technical call, and
+J2 is what those settings do. Authorize-then-capture stays available as a future
+improvement if the double-sale race ever proves to be a real problem rather than
+a theoretical one, because it is the shape in which a painting could be
+confirmed still available *before* the money is taken. The silence above is what
+leaves room for it.
+
 Note this is the opposite call from `works.sale_channel`, which is
 deliberately *not* tied to `status = 'sold'` — and the difference is the point,
 not an inconsistency. That one is typed by hand into a form filled in any
-order, and is recoverable by typing it again. These are written by a webhook or
-one deliberate click, and a lost payment date is gone for good.
+order, and is recoverable by typing it again. These are written by a verified
+payment return or one deliberate click, and a lost payment date is gone for good.
 
 **Still open, and it is an admin task rather than a schema one: an order whose
 receipt is never marked has no computable window.** It sits at `shipped` with
@@ -390,8 +483,83 @@ constraint can make somebody confirm a delivery, and a default date would be
 invented and then counted from. The orders list has to surface dispatches that
 were never closed.
 
+**The orders list is built and surfaces all three of its reconciliation jobs**:
+orders pending for over an hour — the buyer who paid and closed the window —
+orders carrying an owed refund, and **a dispatch nobody has confirmed as
+received**, which is this paragraph's requirement.
+
+That third one carries a **seven-day threshold** rather than firing the moment a
+painting is posted, and the reasoning is the same one that put `delivered` in the
+schema at all. The window is uncomputable from dispatch onwards, so on strict
+reading every posted order qualifies — but a block listing every parcel sent this
+morning is a block she stops reading, which is exactly how "which orders are
+still on the way" stopped being answerable in the first place. Seven days is
+comfortably longer than insured domestic delivery here, so anything still open
+after it is either lost or simply unmarked. Both want a person, which is the
+whole point. The interval is a named constant in `lib/data/orders-repository.js`.
+
+### What cancelling or refunding does to the paintings
+
+**They go back to draft, not back on sale**, and the sale channel is cleared in
+the same statement. That is deliberate: a refund should not silently re-list a
+painting on the public site the moment the money is returned. The artist may want
+to re-photograph it, re-price it, or keep it — so publication is hers to restore,
+from the painting itself.
+
+**An order that owes a refund releases nothing.** Its painting was won by
+somebody else in the race; taking it back to fix a refund would take it from a
+buyer who is waiting for it. That order gets one action — recording that the
+money was returned — and says so on the page.
+
 Nothing writes orders yet. The cart holds work ids in a cookie and ends in a
-deliberately inert checkout button; no checkout, and no payment provider.
+deliberately inert checkout button. **The provider is settled — Hyp Pay, on the
+yaad-sarig platform** — and what remains is the checkout itself, the verified
+return that is this tier's only completion signal, and the admin's orders pages.
+
+## Delivery
+
+**Two ways a painting reaches its buyer, and they are not the same
+transaction.**
+
+| Method | Cost | Address | How it completes |
+|---|---|---|---|
+| `shipping` | **40 ILS flat**, anywhere in Israel | required | `paid` → `shipped` → `delivered` |
+| `self-pickup` | **free** | **none at all** | `paid` → `delivered`, in one act |
+
+**Flat anywhere in Israel, deliberately.** A zone table is a pricing model to
+maintain for a country four hours long, and it would be the artist keeping it
+current.
+
+**The fee charged is stored on the order and never recomputed.** The rate lives
+in exactly one place in code — `lib/delivery.js` — and it is expected to move to
+`/admin/settings`. The day it changes, anything that recalculated an old order's
+delivery cost from the current rate would rewrite what that buyer was charged,
+silently, in a record that has to read the same in three years in front of an
+accountant. That is the rule `order_lines.price_agorot` already follows for the
+paintings, applied to the other line on the invoice. Do not scatter the rate, and
+do not derive an old order's delivery cost from it.
+
+**A pickup order has no address** — not an empty one, and not the studio's own
+address typed into the buyer's field, which is what a required column invites.
+The database enforces both halves: required for shipping, absent for pickup.
+
+**A pickup order never ships, and that is why migration 009 had to correct 007.**
+The artist hands the painting over, and that single act is both dispatch and
+receipt. Forcing a `shipped_at` would mean inventing a date nobody observed, on
+the columns 007 exists to keep honest — so a pickup order may carry neither the
+`shipped` status nor a dispatch date, and goes straight to `delivered`.
+
+The legal point survives intact, which is the test that mattered: **the 14-day
+window counts from receipt**, and a pickup order has a real `delivered_at` — the
+moment she handed it over. For the artist that is one click at the moment of
+handover, and it is the click that starts a clock she is bound by.
+
+**Pickup is free and the database enforces it; the shipping fee is deliberately
+not pinned to 40 ILS.** Pinning it would put today's price list in the schema,
+make a rate change a migration, fail an old order's own constraint the day the
+rate moved, and refuse a free-shipping promotion. Same line as everywhere else
+here: enforce what is never legitimately otherwise, stay silent where the
+business may reasonably change its mind.
 
 ## Money handling
 

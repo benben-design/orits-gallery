@@ -387,16 +387,23 @@ export default function CartDrawer({ dictionary, locale }) {
         ) : null}
 
         {/*
-          The checkout control. **It deliberately does nothing yet**: checkout is
-          not built and no payment provider is chosen, and it is here so the flow
-          can be shown end to end. `aria-disabled` rather than nothing at all —
-          it looks exactly as it will when it works, but a screen reader is not
-          told it leads somewhere. See commerce.md.
+          The checkout control, and **a real link now that there is a checkout**.
+          It was an inert `<button>` carrying `aria-disabled` for as long as there
+          was nowhere to go; it looks exactly the same, because it always looked
+          the way it would when it worked.
+
+          It closes the drawer on the way, like the link below it: this is a
+          navigation, and a panel left hanging open over the page somebody has just
+          navigated to is the drawer forgetting what it is for.
         */}
-        <button type="button" className={styles.checkout} aria-disabled="true">
+        <Link
+          href={localeHref(locale, '/checkout')}
+          className={styles.checkout}
+          onClick={closeCart}
+        >
           <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
           <span>{dictionary.cart.checkout}</span>
-        </button>
+        </Link>
 
         <Link href={localeHref(locale, '/cart')} className={styles.viewCart} onClick={closeCart}>
           {dictionary.cart.viewCart}

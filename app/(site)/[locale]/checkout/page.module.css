@@ -1,0 +1,94 @@
+/**
+ * Chrome for the checkout route — the column it reads in, and the two states
+ * that are not the form.
+ *
+ * Everything the form itself looks like lives in CheckoutForm.module.css. This
+ * file holds only what belongs to the page: the measure, the summary heading, an
+ * empty checkout, and the quiet notice block.
+ */
+
+/**
+ * The same measure as the cart, and for the same measured reason: a list with a
+ * picture in it stops holding together across the full page width. Carrying it
+ * from one page to the next also means the paintings do not change size or
+ * position between the cart and the checkout, which is the moment a buyer is
+ * most alert to something looking different.
+ */
+.column {
+  max-inline-size: var(--measure-list);
+}
+
+/**
+ * The summary's heading. Smaller than the page's h1 and quieter than a section
+ * heading — it labels a block on a page whose subject is already named above.
+ */
+.summaryTitle {
+  margin-block-start: var(--space-6);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * Nothing to pay for. An invitation rather than a dead end, the same shape the
+ * empty cart takes.
+ */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  margin-block: var(--space-8) var(--space-9);
+}
+
+.emptyText {
+  font-size: var(--text-md);
+  color: var(--text-muted);
+}
+
+/**
+ * Something the buyer should read before filling anything in: a painting in the
+ * list has gone, or payment is not configured. The cart's sunk ground, which is
+ * this palette's way of setting a block apart without a colour that means
+ * anything — there is one accent and it belongs to interaction.
+ */
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-block-start: var(--space-6);
+  padding: var(--space-5);
+  background-color: var(--surface-sunk);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.noticeList {
+  margin-inline-start: var(--space-5);
+  list-style: disc;
+}
+
+/**
+ * The test-terminal marker. Deliberately plain and deliberately not hidden: it
+ * exists to answer "was that real money" in the one place the answer matters,
+ * and a marker styled as a warning would read as something being wrong.
+ */
+.testMode {
+  margin-block-start: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/**
+ * The way back, inside the notice. A block of its own so the button is not
+ * crowded against the list of paintings above it.
+ */
+.noticeAction {
+  margin-block-start: var(--space-3);
+}

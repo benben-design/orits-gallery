@@ -1,8 +1,10 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
 import { ShoppingBag, CreditCard } from 'lucide-react';
 import { isBuyable } from '@/components/ui/statusPresentation';
+import { localeHref } from '@/lib/i18n/config';
 import { useCart } from './cart-context';
 import styles from './AddToCart.module.css';
 
@@ -36,7 +38,7 @@ import styles from './AddToCart.module.css';
  * painting is going, and the same glyph in both places is what makes that
  * legible without a sentence.
  */
-export default function AddToCart({ work, dictionary }) {
+export default function AddToCart({ work, dictionary, locale }) {
   const { addWork } = useCart();
   const buttonRef = useRef(null);
 
@@ -68,26 +70,31 @@ export default function AddToCart({ work, dictionary }) {
       </button>
 
       {/*
-        Buying in one step, and **it deliberately does nothing yet** — checkout
-        is not built and no payment provider is chosen. It is the same trade the
-        cart drawer's checkout control already makes, kept honest the same three
-        ways: a `<button>` rather than a link to `/checkout`, so it does not
-        assert that a checkout exists and is broken; `aria-disabled`, so a
-        screen reader is not told it leads somewhere; and the line beneath, so
-        the control is never the only thing saying what will happen.
+        Buying this one painting, now. **A real link since the checkout exists** —
+        it was an inert `<button>` with an `aria-disabled` and a "not open yet"
+        sentence beneath it for as long as there was nowhere to go, and all three
+        of those are gone together.
 
-        It is the clay tint rather than a second accent fill, and that was
-        settled by measurement: a dark fill would sit at 12:1 against the wall
-        beneath a primary at 5.43:1, so the inert control would have been the
-        louder of the two. See AddToCart.module.css.
+        `?work=` is the whole of the mechanism: the checkout reads that one id from
+        the URL, prices it, and never looks at the cart. So this buys the painting
+        in front of you without adding it to, removing it from, or reordering
+        whatever somebody already had put aside — and because it is a plain link,
+        it works with no JavaScript, is shareable, and survives the back button.
+        The cart is not touched, so abandoning the payment loses nothing.
+
+        It stays the clay tint rather than becoming a second accent fill. That was
+        settled by measurement and the measurement has not changed: one filled
+        accent per view, and it belongs to "add to cart" above. See
+        AddToCart.module.css.
       */}
-      <button type="button" className={styles.buyNow} aria-disabled="true">
+      <Link
+        href={localeHref(locale, `/checkout?work=${work.id}`)}
+        className={styles.buyNow}
+      >
         {/* The same glyph the cart's checkout carries — one action, one symbol. */}
         <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
         <span>{dictionary.artwork.buyNow}</span>
-      </button>
-
-      <p className={styles.pending}>{dictionary.cart.checkoutPending}</p>
+      </Link>
     </div>
   );
 }

@@ -43,6 +43,10 @@ import {
   IMAGE_PUBLIC_ID_FIELD,
   MANUAL_SALE_CHANNELS,
 } from '@/lib/data/work-input';
+import {
+  advanceOrder as advanceOrderRecord,
+  closeOrder as closeOrderRecord,
+} from '@/lib/data/orders-repository';
 import { signImageUpload, readUploadedImage } from '@/lib/image-host';
 import { safeReturnTo, ADMIN_LOGIN_PATH } from '@/lib/auth/admin-guard';
 import { readClientIp } from '@/lib/auth/client-ip';
@@ -645,4 +649,113 @@ export async function saveMainImage(workId, publicId) {
   revalidatePath('/', 'layout');
 
   return { ok: true, image };
+}
+
+/* ------------------------------------------------------------------ *
+ * Orders
+ *
+ * The four things the artist does to an order after it has been paid for. Every
+ * one verifies the session in its own first line, because the page guard has no
+ * say over a Server Action — see security.md — and every one takes its order id
+ * as a **bound** argument rather than a form field, so a browser cannot point it
+ * at somebody else's order.
+ *
+ * None of them parses a form and none of them takes a date. The dates are set by
+ * the same statement that moves the status, so what is recorded is when the
+ * artist pressed the button rather than what she typed.
+ * ------------------------------------------------------------------ */
+
+function orderPath(orderId, outcome) {
+  const path = '/admin/orders/' + encodeURIComponent(orderId);
+  return outcome ? path + '?done=' + outcome : path;
+}
+
+/**
+ * Moves an order one step forward: posted, or arrived.
+ *
+ * **The database decides whether the step is legal**, not this function and not
+ * the page that drew the button. `advanceOrder` builds a `where` clause that can
+ * only match an order actually in the state the step starts from, so a double
+ * press, a stale tab, or a hand-made POST changes nothing instead of raising a
+ * constraint violation at the artist.
+ *
+ * @param {string} orderId - Bound server-side by the page.
+ * @param {'shipped'|'delivered'} to - Bound the same way, one per button.
+ */
+export async function advanceOrderStatus(orderId, to) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  const moved = await advanceOrderRecord({ orderId, to });
+
+  redirect(orderPath(orderId, moved ? 'advanced-' + to : 'notAllowed'));
+}
+
+/**
+ * Cancels an order, and gives the paintings back.
+ *
+ * Legal from `pending` — nothing was ever paid — and from `paid`, which is the
+ * artist calling off a sale that had gone through. Both write `cancelled_at` in
+ * the same statement.
+ *
+ * **The paintings come back as drafts**, not straight back onto the site: see
+ * `closeOrder`. That is why the public site is revalidated afterwards — a work
+ * that has just become a draft must stop being served, and the gallery, the
+ * homepage grid and its own artwork page would otherwise keep their cached
+ * render and go on offering a painting that is no longer for sale.
+ *
+ * @param {string} orderId - Bound server-side by the page.
+ */
+export async function cancelOrder(orderId) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  const { ok, released } = await closeOrderRecord({ orderId, to: 'cancelled' });
+
+  if (released > 0) revalidatePath('/', 'layout');
+
+  redirect(orderPath(orderId, ok ? 'cancelled' : 'notAllowed'));
+}
+
+/**
+ * Refunds an order, and gives the paintings back.
+ *
+ * Legal only from a status at or past paid, because 007 requires `paid_at`
+ * before `refunded` — there is nothing to refund on an order nobody paid for,
+ * and the `where` clause says so rather than trusting the page not to offer the
+ * button.
+ *
+ * @param {string} orderId - Bound server-side by the page.
+ */
+export async function refundOrder(orderId) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  const { ok, released } = await closeOrderRecord({ orderId, to: 'refunded' });
+
+  if (released > 0) revalidatePath('/', 'layout');
+
+  redirect(orderPath(orderId, ok ? 'refunded' : 'notAllowed'));
+}
+
+/**
+ * Records that an owed refund has actually been paid back.
+ *
+ * **Its own action, and its own word, for a case that reads nothing like the one
+ * above.** An order carrying `refund_due_at` is not a sale the artist changed her
+ * mind about: it is a buyer who paid for a painting that had already gone to
+ * somebody else, whose charge could not be voided automatically. The money is
+ * hers to return, by hand, in the Hyp console — and this is her saying she has.
+ *
+ * It shares `closeOrder`'s write, because the resulting row is the same:
+ * `refunded`, with `refunded_at`. What it does not share is the release —
+ * `closeOrder` gives paintings back only for an order that actually held them,
+ * and this one never did. **The painting on it belongs to whoever won the race**,
+ * and taking it away from them would be the worst possible way to fix this.
+ *
+ * @param {string} orderId - Bound server-side by the page.
+ */
+export async function settleOwedRefund(orderId) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  const { ok } = await closeOrderRecord({ orderId, to: 'refunded' });
+
+  redirect(orderPath(orderId, ok ? 'refundSettled' : 'notAllowed'));
 }

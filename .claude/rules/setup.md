@@ -188,10 +188,37 @@ of them.** A hosted painting is resized by the host, from a URL
 `lib/image-loader.js` builds out of the reference stored in the database, so a
 work already uploaded goes on rendering for visitors whatever these keys say.
 
-Only the payment provider's keys are still forecasts, and their names will
-change once a provider is chosen. Uncomment nothing into use before something
-reads it, and add a key to the example in the same change that starts reading
-it.
+**The three `HYP_*` keys are read now**, by `lib/payments/hyp.js`, and they
+behave like the Cloudinary set: needed **as a set**, server-side only, and
+**optional in the same way** — with any of them missing the checkout page shows
+a notice where the payment form would be, rather than offering a control that
+dies on submit. `HYP_TERMINAL_NUMBER`, `HYP_API_KEY` and `HYP_API_PASSWORD`
+belong to **one terminal**.
+
+There is a fourth, `HYP_ENDPOINT_OVERRIDE`, and it is **development only and
+normally absent**. It points the two Hyp calls at a stand-in so the payment
+return could be exercised before the account existed — this provider has one host
+for test and production, so there is no sandbox to aim at. It is **ignored when
+`NODE_ENV` is production**, which covers the live site and Netlify deploy
+previews both, and that guard is the whole of what makes it safe. Delete it once
+there is a test terminal. See deployment.md.
+
+There is one more guard worth knowing about: **outside production, a terminal
+number that is not a test terminal is refused outright**, with nothing signed. Hyp's
+test terminals start with `00100`, and the failure that rail prevents — a real
+card charged during a test — is not one you can recover from by noticing it
+afterwards.
+
+Development runs against Hyp's documented **test** terminal; the production
+terminal is provisioned separately, so the two environments differ by these
+three values and by nothing in the code. Two further settings are not variables
+at all — the payment-page signature and the return URLs live in the Hyp console,
+at the terminal level, and the signature must not be switched on until the
+verification code is built and tested. See api.md.
+
+Add a key to the example in the same change that starts reading it, and keep a
+real terminal's credentials in `.env.local` and the Netlify site and nowhere
+else.
 
 As each arrives, add it to `.env.local` locally and to the Netlify site for
 deployment. Never commit real credentials.

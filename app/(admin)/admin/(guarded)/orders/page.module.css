@@ -1,0 +1,218 @@
+/**
+ * The orders list.
+ *
+ * The works list's language, because it is the same person doing the same kind
+ * of scanning: hairlines between rows rather than a bordered card each, small
+ * muted metadata, one word per state, text links for actions.
+ *
+ * Two blocks break that quiet deliberately, and they are the only things on the
+ * page allowed to. Neither is carried by colour — there is one accent on this
+ * site and it belongs to interaction — so they are told apart by weight of
+ * border and by what they say.
+ */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-6);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+}
+
+.empty {
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * The two things that need chasing
+ * ------------------------------------------------------------------ */
+
+/**
+ * Money owed to somebody. The loudest thing the admin has.
+ *
+ * The clay ground plus a full strong border, which nothing else in this admin
+ * uses — the works list's confirmation band is the same tint with no border, so
+ * this reads as a step beyond it rather than as the same kind of notice.
+ */
+.urgent {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-inline-start-width: var(--space-1);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-tint);
+  padding: var(--space-5);
+  margin-block-end: var(--space-5);
+}
+
+.urgentTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  /* text-primary on surface-tint: 10.80:1, one of the permitted pairings. */
+  color: var(--text-primary);
+}
+
+/**
+ * Orders that may hide a payment nobody knows about. Quieter than an owed
+ * refund, because it is a question rather than a debt — the sunk ground the
+ * cart uses for its missing works.
+ */
+.chase {
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-sunk);
+  padding: var(--space-5);
+  margin-block-end: var(--space-6);
+}
+
+.chaseTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.blockBody {
+  margin-block-start: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.blockList {
+  margin-block-start: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.blockLink {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (hover: hover) {
+  .blockLink:hover {
+    color: var(--accent-hover);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * The list
+ * ------------------------------------------------------------------ */
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  border-block-end: var(--border-hairline) solid var(--line);
+  transition: background-color var(--duration) var(--ease);
+}
+
+/**
+ * A row that owes a refund. A rule down the inline-start edge rather than a
+ * fill: the badge already says what it is, and this is what makes it findable
+ * while scrolling.
+ */
+.rowUrgent {
+  border-inline-start: var(--space-1) solid var(--line-strong);
+}
+
+@media (hover: hover) {
+  .row:hover {
+    background-color: var(--surface-mat);
+  }
+}
+
+.open {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  color: inherit;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+/** What sold. The reason she opened the page. */
+.works {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.status {
+  color: var(--text-primary);
+}
+
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.refundFlag,
+.staleFlag {
+  border-radius: var(--radius-sm);
+  padding-inline: var(--space-3);
+  padding-block: var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+}
+
+.refundFlag {
+  background-color: var(--surface-tint);
+  color: var(--text-primary);
+}
+
+/* Dashed, like the works list's draft marker: a question, not a state. */
+.staleFlag {
+  border: var(--border-hairline) dashed var(--line-strong);
+  color: var(--text-muted);
+}
+
+.total {
+  flex: none;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/**
+ * On a phone the amount drops under the details rather than squeezing the
+ * titles into a column two words wide.
+ */
+@media (max-width: 34rem) {
+  .open {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .total {
+    text-align: end;
+  }
+}

@@ -1,0 +1,151 @@
+/**
+ * The order page.
+ *
+ * The cart and checkout language carried one step further: a document column,
+ * hairlines rather than boxes, one uppercase muted label per block, and the
+ * total in the display face because it is still the number the page adds up to.
+ *
+ * Nothing here is coloured by outcome. There is one accent and it belongs to
+ * interaction, so a payment that failed and a payment that succeeded are told
+ * apart by what the words say — the same rule that keeps every sale status on
+ * this site legible in a screenshot. See frontend/styles.md.
+ */
+.column {
+  max-inline-size: var(--measure-list);
+}
+
+/**
+ * The first sentence after the heading — what happened, in one line. Larger than
+ * body copy because on this page it is the answer somebody arrived for.
+ */
+.lead {
+  margin-block-start: var(--space-5);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * What happens to their money, when the answer is "the painting is gone".
+ *
+ * Primary ink and its own block, deliberately: it is the one sentence a buyer
+ * reading bad news needs to find without hunting, and burying it in the
+ * paragraph above would be the site being tactful at their expense.
+ */
+.money {
+  margin-block-start: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--surface-sunk);
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.next {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+.blockTitle {
+  margin-block-start: var(--space-7);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * The order number. Quiet, and always present — it is the only thing a buyer can
+ * quote back, and it is this page's own address.
+ */
+.reference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin-block-start: var(--space-6);
+  padding-block: var(--space-4);
+  border-block: var(--border-hairline) solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.referenceLabel {
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.referenceValue {
+  color: var(--text-primary);
+  /* A uuid is long; let it break rather than push the page sideways on a phone. */
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------ *
+ * What was bought
+ * ------------------------------------------------------------------ */
+
+.lines {
+  margin-block-start: var(--space-4);
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding-block: var(--space-4);
+  border-block-end: var(--border-hairline) solid var(--line);
+}
+
+.lineTitle {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+@media (hover: hover) {
+  .lineTitle:hover {
+    color: var(--accent);
+  }
+}
+
+.lineAmount {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/**
+ * The total, with the checkout's treatment so the figure a buyer approved and
+ * the figure they paid look like the same number one step apart.
+ */
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-block-start: var(--space-5);
+}
+
+.totalLabel {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.totalAmount {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-light);
+  color: var(--text-primary);
+}
+
+/** The way onwards, on the two states that need one. */
+.action {
+  margin-block-start: var(--space-7);
+}

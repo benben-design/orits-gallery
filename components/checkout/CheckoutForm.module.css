@@ -1,0 +1,362 @@
+/**
+ * The checkout form.
+ *
+ * The cart's language continued rather than a new one: a document column, no
+ * panels, hairlines instead of boxes, one uppercase muted label per section, and
+ * exactly one filled accent control on the page — the button that takes the
+ * money. The totals block is the cart's `.summary` treatment, because it is the
+ * same moment in the same journey and a buyer should recognise it.
+ *
+ * Two places do take a box, and both earn it: a delivery option, because a
+ * selectable thing needs an edge to be selectable (a surface fill is only 1.11:1
+ * against the wall, so the hairline is what makes it a control at all — see
+ * styles.md), and the stop block, because it is the one thing on the page that
+ * must interrupt.
+ *
+ * Logical properties throughout, so Hebrew and English are one layout mirrored.
+ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  margin-block-start: var(--space-7);
+}
+
+/* ------------------------------------------------------------------ *
+ * Sections
+ * ------------------------------------------------------------------ */
+
+/**
+ * Borderless on purpose. The reset clears the browser's default 2px groove — see
+ * the note in styles.md — and nothing is put back: this page is a column of
+ * sections, not a stack of containers. The legend does the grouping work.
+ */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/**
+ * The same treatment as the total's label, which is the site's way of saying
+ * "this names a block rather than speaking to you".
+ *
+ * **The margin is doing the whole job here, and it has to.** A `<legend>` is not
+ * a flex item — browsers lay it out specially inside its fieldset — so `.group`'s
+ * `gap` never applies to it. Without this, the section label sat about 20px above
+ * the first field's own label and the two read as one two-line caption. Measured
+ * on the rendered page, not guessed.
+ */
+.legend {
+  margin-block-end: var(--space-3);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * Delivery options
+ * ------------------------------------------------------------------ */
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/**
+ * A hairline box, because this is the one thing on the page you pick between. The
+ * chosen one takes the stronger line rather than a fill — the accent is spent on
+ * the submit button, and a tinted selected state would be a second emphasis
+ * competing with it.
+ */
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius);
+  transition: border-color var(--duration) var(--ease);
+}
+
+.choiceChecked {
+  border-color: var(--line-strong);
+}
+
+@media (hover: hover) {
+  .choice:hover {
+    border-color: var(--line-strong);
+  }
+}
+
+/**
+ * The native radio, kept. The platform control carries the keyboard behaviour and
+ * the group semantics; replacing it with a drawn circle would mean rebuilding both.
+ * `accent-color` is the one line that makes it sit in the palette.
+ */
+.radio {
+  flex: none;
+  margin-block-start: 0.15em;
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/**
+ * The label is the whole block beside the radio, so the name, the price and the
+ * note are all part of the hit target.
+ */
+.choiceLabel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-4);
+  flex: 1;
+  cursor: pointer;
+}
+
+.choiceName {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.choicePrice {
+  grid-column: 2;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+/**
+ * The sentence that keeps the option honest — for pickup it is what stops
+ * "collect in person" implying an address and opening hours that do not exist.
+ * Full width beneath both, because it is prose rather than a column entry.
+ */
+.choiceNote {
+  grid-column: 1 / -1;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * Fields
+ * ------------------------------------------------------------------ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.input {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-3);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  transition: border-color var(--duration) var(--ease);
+}
+
+/**
+ * A rejected field takes the strong line and its message beneath it. Not a
+ * colour: the palette has one accent and it belongs to interaction, so "wrong"
+ * is carried by the sentence that says what to do — the same reason no status on
+ * this site is carried by hue alone. See styles.md.
+ */
+.inputInvalid {
+  border-color: var(--text-primary);
+}
+
+/**
+ * Primary ink rather than muted, for the reason the cart's unavailable note is:
+ * this is the one line in its block a buyer must not skim, and it is short
+ * enough that full contrast does not shout.
+ */
+.error {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/**
+ * Two fields on one row once there is room for them. City and postal code belong
+ * together, and so do an email and a phone number; below 30rem they stack, because
+ * a postal-code box three characters wide is worse than a second row.
+ */
+.pair {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 30rem) {
+  .pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * The stop
+ * ------------------------------------------------------------------ */
+
+/**
+ * The one block that interrupts. `--surface-sunk`, the same ground the cart uses
+ * for the paintings that have gone, with the stronger line — there is no error
+ * colour in this palette and inventing one would be a second accent.
+ */
+.stop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background-color: var(--surface-sunk);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.stopTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.stopLead {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/**
+ * The paintings that have gone, named. A plain list with a marker, because these
+ * are items to read rather than a sentence — and indented from the start edge, so
+ * it mirrors.
+ */
+.stopList {
+  margin-inline-start: var(--space-5);
+  list-style: disc;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* ------------------------------------------------------------------ *
+ * Totals and the control
+ * ------------------------------------------------------------------ */
+
+/**
+ * The cart's summary treatment: a stronger rule where the list stops and the sum
+ * begins, the one place on the page a heavier line carries meaning.
+ */
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--border-hairline) solid var(--line-strong);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.rowLabel {
+  color: var(--text-muted);
+}
+
+.rowAmount {
+  color: var(--text-primary);
+}
+
+.totalRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-block-start: var(--space-2);
+}
+
+.totalLabel {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/**
+ * The display face at the section-heading size — the same as the cart's total,
+ * because it is the same number one step later and it should not change size
+ * between the two pages.
+ */
+.totalAmount {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-light);
+  color: var(--text-primary);
+}
+
+/**
+ * The one filled accent control on the page, matching the cart's checkout button
+ * exactly so the two read as the same action one step apart.
+ */
+.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  inline-size: 100%;
+  min-block-size: 3rem;
+  border-radius: var(--radius);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .submit:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+  }
+}
+
+.submit:active:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+/**
+ * In flight. Dimmed rather than greyed to a different colour, so it is plainly
+ * the same button mid-action and not a second state of the design.
+ */
+.submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/**
+ * Where the card details actually go. It sits under the button rather than
+ * instead of it: a stranger being asked for a few thousand shekels by a shop
+ * they have not heard of needs to read that the card form is somebody else's
+ * before they press it, not after.
+ */
+.security {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}

@@ -10,6 +10,8 @@ below is filled in as more land — the previous project kept a full method / pa
 |---|---|---|---|---|
 | GET | `/api/health` | — | `{ status, works, dataIsPlaceholder }` | Liveness, and proof the repository and the database are reachable from a handler |
 | POST | `/admin/api/translate` | `{ text, kind }` — Hebrew, at most 5,000 characters, and `title` or `description` | `{ ok: true, text }`, or `{ ok: false, error }` | The admin work form filling an English field in from its Hebrew twin. Verifies the session itself and returns 401 without one. 400 empty, unparseable or an unknown kind, 413 too long, 429 the provider is rate limiting, 503 no key or a key it refuses, 502 anything else |
+| GET | `/api/payments/hyp/return` | — (Hyp's query string) | 307 to `/[locale]/order/[id]` | The terminal's **success** return. Calls VERIFY first and does nothing before it answers; on a verified success it seizes the paintings and marks the order paid in one transaction, then clears the cart. A route rather than a page for the cookie reason — only an action or a handler may set one |
+| GET | `/api/payments/hyp/error` | — (Hyp's query string) | 307 to `/[locale]/order/[id]` | The terminal's **error** return, and it runs **the same handler**. Which URL the browser lands on is the provider's opinion; `CCode` is the fact. Ordinarily verification declines too and nothing changes — but a landing here that verifies as genuine is settled, because the alternative is keeping money on the strength of a redirect path |
 
 Health predates the envelope and keeps its own shape; **`{ ok }` is the shape
 every route from here on shares**, with `error` a *code* rather than a sentence,
@@ -34,9 +36,16 @@ hand-written one has to get right: a credential can never end up in a query
 string, and the form still works before the page's JavaScript has loaded.
 
 So a route handler is for what neither a server component nor an action can do:
-**webhooks** (a payment provider posts to a URL, and it cannot call an action),
-anything a **third party** must reach, and anything a client component genuinely
-needs to fetch at runtime.
+anything a **third party** must reach — a provider posting to a URL, or a
+buyer's browser that a provider has redirected back to us — and anything a
+client component genuinely needs to fetch at runtime.
+
+**Our payment provider posts nothing.** Hyp Pay at this tier has no callback at
+all, so what applies is the second half of that first case: Hyp sends the
+*buyer's browser* back to a URL of ours. That URL is a route handler rather
+than a page for a reason which has nothing to do with payments — it has to
+clear the cart cookie, and Next permits a cookie to be set only from an action
+or a route handler, never while rendering a page. See "Money routes" below.
 
 `/admin/api/translate` is the built example of that last case: the browser needs
 an answer in the middle of a form, when a field is left, and the provider key may
@@ -51,7 +60,8 @@ itself. A body that carried the prompt would be an endpoint for saying anything
 at all to a model, on our key.
 
 The gallery, the homepage grid and the artwork page need **no** API. The admin's
-save actions should be Server Actions. The payment webhook must be a route.
+save actions should be Server Actions. The payment provider's return must be a
+route, for the cookie reason above.
 
 **The cart added no endpoint either**, and it is the clearest example of the
 rule so far because a cart is the shape of thing that usually gets one — and
@@ -127,9 +137,105 @@ Checkout re-verifies each work's status server-side at the moment of payment, no
 at the moment it entered the cart. See commerce.md — this is the rule that stops
 the site selling a painting that no longer exists.
 
-Payment webhooks are the only writer of payment state. Never set an order paid
-from a client callback or a redirect — the user closing the tab must not change
-the outcome.
+**That re-verification is one conditional write, and it is the whole of the race
+protection.** A work moves to `sold` only by a statement that requires it to be
+available in the same breath, and whether it matched is how we learn whether we
+won. There is deliberately **no reservation held across a browser session** —
+commerce.md records why a timer, an expiry and a sweep were rejected.
+
+### Who may write payment state
+
+**This rule was amended deliberately, and the version it replaces is worth
+stating, because it is the one most codebases have.** It read: *payment webhooks
+are the only writer of payment state; never set an order paid from a client
+callback or a redirect.* That is the right rule when a provider offers a
+webhook. **Hyp Pay at our tier offers neither a webhook nor a standalone
+transaction-status query**, so the old rule was not merely strict — it was
+unimplementable, and a rule that cannot be followed is worse than one that is
+imperfect, because it gets quietly broken instead of deliberately changed.
+
+What replaces it:
+
+- **The only trusted writer of payment state is our own server, after it has
+  validated the redirect with the provider's VERIFY call.** Not the browser, not
+  the redirect, not a person reading a confirmation page.
+- **Raw redirect parameters are never trusted.** They arrive in a URL the buyer
+  can edit. They are evidence that a transaction *may* have happened, and an
+  input to VERIFY — never an amount, a status or an identity.
+- **An unverified or failed redirect changes nothing.** No order moves to
+  `paid`, no work is marked sold, and the buyer is told something they can act
+  on. Silence is the safe direction: an order left `pending` is recoverable, and
+  an order wrongly marked `paid` is a painting given away.
+
+### The branch with no signal, which cannot be closed
+
+**A buyer who pays and then closes the window before the redirect is a real
+branch, not an edge case.** Money has been taken, no redirect ever reaches us,
+and with no webhook and no status query **nothing server-side can discover it.**
+
+That is an accepted limitation of this tier rather than a bug to engineer
+around, so it is written down rather than rediscovered:
+
+- Those orders stay `pending`. Nothing invents a payment for them.
+- They are reconciled **by a human, against the Hyp console** — the only place
+  the transaction can be seen.
+- **The admin orders list must surface them.** A pending order old enough to be
+  suspicious is the only signal the artist gets, and it is the same shape of job
+  as surfacing a dispatch that was never marked delivered.
+
+### What VERIFY requires
+
+Provider facts, from developers.hyp.co.il and confirmed in a call. Each is a way
+to get this wrong that no test of ours would catch:
+
+- **VERIFY takes every parameter from the redirect, in its original order.**
+  Reordering or dropping one fails the check, so the handler passes the query
+  through as it arrived rather than rebuilding it from named fields.
+- **The response is judged by its `CCode` value, never by HTTP status.** A 200
+  carrying a failure code is a failure.
+- **An HTML response means a system error**, not a declined payment. It is the
+  "we do not know" case, and it takes the `pending` branch above rather than
+  being reported to the buyer as a refusal.
+- **The success and failure return URLs are terminal-level settings**, configured
+  once in the Hyp console rather than sent per transaction. Our handler's path is
+  therefore fixed by configuration, not chosen per request.
+- **Undoing a charge is two different calls**, and which applies is a question
+  about the date: `CancelTrans` voids a transaction the same day, before
+  settlement; `zikoyAPI` refunds one afterwards. Neither is built.
+- **The payment-page signature must be ON in our terminal** — switched on **only
+  after our verification code is built and tested.** Enabling it first makes
+  every test transaction fail, with nothing to say why. That code now exists, so
+  this is a task for the day the account does; deployment.md holds the list.
+
+### What a verified success actually does
+
+In one transaction, and in this order:
+
+1. **Seize every painting conditionally** — one statement, `status = 'available'`
+   and nothing else in the `where` clause, and the count of rows it changed is
+   the answer to whether we won. **All or nothing**: fewer rows than lines rolls
+   the whole thing back, because half an order is worse than none.
+2. **Only then mark the order paid**, with `paid_at` and the provider's
+   reference.
+
+**It does not reuse `markWorkSold`.** That one guards on the sale channel and not
+on the status, so it re-marks a painting that is already sold — and on a replay
+it returns false for a work already carrying `this-site`, which read as "did I
+win" is a false negative that would refund somebody who owns the painting.
+
+**Marking paid is idempotent.** The order row is locked and read first, so a
+refreshed return sees `paid`, writes nothing, and reports it. That check must come
+before the seizure: by then the paintings belong to this order, so the conditional
+update would match nothing and fire the race branch against the winner.
+
+### When the buyer paid and the painting had gone
+
+The charge already happened, so the money goes back immediately if it can:
+`CancelTrans` voids it the same day and the order becomes `cancelled` — keeping
+`paid_at`, because money did move. If the void is impossible the order stays
+`paid` and carries `refund_due_at`, which is migration 010's column and the
+artist's cue to refund by hand. **The order records which of the two happened**,
+and the cart is left alone, because nothing was sold to this buyer.
 
 Amounts crossing this boundary are **minor units** — agorot — because that is
 how they are stored and how a provider charges. Convert once, in the repository,

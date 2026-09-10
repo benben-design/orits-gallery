@@ -5,6 +5,19 @@ through `lib/db.js` — see database.md for the schema. The swap cost one file a
 changed nothing above it: same function names, same arguments, same returned
 shapes, which is what the indirection was for.
 
+**There are two data modules now.** `lib/data/orders-repository.js` joined it
+with the checkout: it prices a basket and writes an order, and it follows the
+same three rules — every function async, plain serializable objects out, and
+these two are the only modules that touch the database.
+
+The one thing to know before adding to it: **every amount inside it is agorot**,
+read from `works.price_agorot` and written to `orders.total_agorot`. It hands
+callers both the integer that will be charged and a major-unit copy for
+printing, precisely so that nothing above it ever has a reason to multiply or
+divide money. A total assembled anywhere else is a bug, and the checkout form is
+built the way it is — handed a pre-computed total per delivery method — to make
+that impossible rather than merely discouraged.
+
 Development runs against a local Postgres. **Neon is not connected**, so nothing
 deployed has a database behind it yet.
 

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Container from '@/components/ui/Container';
 import { Trash2, CreditCard } from 'lucide-react';
 import Section from '@/components/ui/Section';
@@ -144,22 +145,21 @@ export default async function CartPage({ params }) {
                 </p>
 
                 {/*
-                  The checkout control. **It deliberately does nothing yet** —
-                  checkout is not built and no payment provider is chosen, and
-                  it is here so the purchase flow can be shown end to end.
+                  The checkout control, **a real link now that the checkout
+                  exists**. It was a deliberately inert `<button>` with a "not open
+                  yet" line beneath it, because a link to a stub page would have
+                  asserted that a checkout existed and was broken. Both the
+                  `aria-disabled` and that line are gone together with the reason
+                  for them.
 
-                  It is a `<button>` with no handler rather than a link to the
-                  `/checkout` stub, which would be worse: a stub page asserts
-                  that a checkout exists and is broken. `aria-disabled` so a
-                  screen reader is not told it leads somewhere, and the line
-                  underneath says plainly where things stand. See commerce.md.
+                  This page still works with no JavaScript at all, and so does this
+                  link — which is the property that made `/cart` worth keeping when
+                  the drawer became the primary cart.
                 */}
-                <button type="button" className={styles.checkout} aria-disabled="true">
+                <Link href={localeHref(locale, '/checkout')} className={styles.checkout}>
                   <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
                   <span>{dictionary.cart.checkout}</span>
-                </button>
-
-                <p className={styles.pending}>{dictionary.cart.checkoutPending}</p>
+                </Link>
               </div>
             ) : null}
           </div>

@@ -304,7 +304,7 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
             admin preview, a sold painting and a work that is not for sale all
             simply have no button, rather than one that leads to a refusal.
           */}
-          <AddToCart work={work} dictionary={dictionary} />
+          <AddToCart work={work} dictionary={dictionary} locale={locale} />
         </div>
       </article>
 

@@ -203,8 +203,19 @@ they are already inside it.
   `IMAGE_TYPES` — rather than writing whatever value arrived.
 - Uploads are constrained by type and size, and a file's own claimed name or
   content type is not evidence of what it is.
-- Payment state is written only by the provider's verified webhook. Never mark
-  an order paid from a client redirect or callback.
+- **Payment state is written only by our own server, and only after the
+  provider's VERIFY call has validated the redirect.** This amends a stricter
+  rule that could not be implemented here: Hyp Pay at our tier has no webhook
+  and no transaction-status query, so a verified redirect is the only completion
+  signal that exists. api.md carries the full amendment.
+
+  What survives unchanged is the half that matters: **nothing the browser hands
+  us is believed.** The redirect's parameters are an input to VERIFY and never a
+  statement of what happened — not the amount, not the status, not which order
+  it was. A redirect that fails verification writes nothing at all, and an order
+  with no verified return stays `pending` until a human reconciles it against
+  the Hyp console. An order wrongly marked paid is a painting given away; an
+  order left pending is a phone call.
 - Errors shown to a user say what to do next; stack traces and internal detail go
   to the server log only.
 - The admin is excluded from indexing in two places — `robots` and an

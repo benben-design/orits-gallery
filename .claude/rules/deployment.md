@@ -134,6 +134,97 @@ panel. Two things about them are worth knowing before deploying:
   behind the admin login and nothing is ever deleted, but it is a reason not to
   hand these keys to anything that runs untrusted branches.
 
+The three `HYP_*` keys are the payment terminal's, and they behave differently
+from every key above: **they are needed as a set, they are read server-side
+only, and the two environments use two different terminals.** Development runs
+against Hyp's documented test terminal; production uses the real one, which is
+provisioned separately and carries its own monthly cost. Getting this wrong in
+the safe direction is harmless and in the unsafe direction is not — test
+credentials in production means no payment can complete, and production
+credentials in a preview deployment means a real charge against a real card.
+
+Two things the payment integration needs are **not environment variables at
+all**, and both are easy to lose track of because they live in somebody else's
+console: the payment-page **signature** setting and the success and failure
+**return URLs** are terminal-level settings in Hyp. The signature has an
+ordering trap — switching it on before our verification code is built and tested
+makes every test transaction fail with nothing to explain why. See api.md.
+
+## The payment return: what is proven, and what is not
+
+**There is no Hyp account yet**, and there will not be one until the site is
+otherwise ready to sell — registration and the second terminal are the last step,
+not the first. The whole return path is nonetheless built and exercised, against
+a local stand-in that answers the two calls the application makes. This section
+is the honest ledger of which half is which, so nobody has to guess later.
+
+### Proven, without the provider
+
+Against simulated returns, end to end through the real routes, the real
+transaction and the real database:
+
+- A **forged** return claiming success changes nothing — no order moves, no
+  painting is sold, no cookie is cleared.
+- **Missing credentials never read as success.** With no `HYP_*` at all — the
+  project's actual state today — every return takes the "not confirmed" branch.
+- A **declined** `CCode`, an **HTML** body, an empty body, a body with no `CCode`
+  and a 500 carrying `CCode=0` are each refused, and each changes nothing.
+- A **verified success** seizes the paintings conditionally, marks the order paid
+  with its date and reference, and clears the cart — in that order.
+- A **refreshed** return URL writes nothing a second time.
+- The **race**: a painting sold between order and return triggers the losing
+  branch, attempts the void, and records either `cancelled` or a `refund_due_at`
+  — with the other buyer's sale untouched.
+- The redirect's parameters reach VERIFY **in their original order**, with our
+  credentials in front of them.
+
+### Not proven, and cannot be until the account exists
+
+- **That Hyp accepts the VERIFY request as assembled.** The shape follows the
+  documentation — our five parameters, then the return's query verbatim — but no
+  real terminal has ever answered it. If Hyp's return carries its own `action`,
+  `Masof`, `KEY`, `PassP` or `What`, the pairing produces a duplicate key and has
+  to be revisited. The documented return fields contain none of them.
+- **The cancellation call.** `CancelTrans` fires on the losing branch and its
+  handling is proven, but **the parameter name carrying the transaction id is
+  unconfirmed** — it is sent as `TransId`. The docblock on `cancelTransaction` in
+  `lib/payments/hyp.js` is the flag. If it is wrong, the void fails and the order
+  correctly falls back to `refund_due_at`: the failure mode is a manual refund,
+  never money silently kept.
+- **`zikoyAPI`**, the refund for any day but the day of the charge, is not built
+  at all. An owed refund is made by hand.
+- **Which field carries the transaction id on the way back.** The reference is
+  read from the VERIFY response as `Id`, falling back to `TransId`.
+
+### What has to be done on the terminal, at that point
+
+1. **Set both return URLs.** They are terminal-level settings; nothing in the
+   code can supply them.
+
+       success   https://<site>/api/payments/hyp/return
+       error     https://<site>/api/payments/hyp/error
+
+   Both run the same handler, deliberately — VERIFY's answer decides the outcome,
+   not which URL the browser landed on.
+2. **Switch the payment-page signature ON — and only now.** The verification code
+   is in place, which is the precondition that ordering exists for. Turning it on
+   before it existed would have failed every test transaction with nothing to
+   explain why.
+3. **Find out whether the terminal requires an Israeli ID (`UserId`).** Hyp's own
+   documented response example carries one, and **the checkout form does not
+   collect it.** If the terminal demands it, the form needs a field, the order
+   probably needs a column to keep it, and both are a change to the checkout
+   rather than to the return. Check this in the console before the first real
+   transaction, because it is the one open question that can invalidate a form
+   that is otherwise finished.
+4. **Delete the development-only endpoint override.** `HYP_ENDPOINT_OVERRIDE` in
+   `lib/payments/hyp.js` exists solely to make the above provable before the
+   account existed. It is ignored in production, so it is not a hole — but it
+   stops earning its keep the day there is a test terminal to point at.
+5. **Walk one real transaction end to end**, in both languages, including closing
+   the window mid-payment. That branch leaves an order pending with money taken
+   and only the Hyp console can see it.
+
 ## Before going live
 
 Beyond a green build, these are launch blockers and are easy to forget:
@@ -175,6 +266,26 @@ Beyond a green build, these are launch blockers and are easy to forget:
 - **The paid hosting tier**, from the day the site can take money. See the plan
   at the top of this file: the free tier stops a site rather than billing for
   it, and cannot be topped up while it is off.
+- **The production Hyp terminal**, provisioned and its three credentials set in
+  the Netlify site — a second terminal under the same business, with its own
+  monthly cost. The test terminal cannot take a real payment.
+- **Both return URLs set on that terminal**, because they are console settings
+  rather than per-transaction parameters and nothing in the code can supply them:
+
+      success   https://<site>/api/payments/hyp/return
+      error     https://<site>/api/payments/hyp/error
+
+  They must be set per terminal, so the test terminal needs its own pair pointing
+  at whatever host is being tested.
+- **The payment-page signature switched on in that terminal**, and switched on
+  **after** the verification code is built and tested rather than before. Until
+  it is on, a forged redirect is a weaker thing to refuse; turn it on too early
+  and every test transaction fails for no visible reason.
+- **One real transaction walked end to end on the production terminal**, in both
+  languages, including what the buyer sees if they close the window mid-payment.
+  That branch leaves an order pending with money taken, and the orders list is
+  the only place it can be caught — so it has to be seen working before a
+  stranger meets it.
 - **The host configuration actually replaced**, and the `X-Robots-Tag` headers
   with it — `vercel.json` is still the only place they exist and the new host
   does not read it. See the migration tasks at the top of this file.

@@ -130,9 +130,57 @@ nothing that later happens to the catalogue may change what it says.
 `orders` carries `status` (`pending`, `paid`, `shipped`, `delivered`,
 `cancelled`, `refunded`, required with no default), an optional
 `payment_reference` that is unique where present, required `buyer_name` /
-`buyer_email` / `buyer_phone`, a required `shipping_address` as a single text
-field, `total_agorot`, `currency`, a required `buyer_locale`, the five dates
-below, and `created_at` / `updated_at`.
+`buyer_email` / `buyer_phone`, a **conditionally** required `shipping_address`
+as a single text field, `total_agorot`, `currency`, a required `buyer_locale`, a
+required `delivery_method` and `delivery_fee_agorot`, the five dates below, and
+`created_at` / `updated_at`.
+
+**Delivery, added by migration 009.** `delivery_method` is a closed set of two —
+`shipping` or `self-pickup` — required and with **no default**, for the same
+reason `status` has none: a default of `shipping` silently charges and demands an
+address, a default of `self-pickup` silently waives the fee.
+
+- **`delivery_fee_agorot` is what was charged, not what we charge.** Required,
+  minor units, written once at checkout and never recomputed. The rate lives in
+  one place in code — `lib/delivery.js`, 40 ILS flat, destined for
+  `/admin/settings` — and the column exists precisely so that changing it cannot
+  rewrite what an old order cost. It is a *component* of `total_agorot`, and
+  nothing enforces that arithmetic, for the reason 003 gave about line prices.
+- **A pickup order is free and the database enforces it** (`orders_pickup_is_free`).
+  The shipping fee is deliberately **not** pinned to 4000: that would put today's
+  price list in the schema, fail an old order's own constraint the day the rate
+  moved, and refuse a free-shipping promotion. Enforce what is never legitimately
+  otherwise; stay silent where the business may change its mind.
+- **`shipping_address` lost its `not null`**, replaced by two conditional rules —
+  required for `shipping`, and **absent** for `self-pickup`. Two constraints
+  rather than one so a violation names which half broke. A pickup order has no
+  address, and a `not null` column is what forces somebody to invent one; an
+  invented address on an order is worse than an absent one, because it looks
+  like a fact. There is deliberately no non-blank check — an empty string was
+  already accepted before, and format validation belongs at the boundary.
+- **A pickup order never ships, and 009 corrects 007 for it.** It goes from
+  `paid` straight to `delivered` in one act when the artist hands the painting
+  over. So `shipped` still requires `shipped_at`; `delivered` requires it **only
+  when the method is shipping**; and a pickup order may neither hold that status
+  nor carry that date at all (`orders_pickup_never_ships`), because the
+  alternative is inventing a dispatch date nobody observed — on the columns 007
+  exists to keep honest. The law counts the window from receipt, and a pickup
+  order has a real `delivered_at`.
+- **009 also closes a hole that relaxation opens.** 007 ordered the chain as
+  `paid_at <= shipped_at <= delivered_at`, and both halves are silent when
+  `shipped_at` is null — so with no dispatch date, a receipt dated before its own
+  payment would pass every constraint in 007. `orders_paid_before_delivered`
+  states `paid_at <= delivered_at` directly. Redundant for a shipping order, and
+  load-bearing for a pickup one.
+
+**`refund_due_at`, added by migration 010**, is the one state the payment return
+had nowhere to put: a buyer paid, another buyer got the painting first, and the
+charge could not be voided. The order stays `paid` — money moved, and the tax
+record needs that — and this column says a refund is owed on top of it. It is not
+a seventh status for two reasons: the order genuinely is paid, and 007 requires
+`paid_at` before `refunded`, so an order that never passed through paid could
+never later be marked refunded without inventing a payment date. Constrained to
+require `paid_at`, which also keeps it off a pending order without naming one.
 
 `paid_at`, `shipped_at`, `delivered_at`, `cancelled_at` and `refunded_at` are
 all nullable, each absent until the thing it records has happened. Which of
@@ -163,8 +211,11 @@ order unstorable.
   tax invoice have to arrive in that language, and it cannot be reconstructed
   after the fact — it is not the site default, and an Israeli address says
   nothing about which language someone reads. See i18n.md for what this costs.
-- `payment_reference` is unique where present because payment webhooks retry,
-  and that index is the last defence against one payment being processed twice.
+- `payment_reference` is unique where present because a completion signal can
+  arrive more than once — a webhook retrying on a provider that has one, or, on
+  this one, a buyer reloading the return URL or pressing back onto it. That
+  index is the last defence against a single payment being processed twice, and
+  it is what makes recording a payment idempotent rather than merely careful.
 - **`delivered` is a status, not only a date, and that is what makes the 14-day
   cancellation window computable.** Israeli law counts the window from
   *receipt*, and dispatch is not receipt — computing it from `shipped_at` would
@@ -175,7 +226,8 @@ order unstorable.
 - **Each status carries the date it happened, and the database enforces the
   pair — but only forwards.** Migration 007 requires `paid_at` for every status
   at or past paid (**`refunded` included**: a refund does not erase the payment
-  that preceded it), `shipped_at` for `shipped` and `delivered`, `delivered_at`
+  that preceded it), `shipped_at` for `shipped` and — since 009 — for
+  `delivered` only when the method is shipping, `delivered_at`
   for `delivered`, `cancelled_at` for `cancelled`, `refunded_at` for
   `refunded`, and all five absent for `pending`. Ordering is enforced too:
   `paid_at <= shipped_at <= delivered_at`.
@@ -183,7 +235,10 @@ order unstorable.
   than steps in the chain. Whether a `cancelled` order carries a `paid_at` —
   the payment provider documents authorization separately from capture, so an
   order authorised and then voided before capture is a real state, and forcing
-  it to be a refund would be the constraint fighting the provider. And whether
+  it to be a refund would be the constraint fighting the provider — Hyp Pay
+  documents exactly that split (J5 authorize, J4 capture), though we charge
+  directly with J2 today, so the state does not arise yet and the silence is
+  kept for the day it might. And whether
   a `refunded` order carries `shipped_at` / `delivered_at` — refunding before
   dispatch and after delivery are both legitimate, so a constraint picking one
   would be wrong half the time. The line 007 draws: **enforce what is
@@ -193,7 +248,8 @@ order unstorable.
   `works` deliberately does the opposite.** `works.sale_channel` is *not* tied
   to `status = 'sold'`, because it is typed by hand into a form the artist
   fills in any order, and a constraint firing on a half-filled form is one she
-  fights. These dates are written by a webhook and by one deliberate click,
+  fights. These dates are written by a verified payment return and by one
+  deliberate click,
   never mid-edit, and a missing `paid_at` cannot be typed in later — the moment
   is gone and it decides a legal deadline. The two tables are not
   inconsistent; the difference is whether the loss is permanent, and 007's
@@ -203,7 +259,9 @@ order unstorable.
   `delivered_at` stays null, indistinguishable from a parcel still in transit.
   No constraint can make somebody confirm a delivery, and a default would
   invent a date nobody observed — which would be believed and counted from. The
-  remedy belongs to the admin's orders list, surfacing dispatches never closed.
+  remedy belongs to the admin's orders list, surfacing dispatches never closed —
+  and it is **built**: an order still `shipped` with no receipt seven days after
+  dispatch is flagged there, with the reason and what to do about it.
 
 ### `admin_users`
 
@@ -288,11 +346,18 @@ policy that 004 deferred.
 - **Neon.** The local database is the only one that exists. Production has no
   database, and the migrations have never been applied to one — including 006,
   without which every admin sign-in errors rather than degrading quietly.
-- **The admin route guard.** Signing in and out are built — a signed httpOnly
-  cookie, no session table, see security.md — but nothing yet refuses an admin
-  page to someone without a session. Whether a given database has any admin
-  rows is a question for that database, not for this file.
-- **The payment provider**, and therefore what actually writes `orders`.
+- ~~**The admin route guard.**~~ **Built.** Every page under
+  `app/(admin)/admin/(guarded)/` calls `requireAdminSession()` as its first
+  statement, and `scripts/check-admin-guard.mjs` fails if one does not. See
+  security.md. Whether a given database has any admin rows is still a question
+  for that database rather than for this file.
+- **The checkout, and therefore what actually writes `orders`.** The provider
+  itself is settled — Hyp Pay, on the yaad-sarig platform — but nothing reads
+  its credentials yet and no row has ever been written to either orders table.
+  Note that 003 and 007 both describe payment state as arriving by webhook.
+  Migrations are forward-only and are never edited, so those comments stay as
+  written; they record what was believed when the schema was designed, and
+  api.md is where the amended rule lives.
 - **Image hosting is connected**, for the main image. `image_ref` now holds
   either kind: a local path under `public/paintings/` for the sixteen seeded
   works, or an absolute delivery URL for anything the artist uploaded. Nothing

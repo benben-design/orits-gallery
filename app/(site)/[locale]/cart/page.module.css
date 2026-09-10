@@ -176,16 +176,3 @@
     background-color: var(--accent-hover);
   }
 }
-
-/**
- * Buying is not open yet, said plainly. Not styled as a warning: nothing has
- * gone wrong, and a page that alarms someone for reading it to the end is
- * worse than one that simply tells them where things stand. It sits under the
- * button rather than instead of it, so the control is never the only thing
- * saying what will happen.
- */
-.pending {
-  margin-block-start: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}

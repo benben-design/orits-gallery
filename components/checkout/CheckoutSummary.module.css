@@ -1,0 +1,115 @@
+/**
+ * The order summary at the top of the checkout.
+ *
+ * The cart's rhythm deliberately: a column of hairline-separated rows, a small
+ * mounted frame at the start, the amount at the end. Two differences, both
+ * because this list is read rather than edited — there is no remove control, and
+ * from 40rem the amount moves into its own column so the figures share an edge
+ * with the totals below them.
+ */
+.lines {
+  margin-block-start: var(--space-4);
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+/**
+ * 5rem for the frame, as on a cart line, so the two surfaces show a painting at
+ * the same size. The amount wraps under the details below 40rem and takes its own
+ * column above it.
+ */
+.line {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: var(--space-3) var(--space-5);
+  align-items: start;
+  padding-block: var(--space-5);
+  border-block-end: var(--border-hairline) solid var(--line);
+}
+
+/**
+ * The mat is tightened here for the same measured reason it is on a cart line:
+ * `--frame-inset` is sized for a grid card 15rem or wider, and at 5rem it would
+ * leave the painting under half the box.
+ */
+.thumbnail {
+  --frame-inset: var(--space-2);
+  display: block;
+  inline-size: 100%;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+  color: var(--text-primary);
+}
+
+.titleLink {
+  color: inherit;
+}
+
+@media (hover: hover) {
+  .titleLink:hover {
+    color: var(--accent);
+  }
+}
+
+.spec {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.separator {
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--line-strong);
+  flex: none;
+}
+
+/**
+ * Below 40rem the amount sits under the details, in the same column — there is
+ * no room for a third and the sum is close enough to read as one thing.
+ */
+.amount {
+  grid-column: 2;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/**
+ * From 40rem the amount becomes its own column at the inline end, so the prices
+ * stack into a line the eye can run down to the total. Logical properties
+ * throughout, so this is the same layout mirrored in Hebrew.
+ */
+@media (min-width: 40rem) {
+  .line {
+    grid-template-columns: 5rem 1fr auto;
+  }
+
+  .amount {
+    grid-column: 3;
+    text-align: end;
+  }
+}
+
+/**
+ * Stacks the "sample price" marker under the amount rather than beside it, so the
+ * amounts themselves share an edge down the column. Same reason the cart passes
+ * this. See Price.js.
+ */
+.price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}

@@ -130,14 +130,3 @@
 .buyNow:active {
   background-color: var(--surface-tint-hover);
 }
-
-/*
-  Says buying is not open yet, so the inert control above is never the only
-  thing saying what will happen. It reuses the cart's own sentence rather than
-  adding a second translation of it — one wording, two surfaces.
-*/
-.pending {
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
-  color: var(--text-muted);
-}
