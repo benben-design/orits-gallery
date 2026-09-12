@@ -217,6 +217,14 @@ In one transaction, and in this order:
    the whole thing back, because half an order is worse than none.
 2. **Only then mark the order paid**, with `paid_at` and the provider's
    reference.
+3. **Then invalidate the public pages**, through `revalidatePublicSite()`. This
+   is the only writer of `status = 'sold'` outside the admin, and the homepage
+   and the gallery are both cached — so without this the site goes on offering a
+   painting for up to an hour after somebody bought it. Nobody can buy it twice,
+   because the cart re-reads and checkout re-verifies; the cost is a buyer told
+   no at the last step. **On the `paid` branch only**: `alreadyPaid` is a
+   refreshed return that wrote nothing, and clearing on it would let a buyer
+   reloading a confirmation page drop the cache for everyone.
 
 **It does not reuse `markWorkSold`.** That one guards on the sale channel and not
 on the status, so it re-marks a painting that is already sold — and on a replay

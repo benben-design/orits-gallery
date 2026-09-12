@@ -1,17 +1,27 @@
 # Database
 
-PostgreSQL. Development runs against a **local Postgres**, created by hand in
-pgAdmin; the database is called `art_studio`. **Neon is the intended host for
-production and is not connected yet.**
+PostgreSQL, and **there are two databases now.** Development runs against a
+**local Postgres**, created by hand in pgAdmin and called `art_studio`.
+Production is a **Neon project named "Orit's gallery"** — region US East
+(Ohio), PostgreSQL 18 — carrying migrations 001 through 010 and both admin
+accounts as of 12-09-2026.
 
 The schema is plain SQL in `database/migrations/`, and **the application reads
 it**: every page goes through `lib/data/works-repository.js`, which queries
 Postgres through `lib/db.js`. `lib/data/artworks.js` is now the seed fixture
 rather than storage. See data-layer.md.
 
-That is true of the **local** database only. Neon has nothing pointing at it, so
-a deployed build has no database to read — which is a launch blocker, not a
-working state. See deployment.md.
+**A database being ready is not the same as the site being live.** Nothing is
+deployed, so `DATABASE_URL` is set on no host and nothing points at Neon but a
+developer's own shell. See deployment.md.
+
+**Two endpoints, and which one is used is not a preference.** The deployed
+application reads the **pooled** endpoint; migrations and scripts use the
+**direct** one, which is the same host without `-pooler`. The reason is
+connection count: serverless hosting runs many short-lived instances and each
+holds a pool of its own, which is how a small Postgres runs out of connections
+while sitting almost idle. A migration is one connection doing one job and has
+no business going through a pooler.
 
 ## Migration conventions
 
@@ -24,7 +34,13 @@ These apply to every migration from here on.
   `003_create_orders_tables.sql`.
 - **Forward-only.** Once a file has been applied it is never renamed,
   renumbered or edited. A mistake is corrected by the next numbered file — a
-  rename reads as a brand-new migration and runs twice.
+  rename reads as a brand-new migration and runs twice. **Every file here has
+  now been applied somewhere**, so this covers all ten rather than most of
+  them: 008 in particular is frozen, and a refreshed catalogue is a new
+  numbered file, never an edit to that one.
+- **Every migration from here is applied twice** — to the local database and to
+  Neon — deliberately, and as a step of deploying rather than as an
+  afterthought. Applying one locally does nothing to production.
 - **ASCII only, comments included** — with exactly one exception, migration
   008, which loads the catalogue and whose *data* is Hebrew by definition. Its
   comments are still ASCII and its header says how to run it. The rule is about
@@ -40,7 +56,7 @@ These apply to every migration from here on.
 - `gen_random_uuid()` needs PostgreSQL 13 or newer, where it is core.
 - **Which migrations a given database has had applied is not recorded here.**
   There is no ledger table. Ask the database — that is the only answer that
-  cannot be stale.
+  cannot be stale, **and there are two to ask now.**
 
 ## The schema
 
@@ -335,17 +351,19 @@ policy that 004 deferred.
 - Every query is parameterized. Never interpolate input into SQL.
 - Migrations follow the conventions at the top of this file.
 - Slugs are unique per language and permanent once published. See seo.md.
-- Schema changes are applied to Neon explicitly as part of deploying, not
-  assumed to have happened.
+- Schema changes are applied to **both databases** explicitly as part of
+  deploying, not assumed to have happened.
 - Constrained sets — the four statuses, the two categories, the two media keys,
   the order statuses, the sale channels, the locales — are enforced in the
   database and not only in application code. Adding a value is a migration.
 
 ## Not built
 
-- **Neon.** The local database is the only one that exists. Production has no
-  database, and the migrations have never been applied to one — including 006,
-  without which every admin sign-in errors rather than degrading quietly.
+- ~~**Neon.**~~ **Connected**, since 12-09-2026. "Orit's gallery" carries 001
+  through 010, the catalogue and both admin accounts. What is missing is
+  everything around it: **nothing is deployed**, `DATABASE_URL` is set on no
+  host, and the production `ADMIN_SESSION_SECRET` does not exist yet. See
+  deployment.md.
 - ~~**The admin route guard.**~~ **Built.** Every page under
   `app/(admin)/admin/(guarded)/` calls `requireAdminSession()` as its first
   statement, and `scripts/check-admin-guard.mjs` fails if one does not. See

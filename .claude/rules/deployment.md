@@ -43,10 +43,17 @@ untested is worse than a written-down task. These are the tasks.
   is the first. Until the headers exist on the new host, **that belt-and-braces
   is down to one strap.** `robots.js` still covers it, so this is not an open
   door; it is the redundancy that seo.md and security.md both ask for, missing.
-- **Confirm whether a region can be pinned near Israel.** `vercel.json` pinned
-  `fra1` (Frankfurt) for latency to an Israeli audience. Whether the chosen
-  Netlify plan offers an equivalent, and what it is called, is unverified —
-  find out rather than assuming it transfers.
+- ~~**Confirm whether a region can be pinned near Israel.**~~ **Answered, and
+  closed on 12-09-2026 — and the answer reverses the instinct behind it.**
+  `vercel.json` pinned `fra1` (Frankfurt) for latency to an Israeli audience.
+  Netlify runs functions in **US East (Ohio)** by default and region selection
+  is a Pro-and-above feature, so there is no equivalent to carry over on this
+  plan. The database is therefore placed **next to the functions rather than
+  near the visitor**, and Neon's "Orit's gallery" is in US East (Ohio) for that
+  reason. **Queries per page are what multiply**; the visitor pays one long hop
+  for the HTML either way, and a Frankfurt database would have made every query
+  on every page cross the Atlantic instead. Reopen this only if the functions
+  ever move.
 
 ## Build
 
@@ -55,21 +62,38 @@ the images actually in the repo.
 
 ## Database — Neon
 
-Not connected yet. Development runs against a local Postgres, and **the
-application does query it** — every page reads paintings from the database
-through `lib/data/works-repository.js`. See database.md.
+**Connected, as of 12-09-2026.** The production database is a Neon project
+named **"Orit's gallery"**, region **US East (Ohio)**, **PostgreSQL 18**. It
+carries migrations **001 through 010**, the catalogue, and **both admin
+accounts**. Development is unchanged and stays on the local Postgres.
 
-Those two facts together are the current deployment problem: the code now needs
-a database that production does not have. `lib/db.js` throws when `DATABASE_URL`
-is unset, so a deploy today fails at request time on every page that reads a
-painting, which is all of them. Connecting Neon is what closes that.
+**That is not the same as being deployed.** `DATABASE_URL` is set on no host,
+so nothing has ever pointed at it but a developer's own shell. `lib/db.js`
+throws when the variable is unset, so the blocker on a deploy is now that
+variable rather than the database behind it.
 
-**The catalogue has to travel too, and there are two routes.** The migrations
-now include `008_load_catalogue_data.sql`, which carries the sixteen works and
-their images, so applying 001 through 008 in order brings a fresh Neon to the
-catalogue as it stood when 008 was generated. That is the committed backup, and
-it is a snapshot by nature. **When both databases are live, prefer a dump taken
-at the moment of the move:**
+**Two endpoints, and the deployed site does not use the one the migrations
+did.** The application reads the **pooled** endpoint; migrations and scripts
+use the **direct** one, which is the same host without `-pooler`. The reason is
+connection count: many short-lived serverless instances, each holding a pool of
+its own, against a small Postgres.
+
+**The connection string is nowhere in the repository**, `.env.local` included.
+It lives in the Neon console, and in the Netlify site once there is a
+deployment. A script that needs it takes it from the environment for the one
+command that needs it, rather than from a file.
+
+**The catalogue travelled with the migrations.**
+`008_load_catalogue_data.sql` carries the sixteen works and their images, so
+applying 001 through 010 in order brought Neon to the catalogue as it stood
+when 008 was generated, and that is how it got there.
+
+**008 has now run, so it is frozen — in fact, not only by convention.** Its own
+header sets out what that means: it is never edited, and a refreshed catalogue
+goes into a **new numbered file**. Forward-only stops being a style preference
+the moment a file has been applied somewhere.
+
+**To move a newer catalogue across, take a dump rather than rewriting 008:**
 
 ```bash
 pg_dump --data-only --table=works --table=work_images "$LOCAL" | psql "$NEON"
@@ -77,24 +101,27 @@ pg_dump --data-only --table=works --table=work_images "$LOCAL" | psql "$NEON"
 
 It is current by construction, where 008 is current only as of the day it was
 written. 008 exists so that the catalogue is in version control and a fresh
-database needs nothing but the migrations; it is not the thing to run against a
-Neon that already has data.
+database needs nothing but the migrations; neither route is the thing to run
+against a Neon that already holds the catalogue, which is now the case.
 
 **008 is the only migration that is not ASCII**, because its data is Hebrew.
 Run it with a UTF-8 client — its header says how — or psql on Windows aborts it
 mid-statement.
 
-When Neon arrives: the connection string is `DATABASE_URL` in the Netlify
-site, and the migrations in `database/migrations/` are applied to it **by
-hand, in numeric order, as a deliberate step of deploying** — never assumed to
-have happened. There is no runner and no ledger table, so the only way to know
-what a given database has had applied is to ask that database.
+The connection string goes in `DATABASE_URL` in the Netlify site when there is
+a deployment, and every migration in `database/migrations/` is applied to Neon
+**by hand, in numeric order, as a deliberate step of deploying** — never
+assumed to have happened. There is no runner and no ledger table, so the only
+way to know what a given database has had applied is to ask that database, and
+there are two to ask now.
 
-Two hazards specific to having two databases:
+Two hazards specific to having two databases, **both of them live from
+12-09-2026 rather than hypothetical**:
 
-- **The local database and Neon can drift.** Applying a migration locally does
-  nothing to production. A deploy that ships code depending on a new column
-  before that column exists in Neon fails at runtime, not at build time.
+- **The local database and Neon can drift.** Every migration from here is
+  applied to **both**, deliberately. Applying one locally does nothing to
+  production, and a deploy that ships code depending on a new column before
+  that column exists in Neon fails at runtime, not at build time.
 - **`npm run seed:local` must never reach production**, which is why it refuses
   any host that is not loopback and also refuses when `NODE_ENV=production` or
   when the environment variables a build host sets are present — Netlify's and
@@ -253,13 +280,16 @@ Beyond a green build, these are launch blockers and are easy to forget:
   privacy, accessibility. See commerce.md.
 - **A custom domain**, not the host's own preview URL.
 - **Both languages walked end to end**, including checkout, in right-to-left.
-- **A production database.** The site reads Postgres now, but only a local one
-  exists: Neon is not connected, `DATABASE_URL` is not set on the host, and the
-  migrations have never been applied to a hosted database. Until that is done a
-  deployed build cannot render a single painting.
-- **The two admin accounts existing in the production database**, created with
-  `npm run admin:create` against Neon once it exists. Creating them locally
-  does nothing for production, and a local run cannot reach it.
+- **A production database — done.** Neon's "Orit's gallery" carries 001 through
+  010 and the catalogue, since 12-09-2026. **The blocker that replaces it is
+  `DATABASE_URL` set in the Netlify site**, pointing at the **pooled**
+  endpoint: until that variable exists, a deployed build still cannot render a
+  single painting.
+- **The two admin accounts — done.** Both exist in the Neon database, carrying
+  the same scrypt hashes as the local rows, so the same passwords work against
+  either. A hash is all that moved; no password was known to anything in the
+  process. Creating an account locally still does nothing for production, which
+  is the reason this was ever on the list.
 - **`ADMIN_SESSION_SECRET` set in the Netlify site**, and a different value
   from the local one. Without it every admin page throws; with the local one
   copied over, a session minted on a laptop would work in production.

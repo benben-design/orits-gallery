@@ -83,6 +83,41 @@ Server components read through `lib/data/works-repository.js` directly, with
 Routes with dynamic params pre-generate them from the repository so painting
 pages are static and fast.
 
+## Caching
+
+Nothing here cached anything for a long time, so every visit queried Postgres.
+That became worth fixing when the production database moved to a plan whose
+compute sleeps after five minutes of quiet: a visitor can pay a wake-up on top
+of the query. Two shapes are in use, and **which one a page gets is decided by
+whether it reads `searchParams`, not by preference**.
+
+- **A page that takes only `params` gets `export const revalidate`.** It is
+  prerendered per locale and rebuilt on a window. The homepage is this.
+- **A page that reads `searchParams` renders per request whatever window is
+  declared on it**, so a `revalidate` export there is inert and misleading.
+  Cache the *data read* instead, with `unstable_cache` in the repository. The
+  gallery is this, because its category filter is a query parameter and
+  categories staying a filter rather than separate routes is a settled product
+  decision.
+
+Three rules around it:
+
+- **Never cache a read that is shared with something that must not be cached.**
+  `getAllWorks` is called by the gallery, by `app/sitemap.js`, and by
+  `app/api/health/route.js` — which calls it *because* a real query proves the
+  database is reachable. A cache on it turns the liveness check into a liveness
+  check that reports success while the database is down. Add a separate cached
+  read; do not wrap the shared one.
+- **Never cache anything the cart or checkout reads.** A cart is a wish, not a
+  hold, and its whole correctness is that every work is re-read. See commerce.md.
+- **Every write invalidates through `lib/revalidate.js`**, never by calling
+  `revalidatePath` or `revalidateTag` directly. There are two caches with two
+  mechanisms and clearing one is a half-stale site.
+
+`unstable_cache` persists into `.next/cache`, so entries survive a server
+restart. That is right in production and surprising in a test: a "first" request
+after a restart can be served from a previous run's cache.
+
 ## Hydration
 
 Server and browser must render identically. The usual causes of mismatch, all of

@@ -19,7 +19,7 @@
  *     Next renders it as a real form post and replays it.
  */
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePublicSite } from '@/lib/revalidate';
 import { authenticateAdmin } from '@/lib/auth/admin-users';
 import {
   startAdminSession,
@@ -262,7 +262,7 @@ export async function createWork(previousState, formData) {
   // Revalidate the public surfaces this work now appears on. Without it the
   // homepage grid and the gallery keep serving their cached render and she
   // reasonably concludes the save did not work.
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   // redirect() works by throwing, so it must sit outside any try/catch that
   // would swallow it — the one above closed before this line.
@@ -371,7 +371,7 @@ export async function updateWork(workId, previousState, formData) {
   // The work may have just appeared on, changed on, or vanished from the public
   // site. Without this she saves, looks at the gallery, sees the old version and
   // reasonably concludes it did not work.
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   // As in createWork: outside the try/catch, which has already closed. Nothing
   // is echoed back to the form because the form is not what she sees next —
@@ -453,7 +453,7 @@ export async function deleteWork(workId) {
   // The work may have just vanished from the gallery, the homepage grid and the
   // sitemap. Without this they keep serving their cached render and she
   // reasonably concludes the delete did not work.
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   redirect('/admin');
 }
@@ -476,7 +476,7 @@ export async function unpublishWork(workId) {
 
   if (!unpublished) redirect(confirmationPath(workId, 'notFound'));
 
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   // Back to the list, where it now reads as a draft. That is the confirmation:
   // she can see the state she asked for rather than being told about it.
@@ -534,7 +534,7 @@ export async function markWorkSold(workId, channel) {
   // The gallery, the homepage grid and the artwork page all render this work's
   // status. Without this they keep serving their cached render and the site
   // goes on offering a painting that has gone.
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   redirect(savedPath('markedSold'));
 }
@@ -571,7 +571,7 @@ export async function returnWorkToSale(workId) {
     redirect(salePath(workId, work ? 'siteSale' : 'notFound'));
   }
 
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   redirect(savedPath('returnedToSale'));
 }
@@ -646,7 +646,7 @@ export async function saveMainImage(workId, publicId) {
   // The painting has just appeared on the works list, the gallery, the homepage
   // grid and its own page. Without this she uploads, looks at the site, sees the
   // empty frame she was trying to fill, and reasonably concludes it did not work.
-  revalidatePath('/', 'layout');
+  revalidatePublicSite();
 
   return { ok: true, image };
 }
@@ -710,7 +710,7 @@ export async function cancelOrder(orderId) {
 
   const { ok, released } = await closeOrderRecord({ orderId, to: 'cancelled' });
 
-  if (released > 0) revalidatePath('/', 'layout');
+  if (released > 0) revalidatePublicSite();
 
   redirect(orderPath(orderId, ok ? 'cancelled' : 'notAllowed'));
 }
@@ -730,7 +730,7 @@ export async function refundOrder(orderId) {
 
   const { ok, released } = await closeOrderRecord({ orderId, to: 'refunded' });
 
-  if (released > 0) revalidatePath('/', 'layout');
+  if (released > 0) revalidatePublicSite();
 
   redirect(orderPath(orderId, ok ? 'refunded' : 'notAllowed'));
 }

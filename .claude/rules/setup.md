@@ -225,8 +225,15 @@ deployment. Never commit real credentials.
 
 ## Database
 
-A **local Postgres**, created by hand in pgAdmin, called `art_studio`. Neon is
-the intended production host and is not connected yet.
+A **local Postgres**, created by hand in pgAdmin, called `art_studio` — and
+since 12-09-2026 a **Neon project for production** as well: "Orit's gallery",
+US East (Ohio), PostgreSQL 18, carrying 001 through 010 and both admin
+accounts.
+
+Development stays on the local one. **The Neon connection string is not in
+`.env.local` and not anywhere in the repository**; it is taken from the
+environment for the one command that needs it. Migrations and scripts use
+Neon's **direct** endpoint, the deployed application its **pooled** one.
 
 The schema is plain SQL in `database/migrations/`, applied by hand in numeric
 order — no runner, no ORM, forward-only. Conventions and the whole schema are in

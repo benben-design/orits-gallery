@@ -5,7 +5,7 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import ArtworkCard from '@/components/ui/ArtworkCard';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
-import { getAllWorks, WORK_CATEGORIES } from '@/lib/data/works-repository';
+import { getGalleryWorks, WORK_CATEGORIES } from '@/lib/data/works-repository';
 import styles from './page.module.css';
 
 /**
@@ -56,7 +56,18 @@ export default async function GalleryPage({ params, searchParams }) {
   const requested = typeof query?.category === 'string' ? query.category : null;
   const category = WORK_CATEGORIES.includes(requested) ? requested : null;
 
-  const works = await getAllWorks(category ? { category } : {});
+  /**
+   * The cached catalogue read. See `getGalleryWorks`.
+   *
+   * **There is deliberately no `export const revalidate` on this page.** It
+   * reads `searchParams` above, so it renders per request whatever window is
+   * declared here — the window would look like caching and do nothing. What is
+   * cached is the database read, which is where the cost actually is.
+   *
+   * `category` is passed as a string or null rather than an options object
+   * because it is part of the cache key.
+   */
+  const works = await getGalleryWorks(category);
 
   const filters = [
     { value: null, label: dictionary.gallery.filterAll },

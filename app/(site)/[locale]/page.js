@@ -20,6 +20,25 @@ import { getRecentWorks } from '@/lib/data/works-repository';
  * and which has not been built yet.
  */
 
+/**
+ * Prerendered, and rebuilt at most once an hour.
+ *
+ * This page takes only `params`, so it has nothing per-request in it and can be
+ * a static page for both languages — which is what stops every visit querying
+ * Postgres. That matters more than it used to: the production database sleeps
+ * after five minutes of quiet on its plan, so an uncached visit can pay a
+ * wake-up on top of the query.
+ *
+ * **The hour is a backstop, not the mechanism.** Every admin mutation and the
+ * verified payment return call `revalidatePublicSite()`, so a save or a sale
+ * appears immediately. The window only catches a change that reached the
+ * database without going through either.
+ *
+ * The gallery cannot do this — it reads `searchParams` — and takes the win at
+ * the data layer instead. See `getGalleryWorks`.
+ */
+export const revalidate = 3600;
+
 /** Number of works in the homepage grid. */
 const GRID_SIZE = 12;
 
