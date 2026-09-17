@@ -58,7 +58,7 @@ Sizes roughly 30×30 to 50×70 cm, prices roughly ₪900–₪3,500.
 | Auth | **Built.** Two accounts with equal rights, the artist's and the developer's. scrypt password hashing, accounts created by `npm run admin:create`, sign-in and sign-out through a signed httpOnly cookie with no session table, and every guarded admin page redirecting a visitor without a session to the login form. The guard covers **rendering only** — mutations verify the session themselves, see security.md |
 | Translation | Google's Gemini, behind `lib/translate.js`, called only from `/admin/api/translate`. Fills the admin form's English fields in from the Hebrew, unapproved until she reads them. **Optional** — with no key the English is typed by hand |
 | Payments | **Hyp Pay**, on the yaad-sarig platform — docs at developers.hyp.co.il, chosen after research and a call with them. The buyer is sent to Hyp's own hosted payment page, so no card detail touches this server, and the charge is **direct (J2)** rather than authorize-then-capture. **This tier has no webhook and no transaction-status query**, so the only completion signal is the buyer's browser returning to us, which the server validates with the provider's VERIFY call before writing anything. Tax invoices are issued by the artist by hand for v1. **Not built** — the three keys are named in `.env.example` and nothing reads them yet |
-| Host | **Netlify**, one site, one deployment. `vercel.json` is still in the repo from the previous decision and is **not** read by Netlify — replacing it, carrying over its noindex headers, and finding out whether a region can be pinned near Israel are open tasks in deployment.md. Free tier while building, paid tier the day the site can take money |
+| Host | **Netlify**, one site, one deployment. `netlify.toml` is the build command and a pinned Node 22 and nothing else; everything else is detected, and region selection is a paid-plan feature, so the old Frankfurt pin has no successor. **The noindex headers are declared in `next.config.mjs`**, because a host header rule is never applied to a server-rendered response and every admin route is one. Free tier while building, paid tier the day the site can take money |
 
 Frontend and backend are the same app. There is no `client/` or `server/` split
 and there must not be one — a previous project of the owner's used that shape and
@@ -133,7 +133,10 @@ redirect to one.
    the site. What the grid cannot say is that these are physical objects made
    by hand, which is what a first-time buyer needs. Still not a carousel.
    A poster still is the LCP element and a complete hero on its own; the loop
-   is deferred over it — see app-files.md.
+   is deferred over it — see app-files.md. **The loop can be stopped**, by a
+   control in the frame reachable by keyboard in both languages, because a
+   thing that moves by itself and never stops is a Level A failure; stopping it
+   uncovers that still, which is a frame of the same footage.
 3. Works grid — twelve pieces with title, price and status; link to the gallery
 4. A row of four short promises — original one-off work, signed by the artist,
    insured shipping in Israel, 14-day cancellation
@@ -154,7 +157,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Area | Status |
 |---|---|
 | Project scaffold, Next config | Done |
-| Host configuration | **Not done.** `vercel.json` describes a host this project no longer deploys to. Nothing is deployed, so no replacement can be verified yet — see deployment.md |
+| Host configuration | **Done.** `netlify.toml` carries the build command and a pinned Node 22; the old Vercel configuration file is deleted, and the `X-Robots-Tag` noindex headers it held are declared in `next.config.mjs` — the only place they work for a route the host renders in a function. Nothing is deployed, so they are proven against a local production build rather than against Netlify |
 | i18n config, dictionary loader, `he`/`en` locale files | Done |
 | Data access layer + seed fixture + image manifest | Done |
 | Design tokens, global styles, the two faces via `next/font` | Done |

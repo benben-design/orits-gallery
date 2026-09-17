@@ -156,6 +156,20 @@
   color: var(--text-primary);
 }
 
+/**
+ * The visible half of `required`.
+ *
+ * The secondary ink, because it is a qualifier on the label rather than a
+ * second label — and `--text-muted` on `--surface-wall` is one of the pairings
+ * `npm run check:contrast` asserts, so it stays legible rather than becoming
+ * decoration. There is deliberately no asterisk: a symbol needs a sentence
+ * somewhere explaining what it means, and the word does not.
+ */
+.required {
+  margin-inline-start: var(--space-1);
+  color: var(--text-muted);
+}
+
 .input {
   min-block-size: 2.75rem;
   padding-inline: var(--space-3);
@@ -248,6 +262,36 @@
   list-style: disc;
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
+}
+
+/**
+ * A link in the summary, to the field it names.
+ *
+ * Underlined rather than accent-coloured alone — the same rule as everywhere
+ * else here: nothing on this site is carried by colour by itself, and a run of
+ * terracotta words inside a block that is already saying something went wrong
+ * needs to read as a link at a glance.
+ */
+.stopLink {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+@media (hover: hover) {
+  .stopLink:hover {
+    color: var(--accent-hover);
+  }
+}
+
+/**
+ * The summary takes focus when a submission is rejected, so it needs the ring
+ * like anything else that can hold focus. `:focus-visible` in globals.css does
+ * not match a programmatic focus on a container, so this one is stated.
+ */
+.stop:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* ------------------------------------------------------------------ *

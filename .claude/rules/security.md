@@ -219,8 +219,8 @@ they are already inside it.
 - Errors shown to a user say what to do next; stack traces and internal detail go
   to the server log only.
 - The admin is excluded from indexing in two places — `robots` and an
-  `X-Robots-Tag` header. Keep both. **Only the first is currently in effect:**
-  the header lives in `vercel.json`, and this project deploys to Netlify, which
-  does not read it. `app/robots.js` still covers the admin, so nothing is open —
-  but the redundancy is missing until the header is carried over, and that is a
-  recorded task in deployment.md rather than something already handled.
+  `X-Robots-Tag` header. Keep both, and keep the header **in
+  `next.config.mjs`**. The host's own header rules are applied only to responses
+  it serves from its store and never to one a function produced, so a rule moved
+  there would read as protection and provide none — and every admin route is
+  server-rendered, which is exactly the case those rules do not cover.

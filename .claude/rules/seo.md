@@ -112,15 +112,15 @@ publication status is not the same question as sale status: a sold work is
 public, an unpublished one is not.
 
 `robots` disallows `/admin`. An `X-Robots-Tag: noindex, nofollow, noarchive`
-header on `/admin/*` is meant to sit beside it — belt and braces, because an
+header on `/admin` and on `/dev` sits beside it — belt and braces, because an
 admin page leaking into search is embarrassing and permanent.
 
-**That header is not in effect yet.** It is written in `vercel.json`, and this
-project deploys to Netlify, which does not read that file. `robots` still
-disallows the admin, so the braces are on; the belt is a task recorded in
-deployment.md, and it should be done before anything is deployed rather than
-after, because an indexed admin URL is permanent in a way a fixed config is
-not.
+**That header is declared in `next.config.mjs`, and it has to be.** A rule
+written in the host's own configuration is applied only to responses Netlify
+serves from its store, never to one produced by a function — and every admin
+route is server-rendered, so host configuration is the one place the rule would
+look present and protect nothing. Declared in the framework it is part of the
+response whatever rendered it. See deployment.md.
 
 ## Rendering
 

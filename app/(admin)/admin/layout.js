@@ -13,12 +13,13 @@ import { isSignedIn } from '@/lib/auth/admin-session';
  * header, no footer, no language switcher and no cart. That is why it is a
  * second root layout in its own route group — see .claude/rules/app-files.md.
  *
- * It is kept out of search results three ways: the robots metadata below,
- * app/robots.js, and an
- * X-Robots-Tag header that
- * `vercel.json` still holds and the new host does not read — see deployment.md.
- * **That third way is not in effect until it is carried over to Netlify**, so
- * the two above are what is actually doing the work today.
+ * It is kept out of search results three ways, all three in effect: the robots
+ * metadata below, app/robots.js, and an `X-Robots-Tag` header declared in
+ * next.config.mjs. That header has to be declared in the framework rather than
+ * in the host's own configuration, and this file is the reason why: reading
+ * the session below makes every route under /admin server-rendered, and
+ * Netlify applies its header rules only to responses it serves from its own
+ * store — never to one a function produced. See .claude/rules/deployment.md.
  */
 
 export async function generateMetadata() {

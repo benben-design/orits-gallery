@@ -19,7 +19,9 @@
   "home": {
     "hero": {
       "positioning": "[PLACEHOLDER POSITIONING LINE — real copy not written yet]",
-      "posterAlt": "Orit Bar Shai painting in her studio — a loaded brush meeting wet oil paint on canvas"
+      "posterAlt": "Orit Bar Shai painting in her studio — a loaded brush meeting wet oil paint on canvas",
+      "pauseMotion": "Stop the video",
+      "playMotion": "Play the video"
     },
     "works": {
       "heading": "[PLACEHOLDER HEADING] Selected works",
@@ -156,7 +158,8 @@
       "postalCodeInvalid": "An Israeli postal code is five or seven digits.",
       "deliveryMethodInvalid": "Please choose how to receive the work.",
       "tooLong": "That is too long."
-    }
+    },
+    "requiredMark": "(required)"
   },
   "orderConfirmation": {
     "title": "Your order",

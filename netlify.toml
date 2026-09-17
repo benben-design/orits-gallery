@@ -1,0 +1,21 @@
+# Netlify build configuration.
+#
+# Two settings, and deliberately nothing else: the framework, the publish
+# directory and the function bundling are all detected by the Next runtime, and
+# a value restated here is one that can disagree with the manifest later.
+
+[build]
+  # Exactly what package.json defines. `prebuild` runs with it, so the image
+  # manifest is regenerated on the host and a deployed build can never ship a
+  # stale one.
+  command = "npm run build"
+
+[build.environment]
+  # Pinned, because the host's default Node moves with its build image — and a
+  # major version changing underneath a build is a failure that arrives on a
+  # day nothing was pushed, with nothing in the diff to explain it.
+  #
+  # 22 is the line this project is developed on. Next 16 needs 20.9 or newer,
+  # so that is the floor rather than the target: matching development is what
+  # makes a green build here mean something about the build there.
+  NODE_VERSION = "22"

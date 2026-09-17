@@ -22,6 +22,14 @@ import styles from './Hero.module.css';
  *     has gone quiet, and skipped entirely under reduced-motion or Save-Data.
  *     See HeroVideo.js.
  *
+ * **The loop sits on top of the poster and is never a replacement for it**, and
+ * that is what makes stopping it possible at all: the control in HeroVideo
+ * fades the video out rather than unmounting it, and the still underneath is
+ * simply uncovered. So "not playing" is one defined picture — the same one
+ * whether the visitor stopped it, asked their system for reduced motion, or
+ * arrived before the video did — rather than a frozen frame wherever the loop
+ * happened to be.
+ *
  * The text sits BELOW the frame rather than over it. Overlaying was considered
  * and rejected: the quiet corner of the footage is on one side of the frame,
  * but this site is right-to-left by default, so a headline anchored to the
@@ -46,12 +54,17 @@ import styles from './Hero.module.css';
 const HERO_VIDEO = '/video/wide-4x3-slow50.mp4';
 
 /**
- * PENDING. The still frame is the LCP element and the hero's whole fallback,
- * so this is the one asset the section is not complete without. Set it to
- * '/video/hero-cherries-poster.jpg' when the file lands and the poster renders
- * automatically — nothing else has to change.
+ * The still, and **a frame of the loop itself** rather than a second
+ * photograph — extracted from `wide-4x3-slow50.mp4` at 2.93s, at the source's
+ * own 1080x810.
+ *
+ * That it is the same footage is the point rather than a convenience. It is
+ * what the visitor sees before the loop arrives, whenever they stop the loop,
+ * and instead of the loop under reduced motion — so a different image would
+ * make stopping the video a change of subject, and would make the alt text
+ * below true of only one of the two states.
  */
-const HERO_POSTER = null;
+const HERO_POSTER = '/video/hero-cherries-poster.jpg';
 
 export default function Hero({ dictionary }) {
   return (
@@ -77,7 +90,11 @@ export default function Hero({ dictionary }) {
             />
           ) : null}
 
-          <HeroVideo src={HERO_VIDEO} />
+          <HeroVideo
+            src={HERO_VIDEO}
+            pauseLabel={dictionary.home.hero.pauseMotion}
+            playLabel={dictionary.home.hero.playMotion}
+          />
         </div>
 
         <div className={styles.text}>

@@ -2,11 +2,12 @@
  * robots.txt
  *
  * The admin area and the design-system page at /dev are both kept out of search
- * results three ways: here, in each one's own root-layout metadata, and via an
- * X-Robots-Tag header that
- * `vercel.json` still holds and the new host does not read — see deployment.md.
- * **That third way is not in effect until it is carried over to Netlify**, so
- * the two above are what is actually doing the work today.
+ * results three ways, all three in effect: here, in each one's own root-layout
+ * metadata, and via an `X-Robots-Tag: noindex, nofollow, noarchive` header
+ * declared in next.config.mjs — in the framework's configuration rather than
+ * the host's, because a header rule written for Netlify is applied only to
+ * responses it serves from its own store and never to one a function produced,
+ * which every admin route is. See .claude/rules/deployment.md.
  *
  * Neither reaches the sitemap either: it is generated from the locale list and
  * the works repository — which is the only way it may be generated, see

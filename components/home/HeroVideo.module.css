@@ -41,3 +41,50 @@
     transition: none;
   }
 }
+
+/**
+ * The control that stops the loop — WCAG 2.2.2, and the reason it exists is in
+ * HeroVideo.js.
+ *
+ * It sits **on** the footage, which is the one place on this site where a
+ * control has no surface of its own to sit on, so it brings one: the mat board
+ * the paintings are mounted on, at full opacity. A translucent panel was the
+ * obvious alternative and is wrong here — what shows through it is moving, so
+ * the contrast behind the label changes frame by frame and there is no value it
+ * can be measured at. `--text-primary` on `--surface-mat` is one of the
+ * pairings `npm run check:contrast` already asserts, and it holds whatever the
+ * video is doing underneath.
+ *
+ * Placed with logical properties, so it sits in the trailing bottom corner of
+ * the frame in both writing directions — where a media control is looked for,
+ * and clear of the positioning line below.
+ *
+ * Note that the footage is **not** mirrored between the two languages while the
+ * control is: in English it lands over the gloved hand and in Hebrew over the
+ * pale canvas. That is exactly why the fill is opaque rather than a tint — the
+ * label has to hold against either, and against every frame in between.
+ */
+.control {
+  position: absolute;
+  inset-block-end: var(--space-4);
+  inset-inline-end: var(--space-4);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* A real target on a phone, where this is hardest to hit deliberately. */
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-4);
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  transition: background-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .control:hover {
+    background-color: var(--surface-tint);
+  }
+}

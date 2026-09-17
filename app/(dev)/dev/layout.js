@@ -11,11 +11,11 @@ import { fontVariables } from '@/app/fonts';
  * and no menu to remember to edit. See .claude/rules/app-files.md.
  *
  * It is a developer tool and is kept out of search results three ways, matching
- * the admin: the robots metadata below, a disallow in app/robots.js, and an
- * X-Robots-Tag header that
- * `vercel.json` still holds and the new host does not read — see deployment.md.
- * **That third way is not in effect until it is carried over to Netlify**, so
- * the two above are what is actually doing the work today.
+ * the admin and all three in effect: the robots metadata below, a disallow in
+ * app/robots.js, and an `X-Robots-Tag` header declared in next.config.mjs —
+ * which is where it belongs rather than in the host's configuration, because a
+ * Netlify header rule never reaches a response produced by a function. See
+ * .claude/rules/deployment.md.
  *
  * The document is English and left-to-right because the tool's own labels are
  * English. The specimens inside it carry their own dir="rtl" lang="he" — this

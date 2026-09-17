@@ -24,28 +24,46 @@ While nothing is deployed and nothing is for sale, the free tier costs nothing
 and risks nothing. That changes on the first real customer, not on the first
 busy week.
 
-### Still to do, and deliberately not done yet
+### The move off Vercel, done on 17-09-2026
 
 **This project was going to deploy to Vercel and the decision changed.** The
-migration itself is not done, on purpose: nothing is deployed, so no host config
-can be verified by anything, and a config file that looks authoritative while
-untested is worse than a written-down task. These are the tasks.
+repository now carries the Netlify side of that decision and nothing of the old
+one. Nothing is deployed yet, so what follows is proven against a local
+production build rather than against the host.
 
-- **Replace `vercel.json`.** It is still in the repo and still describes Vercel:
-  the framework, the region, and the headers below. Netlify reads none of it. It
-  is left in place rather than deleted so that what it holds is not lost before
-  it is carried over — but **nothing in it is in effect on Netlify**, and it
-  should not be read as live configuration.
-- **Carry over the `X-Robots-Tag` headers**, which is the one item here with a
-  consequence rather than an inconvenience. `vercel.json` sends
-  `noindex, nofollow, noarchive` on `/admin/*` and `/dev`, and that is the
-  second of the two places those routes are kept out of search — `app/robots.js`
-  is the first. Until the headers exist on the new host, **that belt-and-braces
-  is down to one strap.** `robots.js` still covers it, so this is not an open
-  door; it is the redundancy that seo.md and security.md both ask for, missing.
+- ~~**Replace the old Vercel configuration file.**~~ **Deleted.** Exactly one thing in it had a
+  consequence — the `X-Robots-Tag` headers, below. Nothing else had a successor
+  to carry over: Netlify detects the framework on its own, and region selection
+  is a paid-plan feature this project has no access to.
+- **Those headers are declared in `next.config.mjs`, not in `netlify.toml`, and
+  that distinction is the thing to remember from this whole migration.**
+  Netlify's custom headers — written in its own configuration file or in a
+  `_headers` file — are applied only to responses it serves **from its own
+  store**. They are never applied to a response produced by a **function**,
+  which is what every server-rendered route is; and every route under `/admin`
+  is server-rendered, because the admin's root layout reads the session cookie.
+  Porting the rules into host configuration would therefore have produced
+  precisely what this section exists to prevent: **a file that reads as
+  authoritative and does nothing.** Declared in the framework, the header is
+  part of the response whatever rendered it.
+  The one documented difference is that headers declared there are evaluated
+  **after** the proxy rather than before, and it cannot matter for these two
+  paths, because `proxy.js`'s matcher deliberately excludes both `/admin` and
+  `/dev`.
+- **`netlify.toml` carries two settings and deliberately nothing else**: the
+  build command exactly as `package.json` defines it, and `NODE_VERSION = "22"`.
+  The framework, the publish directory and function bundling are all detected,
+  and a value restated there is one that can quietly disagree with the manifest
+  later. **Node is pinned because the host's default moves with its build
+  image**, and a major version changing underneath a build is a failure that
+  arrives on a day nothing was pushed, with nothing in the diff to explain it.
+  22 is the line this project is developed on; Next 16 requires 20.9 or newer,
+  so that is the floor rather than the target — matching development is what
+  makes a green build on a laptop mean something about a build on the host.
 - ~~**Confirm whether a region can be pinned near Israel.**~~ **Answered, and
   closed on 12-09-2026 — and the answer reverses the instinct behind it.**
-  `vercel.json` pinned `fra1` (Frankfurt) for latency to an Israeli audience.
+  The Vercel configuration pinned `fra1` (Frankfurt) for latency to an Israeli
+  audience.
   Netlify runs functions in **US East (Ohio)** by default and region selection
   is a Pro-and-above feature, so there is no equivalent to carry over on this
   plan. The database is therefore placed **next to the functions rather than
@@ -316,9 +334,12 @@ Beyond a green build, these are launch blockers and are easy to forget:
   That branch leaves an order pending with money taken, and the orders list is
   the only place it can be caught — so it has to be seen working before a
   stranger meets it.
-- **The host configuration actually replaced**, and the `X-Robots-Tag` headers
-  with it — `vercel.json` is still the only place they exist and the new host
-  does not read it. See the migration tasks at the top of this file.
+- **The `X-Robots-Tag` header confirmed on the deployed site**, not only in a
+  local production build. It is declared in `next.config.mjs` and therefore
+  carried by Netlify's Next adapter rather than by the host's own header rules —
+  and the adapter honouring it is the one part of this a laptop cannot prove.
+  `curl -I` an admin path and `/dev` on the deployed site and look for all three
+  directives.
 - **A check that the guard survived the deploy.** It is built, but it is
   ordinary application code rather than infrastructure: browse to an admin page
   signed out on the deployed site and confirm it lands on the login form.

@@ -46,9 +46,9 @@ layout, a disallow in `app/robots.js`, and an `X-Robots-Tag` header — and it i
 unreachable from any navigation because it sits outside `app/(site)/[locale]`
 entirely.
 
-The third of those is currently missing: the header is in `vercel.json` and the
-project deploys to Netlify, which does not read it. The first two still hold.
-See deployment.md.
+The third is declared in `next.config.mjs` rather than in the host's
+configuration, because a Netlify header rule is never applied to a response
+produced by a function. See deployment.md.
 
 To make it developer-only instead, add an `export const dynamic` guard or a
 `notFound()` on `process.env.NODE_ENV === 'production'` in its page. That also

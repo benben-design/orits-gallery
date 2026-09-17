@@ -52,6 +52,11 @@ One glyph means one action, everywhere it appears:
 | Sign in / out | `LogIn` / `LogOut` | the admin |
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |
+| Stop / play the hero loop | `Pause` / `Play` | the homepage hero, over the footage |
+
+**The play triangle does not flip in Hebrew.** i18n.md names it among the icons
+that carry no direction — unlike a "back" chevron — so the control mirrors to
+the other corner while the glyph inside it stays as drawn.
 
 **`X` means close and nothing else.** Removal was `X` until the drawer's close
 control lost its label and became the glyph alone — one symbol cannot mean both

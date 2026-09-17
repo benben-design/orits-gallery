@@ -1,11 +1,31 @@
 'use client';
 
-import { useActionState, useId, useState } from 'react';
+import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import { CreditCard } from 'lucide-react';
 import { formatPrice } from '@/lib/format';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { DELIVERY_METHODS } from '@/lib/delivery';
 import styles from './CheckoutForm.module.css';
+
+/**
+ * Every field that can be rejected, **in the order it appears on the page**,
+ * with the dictionary key naming it.
+ *
+ * The order is the whole point: it is what makes "the first thing wrong" mean
+ * the first one a buyer would reach rather than whichever key the validator
+ * happened to write first. The address three are absent for self-pickup and the
+ * validator never rejects them there, so a summary built from this list cannot
+ * offer a link to a field that is not on the page.
+ */
+const FIELD_ORDER = [
+  { name: 'deliveryMethod', labelKey: 'deliveryLegend' },
+  { name: 'street', labelKey: 'addressStreet' },
+  { name: 'city', labelKey: 'addressCity' },
+  { name: 'postalCode', labelKey: 'addressPostalCode' },
+  { name: 'name', labelKey: 'buyerName' },
+  { name: 'email', labelKey: 'buyerEmail' },
+  { name: 'phone', labelKey: 'buyerPhone' },
+];
 
 /**
  * The checkout form: how the painting travels, who is buying it, and what it costs.
@@ -57,6 +77,37 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
   const chosen = amounts.methods[method];
   const wantsAddress = method === 'shipping';
 
+  /*
+    One prefix for every control on this form, so a field's id is predictable
+    from its name. The summary below has to link to fields it does not render,
+    and a useId() inside each Field gives ids nothing outside it can name.
+  */
+  const ids = useId();
+  const fieldId = (name) => `${ids}-${name}`;
+
+  /** What was rejected, in page order, with the wording to point at it. */
+  const rejected = FIELD_ORDER.filter((field) => errors[field.name]);
+
+  /**
+   * Where the keyboard goes when a submission comes back rejected.
+   *
+   * **Focus moves to the summary rather than to the first bad field**, and the
+   * difference matters for the person this is for. Focusing the field announces
+   * that one field; focusing the summary announces that the submission failed,
+   * how many fields are wrong, and puts a link to each of them one Tab away —
+   * so the buyer learns the shape of the problem before being dropped into one
+   * corner of it. It is also the only arrangement where the count is spoken at
+   * all. This is the pattern GOV.UK's error summary uses, for the same reason.
+   *
+   * `role="alert"` stays on it as well, because a submission that is rejected
+   * while the buyer's focus has already moved elsewhere still has to speak.
+   */
+  const summaryRef = useRef(null);
+
+  useEffect(() => {
+    if (state?.error === 'invalid') summaryRef.current?.focus();
+  }, [state]);
+
   return (
     <form action={formAction} className={styles.form} noValidate>
       {/*
@@ -101,16 +152,57 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         </p>
       ) : null}
 
+      {/*
+        A rejected field, which is the ordinary failure and was the silent one:
+        the action returns `invalid`, the per-field messages render correctly
+        associated — and until this block existed nothing announced that
+        anything had happened at all. To a screen reader the page was unchanged
+        after pressing pay, one step from money. Error identification, Level A.
+
+        The sentence is `errorRequired`, which was written for exactly this and
+        sat in both locale files rendered by nothing.
+
+        **The list is the half that saves the hunting.** Each entry is an
+        ordinary in-page link to the field that was rejected, in page order, so
+        the fix is Tab-then-Enter rather than a search through a form whose bad
+        field may be below the fold. It is the same arrangement the admin's work
+        form uses for its unapproved translations, and the same idea as the
+        orders list: the block explains, the link locates.
+      */}
+      {state?.error === 'invalid' ? (
+        <div className={styles.stop} role="alert" tabIndex={-1} ref={summaryRef}>
+          <p className={styles.stopLead}>{copy.errorRequired}</p>
+
+          {rejected.length > 0 ? (
+            <ul className={styles.stopList}>
+              {rejected.map((field) => (
+                <li key={field.name}>
+                  <a className={styles.stopLink} href={`#${fieldId(field.name)}`}>
+                    {copy[field.labelKey]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* ---- How the painting travels. First, because it decides the rest. ---- */}
 
       <fieldset className={styles.group}>
         <legend className={styles.legend}>{copy.deliveryLegend}</legend>
 
         <div className={styles.choices}>
-          {DELIVERY_METHODS.map((value) => (
+          {DELIVERY_METHODS.map((value, index) => (
             <DeliveryChoice
               key={value}
               value={value}
+              /*
+                The group has one id to be linked to, and it belongs on the
+                first radio — the target of a link has to be something focus can
+                land on, and a fieldset is not.
+              */
+              id={index === 0 ? fieldId('deliveryMethod') : `${ids}-deliveryMethod-${value}`}
               checked={method === value}
               onChange={() => setMethod(value)}
               label={value === 'shipping' ? copy.deliveryShipping : copy.deliveryPickup}
@@ -141,6 +233,8 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
 
           <Field
             name="street"
+            id={fieldId('street')}
+            requiredMark={copy.requiredMark}
             label={copy.addressStreet}
             defaultValue={state?.values?.street}
             error={errors.street ? copy.errors[errors.street] : null}
@@ -151,6 +245,8 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
           <div className={styles.pair}>
             <Field
               name="city"
+              id={fieldId('city')}
+              requiredMark={copy.requiredMark}
               label={copy.addressCity}
               defaultValue={state?.values?.city}
               error={errors.city ? copy.errors[errors.city] : null}
@@ -160,6 +256,8 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
 
             <Field
               name="postalCode"
+              id={fieldId('postalCode')}
+              requiredMark={copy.requiredMark}
               label={copy.addressPostalCode}
               defaultValue={state?.values?.postalCode}
               error={errors.postalCode ? copy.errors[errors.postalCode] : null}
@@ -180,6 +278,8 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
 
         <Field
           name="name"
+          id={fieldId('name')}
+          requiredMark={copy.requiredMark}
           label={copy.buyerName}
           defaultValue={state?.values?.name}
           error={errors.name ? copy.errors[errors.name] : null}
@@ -190,6 +290,8 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         <div className={styles.pair}>
           <Field
             name="email"
+            id={fieldId('email')}
+            requiredMark={copy.requiredMark}
             type="email"
             label={copy.buyerEmail}
             defaultValue={state?.values?.email}
@@ -202,6 +304,8 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
 
           <Field
             name="phone"
+            id={fieldId('phone')}
+            requiredMark={copy.requiredMark}
             type="tel"
             label={copy.buyerPhone}
             defaultValue={state?.values?.phone}
@@ -268,9 +372,7 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
  * artist afterwards — so the wording says exactly that. A bare "collect in
  * person" invites somebody to turn up somewhere.
  */
-function DeliveryChoice({ value, checked, onChange, label, note, price }) {
-  const id = useId();
-
+function DeliveryChoice({ id, value, checked, onChange, label, note, price }) {
   return (
     <div className={[styles.choice, checked ? styles.choiceChecked : ''].filter(Boolean).join(' ')}>
       <input
@@ -306,15 +408,42 @@ function DeliveryChoice({ value, checked, onChange, label, note, price }) {
  * every message is ours, in the buyer's language, and in the same place every
  * time. `required` stays on the input for the semantics rather than the
  * behaviour — it is what tells a screen reader the field is required.
+ *
+ * **And the marker beside the label is what tells everybody else.** The
+ * attribute above is announced by assistive technology and is invisible, so
+ * before this a sighted buyer had nothing at all saying which fields they had
+ * to fill — every one of them, as it happens, which is exactly the case where
+ * it goes unnoticed for a long time. Labels or instructions, Level A.
+ *
+ * It is `aria-hidden` because `required` has already said it: without that a
+ * screen reader reads the field as "Full name required, required, edit text".
+ * The marker is the *visible* half of a fact the markup already carries, which
+ * is also why it follows the `required` prop rather than being a sentence at
+ * the top of the form promising something about fields it cannot see.
  */
-function Field({ name, label, error, type = 'text', defaultValue, ...rest }) {
-  const id = useId();
+function Field({
+  id,
+  name,
+  label,
+  error,
+  type = 'text',
+  defaultValue,
+  /* Pulled out of `rest` deliberately: spread onto the <input> it would be an
+     unknown DOM attribute, which React reports at every render. */
+  requiredMark,
+  ...rest
+}) {
   const errorId = id + '-error';
 
   return (
     <div className={styles.field}>
       <label htmlFor={id} className={styles.label}>
         {label}
+        {rest.required ? (
+          <span className={styles.required} aria-hidden="true">
+            {requiredMark}
+          </span>
+        ) : null}
       </label>
 
       <input
