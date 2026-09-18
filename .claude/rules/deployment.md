@@ -50,9 +50,10 @@ production build rather than against the host.
   **after** the proxy rather than before, and it cannot matter for these two
   paths, because `proxy.js`'s matcher deliberately excludes both `/admin` and
   `/dev`.
-- **`netlify.toml` carries two settings and deliberately nothing else**: the
-  build command exactly as `package.json` defines it, and `NODE_VERSION = "22"`.
-  The framework, the publish directory and function bundling are all detected,
+- **`netlify.toml` carries four settings and deliberately nothing else**: the
+  build command exactly as `package.json` defines it, `NODE_VERSION = "22"`,
+  and two that narrow the secrets scan — see "The secrets scan is narrowed,
+  never disabled" under Build below. The framework, the publish directory and function bundling are all detected,
   and a value restated there is one that can quietly disagree with the manifest
   later. **Node is pinned because the host's default moves with its build
   image**, and a major version changing underneath a build is a failure that
@@ -77,6 +78,56 @@ production build rather than against the host.
 
 `prebuild` regenerates the image manifest, so the deployed build always matches
 the images actually in the repo.
+
+### The secrets scan is narrowed, never disabled
+
+The first production build, of `dc1519a`, compiled cleanly and then failed at
+Netlify's "Scanning for secrets in code and build output" step, with exit code
+2. **Nothing was published, so nothing leaked and no key needed rotating.** The
+scan found two different kinds of thing, and they are handled differently:
+
+- **The four real secrets were each in exactly one file.**
+  `ADMIN_SESSION_SECRET`, `GEMINI_API_KEY`, `CLOUDINARY_API_KEY` and
+  `CLOUDINARY_API_SECRET` appeared in `.netlify/.next/cache/turbopack/…/*.sst`
+  and nowhere else. That is **Turbopack's persistent build cache**, new in
+  Next 16, which records the values of environment variables read during the
+  build. It is not served and not uploaded to the CDN: the deploy is the pages,
+  the static files and one function, and the cache is saved separately. So
+  `SECRETS_SCAN_OMIT_PATHS` names that cache — `.next/cache/`, where Next
+  writes it, and `.netlify/.next/cache/`, where the scan found it — **and
+  nothing wider.** The scanner matches each entry as a prefix of the file's
+  path from the base directory (or as a glob), so the trailing slash keeps each
+  entry to that directory. **Never widen it to `.next`**: the served pages are
+  generated there, and that is exactly where a leaked secret would show up.
+- **`CLOUDINARY_CLOUD_NAME` was everywhere**, which is correct: in every
+  generated page, in the deploy blobs, in migration 008 and in
+  `scripts/check-image-crop.mjs`. It is not a secret. It is the public
+  identifier inside every delivery URL, so it has to be in the output, and it
+  can never be cleaned out of the repository, which the scan also covers.
+  `SECRETS_SCAN_OMIT_KEYS` names it **and nothing else.** The Cloudinary API
+  key and API secret are real secrets and must never be added.
+
+**The cloud name was only scanned because of a wrong label.** The scanner
+searches only for the values of variables marked "Contains secret values", so
+the cloud name must be marked that way in the Netlify UI. That label is wrong
+for a public identifier. Fixing the label in the UI was an option, and the
+exclusion was kept in `netlify.toml` instead, deliberately, because there it
+can be seen in the diff and it goes on working if someone marks the variable
+secret again.
+
+**`SECRETS_SCAN_ENABLED = false` was rejected.** It would have fixed this in one
+line and thrown away the one check that matters: a secret reaching a page that
+is served. Both settings are in `netlify.toml` rather than the Netlify UI
+because the repository is going public, and an exception to a security check
+has to be visible in the diff with its reason next to it.
+
+**This cannot be checked on a laptop.** Secrets scanning is a Netlify build
+step and does not run locally, so a green local build proves nothing here. The
+check is the next production build: the scan should report zero instances and
+the deploy should reach published. **If it fails again on any of the four, that
+is not noise.** One of them has reached something outside the build cache,
+most likely a served page, and it needs tracing before anything else changes,
+starting with these exclusions.
 
 ## Database — Neon
 

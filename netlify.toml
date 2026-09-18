@@ -1,8 +1,9 @@
 # Netlify build configuration.
 #
-# Two settings, and deliberately nothing else: the framework, the publish
-# directory and the function bundling are all detected by the Next runtime, and
-# a value restated here is one that can disagree with the manifest later.
+# The build command, a pinned Node, and two settings that narrow the secrets
+# scan — and deliberately nothing else: the framework, the publish directory
+# and the function bundling are all detected by the Next runtime, and a value
+# restated here is one that can disagree with the manifest later.
 
 [build]
   # Exactly what package.json defines. `prebuild` runs with it, so the image
@@ -19,3 +20,39 @@
   # so that is the floor rather than the target: matching development is what
   # makes a green build here mean something about the build there.
   NODE_VERSION = "22"
+
+  # The secrets scan: narrowed, never disabled.
+  #
+  # Netlify fails a build when the value of a variable marked "Contains secret
+  # values" appears in the repository or in the build output. Both settings
+  # below are exceptions to that check, which is why they are written here,
+  # where the diff shows them with their reasons, and not in the Netlify UI.
+  # SECRETS_SCAN_ENABLED = "false" would have fixed the first failure in one
+  # line and thrown away the one check that matters: a secret reaching a page
+  # that is served.
+
+  # Turbopack's persistent build cache, new in Next 16, records the values of
+  # environment variables read during the build. On the first production build
+  # it was the only place ADMIN_SESSION_SECRET, GEMINI_API_KEY,
+  # CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET appeared. It is not served and
+  # not uploaded to the CDN; the cache is saved separately.
+  #
+  # Each entry matches as a path prefix from the base directory: .next/cache/
+  # is where Next writes the cache, and .netlify/.next/cache/ is where the scan
+  # found it. Never widen this to .next as a whole — the served pages are
+  # generated there, and that is exactly where a leaked secret would show up.
+  # If the scan names any of those four again, it has reached something outside
+  # this cache: a real finding, not noise.
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/,.next/cache/"
+
+  # The cloud name is not a secret. It is the public identifier inside every
+  # Cloudinary delivery URL, so it has to be in every page that shows an
+  # uploaded painting, and it is in migration 008 and
+  # scripts/check-image-crop.mjs, which the scan also covers. It was scanned
+  # for only because it is marked secret in the Netlify UI, which is the wrong
+  # label for it; this entry keeps that label from failing builds, even if the
+  # variable is marked secret again later.
+  #
+  # The Cloudinary API key and API secret are real secrets and must never be
+  # added here.
+  SECRETS_SCAN_OMIT_KEYS = "CLOUDINARY_CLOUD_NAME"
