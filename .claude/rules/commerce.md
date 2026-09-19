@@ -316,9 +316,8 @@ working one.** It briefly did carry the same accent fill, which had the same
 fault for the same reason.
 
 So it is `--surface-tint` with a `--line-strong` hairline and `--text-primary`
-on it: quiet ground, defined edge, 10.80:1 on the label. The clay is the one
-non-neutral surface in the palette and comes from the same terracotta family as
-the accent, so the two controls read as a deep-and-pale pair. **The
+on it: quiet ground, defined edge, 10.80:1 on the label. The clay tint comes
+from the same terracotta family as the accent, so the two controls read as a deep-and-pale pair. **The
 one-filled-accent rule therefore still holds** — the accent belongs to the
 control that works, and this one is visibly the second option rather than a twin
 of the first.

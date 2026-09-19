@@ -1,12 +1,49 @@
+/* 2.75rem: the touch-target minimum. It was 2.25rem, which a thumb misses.
+
+   The word is set exactly as the destinations are — see
+   PrimaryNav.module.css — so both sides of the name are one row of type. */
 .link {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
-  color: var(--text-muted);
+  gap: var(--space-2);
+  min-inline-size: 2.75rem;
+  block-size: 2.75rem;
+  color: var(--text-primary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-slight);
   transition: color var(--duration) var(--ease);
+}
+
+/* The count is placed against the bag, not the button, so the word beside it
+   cannot push the badge off the glyph. */
+.iconWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/**
+ * Visually hidden on a phone — the bag alone fits the corner — but still the
+ * button's text, so still its accessible name. From 48rem it is shown.
+ */
+.word {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (min-width: 48rem) {
+  .word {
+    position: static;
+    inline-size: auto;
+    block-size: auto;
+    overflow: visible;
+    clip-path: none;
+  }
 }
 
 .icon {
@@ -28,8 +65,8 @@
  */
 .count {
   position: absolute;
-  inset-block-start: 0.125rem;
-  inset-inline-end: 0.125rem;
+  inset-block-start: -0.5rem;
+  inset-inline-end: -0.625rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -40,6 +77,10 @@
   background-color: var(--accent);
   color: var(--text-on-accent);
   font-size: var(--text-xs);
+  /* Not the button's light weight: a hairline numeral at 12px on the accent
+     is the one thing in the header that would be hard to read. */
+  font-weight: var(--weight-normal);
+  letter-spacing: normal;
   line-height: 1;
   /* Latin digits inside a right-to-left document: keep them as one run. */
   unicode-bidi: isolate;
@@ -64,8 +105,5 @@
   }
 }
 
-@media (hover: hover) {
-  .link:hover {
-    color: var(--text-primary);
-  }
-}
+/* The hover line under the word is NavLabel's, shared with the destinations
+   and the language switch, so all three answer the pointer the same way. */

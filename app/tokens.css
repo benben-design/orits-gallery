@@ -81,6 +81,38 @@
    */
   --surface-tint-hover: #D4C3B9;
 
+  /**
+   * The band. The header's ground, and nothing else's yet.
+   *
+   * Taken from the artist's own shop: gitahomedesign.co.il sets its section
+   * bands in a dusty clay, #B49684 laid over white at 68%. This is that hue
+   * lightened until it sits one clear step off the wall (1.29:1) without
+   * weighing on the top of a light page — the shop's full-strength band was
+   * tried and read heavy here. The same hue family as --accent, so the header
+   * belongs to the palette rather than introducing to it, and it is a surface,
+   * not a second accent: it marks no action and carries no meaning.
+   *
+   * Compared on the real header against the wall (the bar blended into the
+   * page), the mat (stark, detached) and a dark ink bar (competed with the
+   * paintings).
+   *
+   * TEXT ON THE BAND: --text-primary (9.33:1) or --text-muted-on-band. Plain
+   * --text-muted fails here (3.85:1), and so does --accent as text (4.22:1) —
+   * the current page is marked with an accent *hairline*, and the WhatsApp
+   * glyph turns accent under the pointer; both are non-text and need only
+   * 3:1. check:contrast holds all of this.
+   *
+   * Every word in the header is --text-primary now — the language switch
+   * included, which used to be the muted one. --text-muted-on-band stays as
+   * what --text-muted means inside the header, for anything muted there later.
+   */
+  --surface-band: #DDCABD;
+  --text-muted-on-band: #574D46;  /* the secondary ink, stepped down for the band: 5.19:1 */
+  /* Hairlines on the band — the rule between the phone's two rows. Not the
+     hover line: at about 1.3:1 it made pointing at a link look like nothing
+     happened, so that line is drawn in ink. */
+  --line-on-band: #C7AF9F;
+
   /* ================================================================ *
    * TEXT
    *
@@ -242,6 +274,15 @@
   --duration-slow: 420ms;
   --duration: 200ms;
   --ease: cubic-bezier(0.2, 0, 0.1, 1);
+
+  /**
+   * The physical edge a line starts from: left in English, right in Hebrew.
+   * `transform-origin` has no logical keywords, so something that grows in
+   * the direction the words are read — the header's hover hairline — needs
+   * the edge named, and this is the one place it is. The blocks below set it
+   * per direction.
+   */
+  --origin-inline-start: left;
 }
 
 /**
@@ -252,4 +293,11 @@
 [dir='rtl'] {
   --tracking-wide: 0;
   --tracking-slight: 0;
+  --origin-inline-start: right;
+}
+
+/* Restated for LTR so an English fragment inside a Hebrew document — the
+   admin's preview — does not inherit the right-hand edge. */
+[dir='ltr'] {
+  --origin-inline-start: left;
 }

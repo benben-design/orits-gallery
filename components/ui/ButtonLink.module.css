@@ -18,6 +18,17 @@
   color: var(--text-primary);
 }
 
+/**
+ * The filled accent, in link form. Same fill, ink and hover step as the cart's
+ * checkout control, so "the thing to do here" looks the same wherever it is.
+ * --text-on-accent on --accent is a pairing check:contrast asserts.
+ */
+.primary {
+  border: var(--border-hairline) solid var(--accent);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+}
+
 .quiet {
   border: var(--border-hairline) solid transparent;
   color: var(--text-muted);
@@ -28,6 +39,11 @@
   .outline:hover {
     background-color: var(--text-primary);
     color: var(--surface-wall);
+  }
+
+  .primary:hover {
+    border-color: var(--accent-hover);
+    background-color: var(--accent-hover);
   }
 
   .quiet:hover {

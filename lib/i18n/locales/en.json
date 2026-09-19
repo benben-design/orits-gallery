@@ -1,6 +1,7 @@
 {
   "site": {
     "artistName": "Orit Bar Shai",
+    "wordmark": "Orit Bar Shai",
     "title": "Orit Bar Shai — Paintings",
     "description": "[PLACEHOLDER] Site description not written yet.",
     "skipToContent": "Skip to main content"
@@ -14,14 +15,17 @@
     "primaryLabel": "Primary navigation",
     "languageLabel": "Choose language",
     "switchTo": "Switch to {language}",
-    "cartWithCount": "Cart ({count})"
+    "cartWithCount": "Cart ({count})",
+    "whatsapp": "Message on WhatsApp",
+    "whatsappMessage": "Hi Orit, I'd love to hear more about your paintings"
   },
   "home": {
     "hero": {
       "positioning": "[PLACEHOLDER POSITIONING LINE — real copy not written yet]",
       "posterAlt": "Orit Bar Shai painting in her studio — a loaded brush meeting wet oil paint on canvas",
       "pauseMotion": "Stop the video",
-      "playMotion": "Play the video"
+      "playMotion": "Play the video",
+      "cta": "View the paintings"
     },
     "works": {
       "heading": "[PLACEHOLDER HEADING] Selected works",

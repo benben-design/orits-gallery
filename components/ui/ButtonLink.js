@@ -2,8 +2,14 @@ import Link from 'next/link';
 import styles from './ButtonLink.module.css';
 
 /**
- * The one call-to-action treatment on the site: a hairline outline in ink, no
- * fill and no colour. Used for "view the full gallery" and its equivalents.
+ * The site's link-shaped calls to action, and its emphasis scale:
+ *
+ *   - `outline` (default) — a hairline in ink, no fill. "See more of this":
+ *     view the full gallery and its equivalents.
+ *   - `primary` — the filled accent. "This is the thing to do here", and there
+ *     is only ever one of those in view. The homepage hero's way into the
+ *     paintings is the one that uses it.
+ *   - `quiet` — no border, muted ink.
  *
  * It is a link, not a button — every use so far navigates.
  */

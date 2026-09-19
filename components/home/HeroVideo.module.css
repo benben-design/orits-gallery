@@ -62,7 +62,7 @@
  * Note that the footage is **not** mirrored between the two languages while the
  * control is: in English it lands over the gloved hand and in Hebrew over the
  * pale canvas. That is exactly why the fill is opaque rather than a tint — the
- * label has to hold against either, and against every frame in between.
+ * glyph has to hold against either, and against every frame in between.
  */
 .control {
   position: absolute;
@@ -71,15 +71,18 @@
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  /* A real target on a phone, where this is hardest to hit deliberately. */
-  min-block-size: 2.75rem;
-  padding-inline: var(--space-4);
+  justify-content: center;
+  /*
+    A square exactly the touch-target minimum, holding the glyph alone — see
+    HeroVideo.js. It is still a real target on a phone, where this is hardest
+    to hit deliberately; it has just stopped being a box with a sentence in it.
+  */
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
   background-color: var(--surface-mat);
   border: var(--border-hairline) solid var(--line);
   border-radius: var(--radius);
   color: var(--text-primary);
-  font-size: var(--text-sm);
   transition: background-color var(--duration) var(--ease);
 }
 

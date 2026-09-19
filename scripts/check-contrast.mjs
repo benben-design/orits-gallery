@@ -76,6 +76,8 @@ const PERMITTED = [
   ['text-primary', 'surface-tint', 'Text on a tinted panel'],
   ['text-primary', 'surface-tint-hover', 'The clay control, hovered'],
   ['text-primary', 'status-sold-bg', 'The reserved badge'],
+  ['text-primary', 'surface-band', 'The header: every word in it'],
+  ['text-muted-on-band', 'surface-band', 'The header: anything muted in it'],
 
   ['text-muted', 'surface-wall', 'Medium, dimensions, captions'],
   ['text-muted', 'surface-mat', 'Caption on a card'],
@@ -108,6 +110,22 @@ const FORBIDDEN = [
     'Only --accent may carry terracotta text. A softer, prettier terracotta for '
       + 'type is the rule this guard exists to protect: lightening the accent '
       + 'runs out of contrast almost immediately.',
+  ],
+  [
+    'text-muted',
+    'surface-band',
+    'The secondary ink on the header band',
+    'The header redefines --text-muted as --text-muted-on-band for everything '
+      + 'inside it. Anything muted placed on the band outside that scope must use '
+      + '--text-muted-on-band too; do not lighten the band to rescue this pairing.',
+  ],
+  [
+    'accent',
+    'surface-band',
+    'Terracotta text on the header band',
+    'Header links are --text-primary. The accent marks the current page there '
+      + 'as a hairline underline, a non-text indicator that needs only 3:1; as '
+      + 'text it falls short of AA on the band.',
   ],
   [
     'line-strong',

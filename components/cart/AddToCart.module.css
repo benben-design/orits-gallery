@@ -91,8 +91,7 @@
  * own edge — which is why the hairline is doing the work here and is not
  * optional. That is what a secondary control is: quiet ground, defined edge.
  *
- * The clay is the one non-neutral surface in the palette, drawn from the same
- * terracotta family as the accent, so the two controls read as a deep-and-pale
+ * The clay tint is drawn from the same terracotta family as the accent, so the two controls read as a deep-and-pale
  * pair rather than as two unrelated buttons. `--text-primary` on it is 10.80:1
  * and is one of only two pairings the tint is allowed to carry — the other is
  * `--status-sold-text`, and `--text-muted` is forbidden there at 4.46:1. Do not

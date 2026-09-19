@@ -53,6 +53,15 @@ One glyph means one action, everywhere it appears:
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |
 | Stop / play the hero loop | `Pause` / `Play` | the homepage hero, over the footage |
+| Message on WhatsApp | `WhatsAppIcon` (not lucide — see below) | the header, beside "contact", icon-only |
+
+**Brand logos are the one exception to "one icon system".** lucide dropped
+every brand mark in its 1.0 release, so there is no WhatsApp to import.
+`components/ui/WhatsAppIcon.js` is Tabler Icons' outline version (MIT), chosen
+because Tabler draws the way lucide does — a 24px grid, round caps, a stroke —
+so at `strokeWidth={1.5}` it sits beside the cart's bag as one set. Take the
+next brand mark from the same place, and draw it in ink: a brand's own colour
+in the chrome is a second accent.
 
 **The play triangle does not flip in Hebrew.** i18n.md names it among the icons
 that carry no direction — unlike a "back" chevron — so the control mirrors to

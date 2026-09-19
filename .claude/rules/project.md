@@ -126,9 +126,12 @@ redirect to one.
 
 ## Homepage section order (locked)
 
-1. Minimal top navigation — gallery, about, contact, language switcher, cart
-2. Hero — **studio footage of the artist painting**, and a single positioning
-   line. Not a painting: the grid immediately below shows twelve, so a
+1. Top navigation — one bar on the clay band, the artist's name as a
+   brush-lettered mark centred in it, gallery / about / contact and a WhatsApp
+   shortcut on one side and the language switcher and cart on the other. Two
+   rows below 64rem
+2. Hero — **studio footage of the artist painting**, a single positioning
+   line, and one filled button into the gallery. Not a painting: the grid immediately below shows twelve, so a
    thirteenth above it did the grid's job worse on the most valuable screen of
    the site. What the grid cannot say is that these are physical objects made
    by hand, which is what a first-time buyer needs. Still not a carousel.
@@ -194,12 +197,13 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | Not started |
 
-**Ten client components exist, and four of them are the cart.** The tenth is the
+**Eleven client components exist, and four of them are the cart.** The tenth is the
 checkout form, which is one for the reason the admin's two forms are: a rejected
 submission has to come back with its errors *and* the typed values intact,
 without either travelling through a URL — an address lost to one bad postal
-code, one field from paying, is a purchase abandoned. The other five
-are the language switcher, the hero's studio loop, the admin's login and work
+code, one field from paying, is a purchase abandoned. The other six
+are the header's primary navigation — client only to mark the current page —
+the language switcher, the hero's studio loop, the admin's login and work
 forms, and the admin's image upload. Everything else is a server component,
 including the gallery and its filters — links and a query parameter rather than
 state — and including the `/cart` page, which is server-rendered and works with
@@ -311,7 +315,9 @@ renders it properly.
 - **Typography is decided: Frank Ruhl Libre for display, Assistant for body.**
   Chosen because the two scripts carry matched optical weight — the test a
   Latin-only shortlist never runs, and the one that matters when most visitors
-  read Hebrew.
+  read Hebrew. The header's brush name is not a third face: it is Comforter
+  Brush outlined into an SVG, an interim until the artist's own signature
+  replaces it.
 - **The current photographs are low-resolution stand-ins** (capped at 1600px by
   WhatsApp compression, two of them far smaller). They are fine for development.
   Replacing them with proper photography is a **launch blocker**. Do not design

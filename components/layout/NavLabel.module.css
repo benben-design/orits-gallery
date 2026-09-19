@@ -1,0 +1,45 @@
+/**
+ * A hairline under the words that draws in the direction they are read — from
+ * the right in Hebrew, from the left in English — rather than fading in where
+ * it stands. It is the header's only motion, and it borrows the gesture of a
+ * line being drawn, which is the one thing a painter's site can do without it
+ * reading as decoration.
+ *
+ * The hover line is in ink: on the band, the old hover underline was drawn in
+ * --line (redefined there to --line-on-band), about 1.3:1 against the ground,
+ * so pointing at a link visibly did nothing. The current page's line is the
+ * accent, so "here" and "pointing at" can never be mistaken for each other.
+ *
+ * `transform` rather than width, so it animates on the compositor. Reduced
+ * motion is flattened globally in app/globals.css — the line then simply
+ * appears.
+ */
+.label {
+  position: relative;
+}
+
+.label::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -0.1em;
+  block-size: var(--border-hairline);
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: var(--origin-inline-start);
+  transition: transform var(--duration) var(--ease);
+}
+
+.current::after {
+  background-color: var(--accent);
+  transform: scaleX(1);
+}
+
+/* The nearest link or button is what is being pointed at. `:hover` on any
+   ancestor would match the whole page, since <body> is hovered too. */
+@media (hover: hover) {
+  a:hover .label::after,
+  button:hover .label::after {
+    transform: scaleX(1);
+  }
+}

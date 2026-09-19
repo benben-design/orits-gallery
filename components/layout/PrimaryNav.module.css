@@ -1,0 +1,92 @@
+/* Centred in a row of their own on a phone and a tablet; from 64rem they sit
+   at the inline start of the one-row bar, opposite the language and the cart
+   — see SiteHeader.module.css for why the bar waits until 64rem.
+
+   The gap is a custom property because the WhatsApp shortcut is placed
+   against it — see .shortcutItem. It opens up from 48rem, where the row has
+   the width to spare. */
+.list {
+  --nav-gap: var(--space-5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nav-gap);
+}
+
+@media (min-width: 48rem) {
+  .list {
+    --nav-gap: var(--space-7);
+  }
+}
+
+@media (min-width: 64rem) {
+  .list {
+    justify-content: flex-start;
+  }
+}
+
+/**
+ * Assistant Light at --text-md, full ink, sentence case — and the same for
+ * every word in the header, the language switch and the cart included, so the
+ * two sides of the centred name are one row of type rather than two.
+ *
+ * Light because the name beside it is a rough, loaded brush: a fine, even
+ * line is its foil, and the artist's own shop sets its navigation the same
+ * way (Rubik Light, 18px). Earlier this was 15px regular — the paragraph face
+ * at paragraph size, which beside a hand-drawn mark read as a template — and
+ * before that 13px tracked capitals, which in Hebrew, with no capitals and no
+ * tracking, left only small grey text.
+ *
+ * Tracking is --tracking-slight, which the RTL block in tokens.css zeroes: a
+ * breath of air in English, and Hebrew left untouched.
+ *
+ * The block size is a touch target rather than a line height: on a phone this
+ * row is tapped with a thumb.
+ */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-slight);
+  color: var(--text-primary);
+}
+
+/**
+ * The shortcut, pulled in towards "contact": the destinations stand
+ * --nav-gap apart, this one --space-2 from the edge of its touch target, so
+ * proximity says it belongs to the word before it.
+ */
+.shortcutItem {
+  display: flex;
+  margin-inline-start: calc(var(--space-2) - var(--nav-gap));
+}
+
+.shortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  color: var(--text-primary);
+  transition: color var(--duration) var(--ease);
+}
+
+/* 1.25rem, the same size as the cart's bag on the other side of the name. */
+.shortcutIcon {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+/**
+ * A glyph cannot take the words' hairline, so it answers in the accent, which
+ * is reserved for exactly this — something that can be pressed. As a graphic
+ * rather than text it needs 3:1 on the band, and the accent clears it.
+ */
+@media (hover: hover) {
+  .shortcut:hover {
+    color: var(--accent);
+  }
+}

@@ -1,6 +1,7 @@
 {
   "site": {
     "artistName": "אורית בר שי",
+    "wordmark": "Orit Bar Shai",
     "title": "אורית בר שי — ציורים",
     "description": "[טקסט זמני] תיאור האתר טרם נכתב.",
     "skipToContent": "דילוג לתוכן המרכזי"
@@ -10,18 +11,21 @@
     "gallery": "גלריה",
     "about": "אודות",
     "contact": "יצירת קשר",
-    "cart": "עגלת קניות",
+    "cart": "עגלה",
     "primaryLabel": "ניווט ראשי",
     "languageLabel": "בחירת שפה",
     "switchTo": "מעבר לשפה {language}",
-    "cartWithCount": "עגלת קניות ({count})"
+    "cartWithCount": "עגלה ({count})",
+    "whatsapp": "שליחת הודעה בוואטסאפ",
+    "whatsappMessage": "היי אורית, אשמח לשמוע עוד על הציורים שלך"
   },
   "home": {
     "hero": {
       "positioning": "[שורת מיצוב זמנית — נוסח שיווקי טרם נכתב]",
       "posterAlt": "אורית בר שי מציירת בסטודיו — מכחול טעון בצבע שמן נוגע בבד",
       "pauseMotion": "עצירת הסרטון",
-      "playMotion": "הפעלת הסרטון"
+      "playMotion": "הפעלת הסרטון",
+      "cta": "לצפייה בציורים"
     },
     "works": {
       "heading": "[כותרת זמנית] עבודות נבחרות",

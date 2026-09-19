@@ -55,34 +55,21 @@
 }
 
 /**
- * A wall label, not a caption.
+ * The positioning line and the way into the paintings, centred under the
+ * frame.
  *
- * A gallery labels a piece with the artist's name in small tracked capitals and
- * the work beneath it, and this site's whole premise is a gallery wall — so the
- * hero's text borrows that hierarchy rather than a landing-page headline stack.
- * It also does a job nothing else on this screen was doing: telling a stranger
- * arriving from Instagram whose work they are looking at. The wordmark in the
- * header is 17px and reads as navigation, not as authorship.
+ * It used to open with the artist's name in small tracked capitals, a wall
+ * label's hierarchy, because the header's 17px wordmark read as navigation
+ * rather than authorship. The wordmark is display-sized now and says whose work
+ * this is by itself, so the name here was the same fact twice on one screen.
  */
 .text {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-5);
   margin-block-start: var(--space-6);
   text-align: center;
-}
-
-/**
- * The name. Tracking is a Latin device — the RTL override in tokens.css zeroes
- * --tracking-wide for Hebrew, and text-transform is inert there anyway, so this
- * degrades correctly in both scripts without the component knowing.
- */
-.eyebrow {
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--text-muted);
 }
 
 /**

@@ -72,7 +72,7 @@ Studio footage — the artist painting, her hands, the palette — is documentar
 material, not a work anyone is buying. Nobody is judging its composition and
 nothing is lost by reframing it. So the homepage hero uses
 `object-fit: cover` inside a frame whose ratio changes between breakpoints:
-16/9 on a phone, 2.35/1 from 48rem up. One source file, art-directed per
+4/3 on a phone, the source's own ratio, and 2.5/1 from 48rem up. One source file, art-directed per
 screen.
 
 That is what lets the hero be a wide cinematic band instead of a tall block —
