@@ -111,7 +111,14 @@ export default function Hero({ locale, dictionary }) {
         </div>
 
         <div className={styles.text}>
-          <p className={styles.positioning}>{dictionary.home.hero.positioning}</p>
+          {/*
+            The page's <h1>: the one line that says what this page is. Without
+            it the homepage's outline began at the works grid's <h2>, which is
+            WCAG 1.3.1. It must render exactly as the paragraph it replaced —
+            the one property the global heading rule would change is pinned in
+            Hero.module.css.
+          */}
+          <h1 className={styles.positioning}>{dictionary.home.hero.positioning}</h1>
           <ButtonLink href={localeHref(locale, '/gallery')} variant="primary">
             {dictionary.home.hero.cta}
           </ButtonLink>

@@ -79,12 +79,19 @@
  * 15px body — a 1.6:1 ratio, barely above body copy, for the line carrying the
  * entire verbal argument of the page. 36px puts it at 2.4:1: still restrained
  * for a gallery, but no longer apologising.
+ *
+ * It is the page's <h1>, and `letter-spacing: inherit` is what keeps that a
+ * change of meaning rather than of looks. globals.css tracks every heading by
+ * --tracking-slight — 0.015em in English, zero in Hebrew — which the paragraph
+ * this used to be never inherited, and every other property that rule sets is
+ * already declared below. Without it the English line alone would widen.
  */
 .positioning {
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: var(--weight-light);
   line-height: var(--leading-snug);
+  letter-spacing: inherit;
   color: var(--text-primary);
   max-width: 42rem;
   text-wrap: balance;

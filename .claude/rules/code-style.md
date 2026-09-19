@@ -98,8 +98,10 @@ otherwise easy to carry over wrongly from plain React:
 - no synchronous scripts, no manual `<head>` tags, no server-only code reaching a
   client component
 
-`npm run lint` also runs four project-specific guards after ESLint: palette
-contrast, the admin guard, the sitemap, and image cropping. The last of those is
+`npm run lint` also runs six project-specific guards after ESLint: palette
+contrast, the admin guard, the sitemap, image cropping, page headings, and
+locale strings — the last fails on a string nothing renders, so a copy key added
+in a change must be rendered in the same change. The last of those is
 the one to know about — `check:crop` asserts that the image loader never asks
 the host to crop a painting, which is the only rule on this project that can
 break without anything on the page looking wrong. See images.md.

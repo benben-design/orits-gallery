@@ -73,11 +73,7 @@
     "medium": "Medium",
     "dimensions": "Dimensions",
     "year": "Year",
-    "price": "Price",
-    "status": "Status",
-    "category": "Category",
     "imageAlt": "{title} — painting by {artist}",
-    "notFound": "[PLACEHOLDER] The requested work was not found.",
     "noImage": "No image yet",
     "imageAltDetail": "{title} — a close-up of the brushwork, a painting by {artist}",
     "imageAltInSitu": "{title} — the painting hanging on a wall, by {artist}",
@@ -171,7 +167,6 @@
     "confirmedTitle": "Payment received",
     "confirmedLead": "Thank you. Your order is recorded and the painting is yours.",
     "itemsTitle": "What you bought",
-    "deliveryTitle": "How you will receive it",
     "total": "Total paid",
     "nextTitle": "What happens now",
     "nextShipping": "Orit will be in touch to arrange the delivery. It is insured and goes to the address you gave with the order.",
@@ -185,11 +180,9 @@
     "unavailableVoided": "The charge has been cancelled. You will not be charged.",
     "unavailableRefundDue": "You will be refunded in full. Orit will be in touch shortly.",
     "unavailableRefunded": "You have been refunded in full.",
-    "unavailableNext": "You are welcome to look through the rest of the gallery, or get in touch and we will gladly help find something similar.",
-    "pendingNote": "This order is recorded but has not been paid."
+    "unavailableNext": "You are welcome to look through the rest of the gallery, or get in touch and we will gladly help find something similar."
   },
   "legal": {
-    "label": "Legal",
     "terms": {
       "title": "Terms of use",
       "body": "[PLACEHOLDER] Terms of use have not been written yet."
@@ -272,13 +265,10 @@
       "tooManyAttempts": "Too many sign-in attempts. Wait a few minutes and try again."
     },
     "newWork": {
-      "title": "Add a work",
-      "body": "[PLACEHOLDER] The new-work form has not been built yet."
+      "title": "Add a work"
     },
     "editWork": {
       "title": "Edit work",
-      "body": "[PLACEHOLDER] The edit-work form has not been built yet.",
-      "idLabel": "Work id",
       "preview": "Preview"
     },
     "deleteWork": {
@@ -324,7 +314,6 @@
     "orders": {
       "title": "Orders",
       "empty": "No orders yet.",
-      "open": "Open",
       "placed": "Placed",
       "refundDueBadge": "Refund owed",
       "staleBadge": "Check Hyp",
@@ -376,7 +365,6 @@
       "actionsNone": "No actions are available at this stage.",
       "releaseNote": "Cancelling or refunding returns this order’s paintings to draft and clears their sale channel - they do not go straight back onto the site. Republishing is done from the painting itself.",
       "refundDueBanner": "Money was taken for a painting that had already sold to someone else, and the charge was not voided. Refund by hand in the Hyp console, then mark it done. The paintings on this order belong to another buyer and will not be released.",
-      "workState": "Painting",
       "workDraft": "Draft",
       "workPublished": "On the site",
       "outcomes": {
@@ -410,7 +398,6 @@
       "priceReduced": "Reduced price (ILS)",
       "priceReducedHint": "Optional. Must be below the regular price.",
       "status": "Status",
-      "saleChannel": "Sold through",
       "addedAt": "Date added",
       "publish": "Publish to the site now",
       "publishHint": "Left unticked the work is saved as a draft: visible here in the admin, not on the site.",

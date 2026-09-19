@@ -23,6 +23,8 @@ When one is added, the highest-value targets on this project, in order:
    both orientations and both file types.
 6. **Locale key parity.** That `he.json` and `en.json` have identical key sets —
    a missing translation is a bug that no page-level test will catch.
+   **Enforced already** by `npm run check:strings`, which also fails on a key
+   nothing reads.
 
 Until then, verification is manual, and the checklist is: every page in both
 languages, right-to-left and left-to-right, mobile and desktop, with no console
