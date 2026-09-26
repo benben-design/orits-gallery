@@ -8,7 +8,7 @@ npm install
 npm run dev        # Next dev server
 npm run build      # production build; runs the image manifest first
 npm run start      # serve the production build locally
-npm run lint       # ESLint, then the contrast guard, then the admin guard check
+npm run lint       # ESLint, then the six project guards below
 
 npm run images:manifest   # regenerate lib/data/image-manifest.json
 npm run dev:placeholders  # regenerate the /dev placeholder images
@@ -16,6 +16,8 @@ npm run check:contrast    # WCAG check over every permitted colour pairing
 npm run check:guard       # every guarded admin page calls the guard
 npm run check:sitemap     # the sitemap offers built pages only, and all of them
 npm run check:crop        # no image transformation crops a painting
+npm run check:headings    # every public page renders a top-level heading
+npm run check:strings     # the locale files match, and every string is read
 
 npm run seed:local        # fill a LOCAL database with the sixteen works
 npm run admin:create      # create an admin account, or change its password
@@ -56,20 +58,23 @@ removes it from previews, which is the trade.
 
 ## Linting
 
-`npm run lint` does five things in order: `eslint .` over every JS/MJS file in
+`npm run lint` does seven things in order: `eslint .` over every JS/MJS file in
 the project — including `proxy.js`, the config files and `scripts/` — then
 `scripts/check-contrast.mjs`, the palette guard, then
 `scripts/check-admin-guard.mjs`, which fails if any page in the guarded admin
 group does not call `requireAdminSession`, then `scripts/check-sitemap.mjs`,
 which fails if the sitemap offers a stub or omits a finished page, then
 `scripts/check-image-crop.mjs`, which fails if the image loader would ask the
-host to crop a painting.
+host to crop a painting, then `scripts/check-page-headings.mjs`, which fails if
+a public page renders no `<h1>`, then `scripts/check-locale-strings.mjs`, which
+fails if the locale files hold different keys or a string nothing reads.
 
-All four guards are advisory in the same way lint is: they are **not** in the
+All six guards are advisory in the same way lint is: they are **not** in the
 build and cannot fail a deploy. That is deliberate for the palette. For the
-other three it is a real limitation worth knowing — a page added without the
-guard ships, a stub listed in the sitemap ships, and a cropping transformation
-ships, and the checks only complain when someone runs them.
+other five it is a real limitation worth knowing — a page added without the
+guard ships, a stub listed in the sitemap ships, a cropping transformation
+ships, a page with no heading ships and a string nothing renders ships, and the
+checks only complain when someone runs them.
 
 The crop guard is the one whose absence would be hardest to notice. The other
 three protect against something a person could eventually see; a cropped
@@ -94,6 +99,44 @@ remove it" nor "remember to add it" is left to anybody's memory.
 Exit codes: `0` all as declared, `1` a page is misfiled or a declared path has
 no page behind it, `2` the public route tree has moved and the script must move
 with it.
+
+## The heading guard
+
+`npm run check:headings` fails if any `page.js` under `app/(site)/[locale]/`
+renders no `<h1>`. The homepage and the gallery shipped without one — WCAG
+1.3.1, Level A — and nothing on screen showed it.
+
+Almost no page writes the tag, so it follows imports: a component counts when
+its own source writes `<h1` or passes `as="h1"`, or when it renders one that
+does. That is worked out from the source on every run rather than kept as a
+list, so taking the heading out of `Hero` fails the homepage. **Comments are
+stripped first** — several say `<h1>` in prose, and a comment claiming a heading
+is exactly what outlives one. It checks that a page renders a heading
+somewhere, not on every branch of a conditional.
+
+## The strings guard
+
+`npm run check:strings` does two things. **Parity:** every file in
+`lib/i18n/locales/` must hold the same keys. **Usage:** every key must be read
+by something in `app/`, `components/` or `lib/`. The case it exists for is
+`checkout.errorRequired`, written in both files and rendered by nothing until
+17-09-2026. Its first run found thirteen more, every one superseded, and they
+were deleted.
+
+It follows the dictionary under `dictionary`, anything from `getDictionary()`,
+local aliases (`const copy = dictionary.checkout`) and slices handed to another
+component as props. Handing a slice on is not a read; what the receiving end
+reads is. **A computed lookup counts as reading its whole prefix** —
+`dictionary.status[work.status]` reads every status, because data can arrive
+from anywhere — **unless the file itself names the keys it can hold**: a
+property called `…Key` (`copy[field.labelKey]`) or a constant map declared
+beside it (`ALT_TEMPLATE_BY_TYPE`). Without that exception those two lookups
+would count all of `checkout` and `artwork` as read. Every computed lookup is
+printed with how it was counted.
+
+**When it finds a string, render it or delete it — never loosen the check.**
+What it cannot see errs towards passing: a slice passed to a plain function
+rather than a component, or two things sharing a name in one file.
 
 ## The palette guard
 

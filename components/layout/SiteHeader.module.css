@@ -1,59 +1,136 @@
+/**
+ * On the band — the dusty clay from the artist's own shop, lightened; see
+ * --surface-band in tokens.css for where it comes from and what it was chosen
+ * over. It stands one clear step off the wall on its own, so the header needs
+ * no bottom rule: a light hairline under a darker band reads as a seam.
+ *
+ * **Three tokens are redefined for everything inside the header**, because
+ * their values assume the wall. --text-muted fails AA on the band, and --line
+ * and --line-strong are lighter than it, so a hairline or a hover underline
+ * drawn in them would vanish or glow. Redefining them here, from tokens that
+ * exist for the band, fixes every component inside at once — the language
+ * switcher, the navigation and the cart need no knowledge of what they sit on.
+ *
+ * Slightly translucent, so what scrolls beneath shows as a blur rather than
+ * vanishing under a solid slab.
+ */
 .header {
+  --text-muted: var(--text-muted-on-band);
+  --line: var(--line-on-band);
+  --line-strong: var(--line-on-band);
+
   position: sticky;
   inset-block-start: 0;
   z-index: 20;
-  background-color: color-mix(in srgb, var(--surface-wall) 88%, transparent);
+  background-color: color-mix(in srgb, var(--surface-band) 95%, transparent);
   backdrop-filter: saturate(1.1) blur(10px);
-  border-block-end: var(--border-hairline) solid var(--line);
 }
 
+/**
+ * Grid areas rather than flex order, because the phone and desktop layouts
+ * differ in structure, not only in order. Grid follows the writing direction,
+ * so "lang" is at the inline start in both languages without a second rule.
+ *
+ * Phone: the name between the language and the cart, the destinations in a
+ * row of their own beneath. Both rows are kept short because the header stays
+ * sticky at full height.
+ */
 .inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    'lang mark cart'
+    'nav nav nav';
+  align-items: center;
+}
+
+/* The link is the size of the mark, so it catches no clicks beside it. */
+.mark {
+  grid-area: mark;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-5);
-  min-block-size: 4.5rem;
+  justify-content: center;
+  min-block-size: 3.75rem;
 }
 
-.wordmark {
-  font-family: var(--font-display);
-  font-size: var(--text-md);
-  letter-spacing: var(--tracking-slight);
-  white-space: nowrap;
+/* The image's height sets the size; its width follows the file's ratio. */
+.markImage {
+  display: block;
+  inline-size: auto;
+  block-size: 2rem;
 }
 
 .nav {
-  display: none;
+  grid-area: nav;
+  border-block-start: var(--border-hairline) solid var(--line);
 }
 
-.navList {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-}
-
-.navLink {
-  font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--text-muted);
-  transition: color var(--duration) var(--ease);
-}
-
+/**
+ * On a phone the utilities are not a group: the language takes one corner and
+ * the cart the other. `display: contents` hands both straight to the grid —
+ * safe on a plain div, which carries no role to lose.
+ */
 .utilities {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
+  display: contents;
 }
 
-@media (hover: hover) {
-  .navLink:hover {
-    color: var(--text-primary);
+.lang {
+  grid-area: lang;
+  justify-self: start;
+}
+
+.cart {
+  grid-area: cart;
+  justify-self: end;
+}
+
+/**
+ * From 56rem, one bar: destinations, name, utilities. The outer tracks are
+ * equal, so the name is centred on the page rather than between whatever the
+ * two sides happen to measure.
+ *
+ * **56rem, and it was measured twice — once for a header that no longer
+ * exists.** This waited until 64rem because three destinations *plus the
+ * WhatsApp shortcut* needed about 400px against a track of about 200: the
+ * Hebrew "יצירת קשר" broke onto two lines and the glyph ran into the name.
+ * The shortcut is a fixed button in the corner of the screen now — see
+ * components/layout/WhatsAppButton — so that measurement was void and the
+ * breakpoint it justified was 128px too late.
+ *
+ * Re-measured with three destinations, in both languages, as the gap between
+ * the last link and the wordmark's box: **-12px at 48rem** (English, already
+ * overlapping), **4px at 52rem**, **40px at 56rem**. English is the tighter
+ * language here, which is worth knowing — "Gallery About Contact" is wider
+ * than its Hebrew. Tightening --nav-gap to buy the 48rem case was tried and
+ * bought 16px, which is still not a gap.
+ *
+ * So 56rem, where a tablet in landscape and a small laptop window get the one
+ * bar, and a tablet in portrait keeps the phone's two rows.
+ */
+@media (min-width: 56rem) {
+  .inner {
+    grid-template-areas: 'nav mark utils';
+    min-block-size: 4.5rem;
   }
-}
 
-@media (min-width: 48rem) {
+  .mark {
+    min-block-size: 0;
+    padding-inline: var(--space-6);
+  }
+
+  .markImage {
+    block-size: 2.25rem;
+  }
+
   .nav {
-    display: block;
+    border-block-start: none;
+  }
+
+  .utilities {
+    grid-area: utils;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-5);
   }
 }

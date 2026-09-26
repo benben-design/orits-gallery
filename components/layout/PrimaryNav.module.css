@@ -1,0 +1,56 @@
+/* Centred in a row of their own on a phone and a tablet in portrait; from
+   56rem they sit at the inline start of the one-row bar, opposite the language
+   and the cart — see SiteHeader.module.css for where that breakpoint came from
+   and what was measured to move it there.
+
+   The gap is a custom property so its two widths are declared together rather
+   than in a rule and an override. It opens up at 48rem, which is still inside
+   the two-row layout, where the row has the full width to spare. */
+.list {
+  --nav-gap: var(--space-5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nav-gap);
+}
+
+@media (min-width: 48rem) {
+  .list {
+    --nav-gap: var(--space-7);
+  }
+}
+
+@media (min-width: 56rem) {
+  .list {
+    justify-content: flex-start;
+  }
+}
+
+/**
+ * Assistant Light at --text-md, full ink, sentence case — and the same for
+ * every word in the header, the language switch and the cart included, so the
+ * two sides of the centred name are one row of type rather than two.
+ *
+ * Light because the name beside it is a rough, loaded brush: a fine, even
+ * line is its foil, and the artist's own shop sets its navigation the same
+ * way (Rubik Light, 18px). Earlier this was 15px regular — the paragraph face
+ * at paragraph size, which beside a hand-drawn mark read as a template — and
+ * before that 13px tracked capitals, which in Hebrew, with no capitals and no
+ * tracking, left only small grey text.
+ *
+ * Tracking is --tracking-slight, which the RTL block in tokens.css zeroes: a
+ * breath of air in English, and Hebrew left untouched.
+ *
+ * The block size is a touch target rather than a line height: on a phone this
+ * row is tapped with a thumb.
+ */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  letter-spacing: var(--tracking-slight);
+  color: var(--text-primary);
+}

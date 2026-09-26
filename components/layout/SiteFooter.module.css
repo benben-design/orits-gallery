@@ -1,6 +1,33 @@
+/**
+ * The bottom padding clears the floating contact button, and it is computed
+ * from that button rather than chosen to look right.
+ *
+ * The button is `position: fixed`, so it occupies no space and nothing in the
+ * flow knows it is there. At the foot of the page that is exactly where the
+ * last line of the footer ends up: the copyright sat --space-7 (40px) off the
+ * bottom, and the button occupies the first 64px of it. In English the line
+ * starts at the inline start, which is the same corner; in Hebrew it starts
+ * opposite, but on a phone it runs the full width and meets it anyway.
+ *
+ * So the room is reserved here, from the tokens the button is drawn from, and
+ * the two cannot drift. Checkout draws no button and keeps the padding, which
+ * costs it some quiet space at the very bottom and nothing else.
+ *
+ * **It clears the larger of the two sizes, not the drawn one.** The button's
+ * tappable square is allowed to reach past its visible disc, and what must not
+ * land on the copyright line is the part a thumb hits — a footer link under an
+ * invisible 1px of another control is a link that does not answer, with
+ * nothing on screen to say why. `max()` rather than the hit token alone so
+ * this stays correct if the disc is ever drawn larger than the floor.
+ */
 .footer {
   margin-block-start: var(--section-gap);
-  padding-block: var(--space-9) var(--space-7);
+  padding-block: var(--space-9)
+    calc(
+      var(--contact-button-inset)
+        + max(var(--contact-button-size), var(--contact-button-hit))
+        + var(--space-4) + env(safe-area-inset-bottom)
+    );
   border-block-start: var(--border-hairline) solid var(--line);
   background-color: var(--surface-wall);
 }

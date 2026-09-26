@@ -126,9 +126,14 @@ redirect to one.
 
 ## Homepage section order (locked)
 
-1. Minimal top navigation — gallery, about, contact, language switcher, cart
-2. Hero — **studio footage of the artist painting**, and a single positioning
-   line. Not a painting: the grid immediately below shows twelve, so a
+1. Top navigation — one bar on the clay band, the artist's name as a
+   brush-lettered mark centred in it, gallery / about / contact on one side and
+   the language switcher and cart on the other. Two rows below 56rem — it was
+   64rem while a WhatsApp shortcut sat in the row, which is what that figure
+   was measuring. **Reaching the artist is a floating button now**, fixed to
+   the bottom-left corner of every public page but checkout
+2. Hero — **studio footage of the artist painting**, a single positioning
+   line, and one filled button into the gallery. Not a painting: the grid immediately below shows twelve, so a
    thirteenth above it did the grid's job worse on the most valuable screen of
    the site. What the grid cannot say is that these are physical objects made
    by hand, which is what a first-time buyer needs. Still not a carousel.
@@ -194,13 +199,18 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | Not started |
 
-**Ten client components exist, and four of them are the cart.** The tenth is the
+**Twelve client components exist, and four of them are the cart.** The tenth is the
 checkout form, which is one for the reason the admin's two forms are: a rejected
 submission has to come back with its errors *and* the typed values intact,
 without either travelling through a URL — an address lost to one bad postal
-code, one field from paying, is a purchase abandoned. The other five
-are the language switcher, the hero's studio loop, the admin's login and work
-forms, and the admin's image upload. Everything else is a server component,
+code, one field from paying, is a purchase abandoned. **The twelfth is the
+floating WhatsApp button**, and it is one for a reason worth knowing: it is
+rendered by the public layout, and a layout cannot know which page it wraps —
+so being absent from checkout has to be decided where the path is known.
+
+The other six are the header's primary navigation — client only to mark the
+current page — the language switcher, the hero's studio loop, the admin's login
+and work forms, and the admin's image upload. Everything else is a server component,
 including the gallery and its filters — links and a query parameter rather than
 state — and including the `/cart` page, which is server-rendered and works with
 no script at all. The hero's poster is server-rendered too, so nothing above the
@@ -266,6 +276,17 @@ copy — **including the four homepage promises**, whose real wording is settled
 locale files yet. When the real values arrive they replace the constants at the
 top of `lib/data/artworks.js`.
 
+**One exception landed on 26-09-2026, by the owner's decision: the hero's
+positioning line.** `home.hero.positioning` now reads "Paintings that bring
+light into a home",
+where every other line on the homepage is still bracketed. Two things about it
+are worth knowing rather than rediscovering. **It is in English on the Hebrew
+site too** — the same string in both locale files, the `<h1>` marked
+`lang="en"`, treated as part of the mark rather than as copy; i18n.md carries
+the argument and the caution. **And it has not been through her**, so it is
+real copy in the sense that it no longer announces itself as a stand-in, not in
+the sense that anybody whose shop it is has approved it.
+
 No photograph of the artist has been supplied. `StorySection` renders a labelled
 empty frame at the right proportions rather than a stock portrait or a stand-in
 face.
@@ -311,7 +332,9 @@ renders it properly.
 - **Typography is decided: Frank Ruhl Libre for display, Assistant for body.**
   Chosen because the two scripts carry matched optical weight — the test a
   Latin-only shortlist never runs, and the one that matters when most visitors
-  read Hebrew.
+  read Hebrew. The header's brush name is not a third face: it is Comforter
+  Brush outlined into an SVG, an interim until the artist's own signature
+  replaces it.
 - **The current photographs are low-resolution stand-ins** (capped at 1600px by
   WhatsApp compression, two of them far smaller). They are fine for development.
   Replacing them with proper photography is a **launch blocker**. Do not design

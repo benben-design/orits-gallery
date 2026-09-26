@@ -53,6 +53,15 @@ One glyph means one action, everywhere it appears:
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |
 | Stop / play the hero loop | `Pause` / `Play` | the homepage hero, over the footage |
+| Message on WhatsApp | `WhatsAppIcon` (not lucide — see below) | the floating button in the corner of every public page, icon-only |
+
+**Brand logos are the one exception to "one icon system".** lucide dropped
+every brand mark in its 1.0 release, so there is no WhatsApp to import.
+`components/ui/WhatsAppIcon.js` is Tabler Icons' outline version (MIT), chosen
+because Tabler draws the way lucide does — a 24px grid, round caps, a stroke —
+so at `strokeWidth={1.5}` it reads as one set with the cart's bag. It used to sit beside that bag in the header; it is the floating contact button's glyph now, at 26px — larger than anything else here because it is the whole of that control rather than a mark beside a label. Take the
+next brand mark from the same place, and draw it in ink: a brand's own colour
+in the chrome is a second accent.
 
 **The play triangle does not flip in Hebrew.** i18n.md names it among the icons
 that carry no direction — unlike a "back" chevron — so the control mirrors to
@@ -89,8 +98,10 @@ otherwise easy to carry over wrongly from plain React:
 - no synchronous scripts, no manual `<head>` tags, no server-only code reaching a
   client component
 
-`npm run lint` also runs four project-specific guards after ESLint: palette
-contrast, the admin guard, the sitemap, and image cropping. The last of those is
+`npm run lint` also runs six project-specific guards after ESLint: palette
+contrast, the admin guard, the sitemap, image cropping, page headings, and
+locale strings — the last fails on a string nothing renders, so a copy key added
+in a change must be rendered in the same change. The last of those is
 the one to know about — `check:crop` asserts that the image loader never asks
 the host to crop a painting, which is the only rule on this project that can
 break without anything on the page looking wrong. See images.md.

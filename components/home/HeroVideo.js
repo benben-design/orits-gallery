@@ -60,7 +60,9 @@ import styles from './HeroVideo.module.css';
  *     whichever blur the pause landed on. Nothing unmounts, so resuming is
  *     instant and the download is not repeated.
  *   - **The label is the next action**, swapping between "stop" and "play",
- *     rather than a pressed state on a control whose name never changes.
+ *     rather than a pressed state on a control whose name never changes. It is
+ *     the button's accessible name rather than printed text: the control shows
+ *     the glyph alone, so it stays small over the footage it controls.
  */
 export default function HeroVideo({ src, pauseLabel, playLabel, className = '' }) {
   /* Starts false so the server render and the first client render agree. */
@@ -187,13 +189,20 @@ export default function HeroVideo({ src, pauseLabel, playLabel, className = '' }
         type="button"
         className={styles.control}
         onClick={toggle}
+        /*
+          Icon only, with the words as its accessible name. With the label
+          printed beside the glyph it was a white box with a sentence in it —
+          the brightest, most solid thing in the hero, louder than the brush
+          it sat over. Pause and play are the most widely understood glyphs
+          there are, and a screen reader still hears "stop the video".
+        */
+        aria-label={playing ? pauseLabel : playLabel}
       >
         {playing ? (
-          <Pause size={14} strokeWidth={1.5} aria-hidden="true" />
+          <Pause size={18} strokeWidth={1.5} aria-hidden="true" />
         ) : (
-          <Play size={14} strokeWidth={1.5} aria-hidden="true" />
+          <Play size={18} strokeWidth={1.5} aria-hidden="true" />
         )}
-        <span>{playing ? pauseLabel : playLabel}</span>
       </button>
     </>
   );

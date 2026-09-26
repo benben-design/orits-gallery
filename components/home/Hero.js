@@ -1,10 +1,13 @@
 import Image from 'next/image';
 import Container from '@/components/ui/Container';
+import ButtonLink from '@/components/ui/ButtonLink';
+import { localeHref } from '@/lib/i18n/config';
 import HeroVideo from './HeroVideo';
 import styles from './Hero.module.css';
 
 /**
- * Homepage section 1 — the artist at work, and a single positioning line.
+ * Homepage section 1 — the artist at work, a single positioning line, and the
+ * way into the paintings.
  *
  * The hero is footage of Orit painting rather than one of the paintings. That
  * is a deliberate reversal of the original plan, and the reason is redundancy:
@@ -37,6 +40,16 @@ import styles from './Hero.module.css';
  * over the quiet canvas in one language and over the brush in the other. Text
  * below is legible in both, and needs no scrim darkening footage whose colour
  * is the point.
+ *
+ * **It ends in one action**, the filled accent into the gallery. Without it the
+ * only control on the first screen was the one that stops the video, and on a
+ * laptop that screen ends before the first painting — a shop whose opening view
+ * offered nothing to do but stop a film.
+ *
+ * The artist's name is no longer repeated here. It sat above the positioning
+ * line because the header's wordmark was 17px and read as navigation; the
+ * wordmark now carries it at display size, and saying it twice on one screen
+ * was the duplication.
  */
 
 /* ------------------------------------------------------------------ *
@@ -66,7 +79,7 @@ const HERO_VIDEO = '/video/wide-4x3-slow50.mp4';
  */
 const HERO_POSTER = '/video/hero-cherries-poster.jpg';
 
-export default function Hero({ dictionary }) {
+export default function Hero({ locale, dictionary }) {
   return (
     <section className={styles.hero}>
       <Container>
@@ -98,8 +111,34 @@ export default function Hero({ dictionary }) {
         </div>
 
         <div className={styles.text}>
-          <p className={styles.eyebrow}>{dictionary.site.artistName}</p>
-          <p className={styles.positioning}>{dictionary.home.hero.positioning}</p>
+          {/*
+            The page's <h1>: the one line that says what this page is. Without
+            it the homepage's outline began at the works grid's <h2>, which is
+            WCAG 1.3.1. It must render exactly as the paragraph it replaced —
+            the one property the global heading rule would change is pinned in
+            Hero.module.css.
+
+            **It is in English on the Hebrew site too, by the owner's decision,
+            and `lang="en"` is what makes that honest rather than a bug.** The
+            locale files hold the same value in both languages — deliberately,
+            the way `site.wordmark` already does, because this line is being
+            treated as part of the mark rather than as copy. i18n.md's rule
+            against setting language on an inner element is about *patching a
+            layout*; this is the case the attribute exists for, and the same
+            one Wordmark's alt text answers. Without it a Hebrew screen reader
+            pronounces Latin letters with Hebrew phonetics, so the one sentence
+            on the first screen is the one sentence it reads as nonsense.
+
+            No `dir` beside it: the run is pure Latin, so bidi resolves it
+            left-to-right on its own, and `.text` centres the line in both
+            languages, so there is no alignment for a direction to change.
+          */}
+          <h1 className={styles.positioning} lang="en">
+            {dictionary.home.hero.positioning}
+          </h1>
+          <ButtonLink href={localeHref(locale, '/gallery')} variant="primary">
+            {dictionary.home.hero.cta}
+          </ButtonLink>
         </div>
       </Container>
     </section>

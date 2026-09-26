@@ -50,7 +50,7 @@ export default async function HomePage({ params }) {
 
   return (
     <>
-      <Hero dictionary={dictionary} />
+      <Hero locale={locale} dictionary={dictionary} />
       <WorksGrid works={works} locale={locale} dictionary={dictionary} />
       <PromisesRow dictionary={dictionary} />
       <StorySection locale={locale} dictionary={dictionary} />

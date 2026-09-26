@@ -14,8 +14,21 @@ import styles from './ArtworkCard.module.css';
  *
  * Every string comes from the dictionary; the only text this component
  * produces itself is the work's own title, which is data.
+ *
+ * `titleAs` sets the title's heading level, because that depends on the page
+ * rather than on the card: an <h3> under the homepage grid's <h2>, an <h2>
+ * directly under the gallery's <h1>. The look does not change with it —
+ * `.title` sets its own size and weight, and globals.css styles every heading
+ * level alike.
  */
-export default function ArtworkCard({ work, locale, dictionary, sizes, priority = false }) {
+export default function ArtworkCard({
+  work,
+  locale,
+  dictionary,
+  sizes,
+  priority = false,
+  titleAs: TitleTag = 'h3',
+}) {
   const title = work.title[locale];
   const medium = mediumLabel(work, locale, dictionary);
   const mainImage = work.images.find((image) => image.type === 'main') ?? work.images[0];
@@ -37,7 +50,7 @@ export default function ArtworkCard({ work, locale, dictionary, sizes, priority 
           priority={priority}
         />
         <div className={styles.caption}>
-          <h3 className={styles.title}>{title}</h3>
+          <TitleTag className={styles.title}>{title}</TitleTag>
 
           {/*
             Medium and size, in the secondary ink. The size is a placeholder

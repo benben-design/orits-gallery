@@ -13,8 +13,17 @@ accent decoratively: a hue used as ornament next to one of these paintings
 fights it, and the painting loses. Everything that is not interactive draws
 from the surface, text and line tokens, which are warm neutrals.
 
-`--surface-tint` is the one non-neutral surface. It is a background only, never
-a text colour — see the measured note in `app/tokens.css`.
+`--surface-tint` and `--surface-band` are the two clay surfaces, both from the
+terracotta family and both backgrounds only, never text colours — see the
+measured notes in `app/tokens.css`. The band is the header's ground and taken
+from the artist's own shop; nothing else uses it yet.
+
+**Inside the header three tokens are redefined**, because their values assume the
+wall: `--text-muted` becomes `--text-muted-on-band` (plain muted fails AA on the
+band), and `--line` / `--line-strong` become `--line-on-band` (both are lighter
+than the band). `SiteHeader.module.css` does it once, so nothing inside needs to
+know what it sits on. Terracotta *text* on the band also fails; the current page
+is marked there with an accent hairline, which is a non-text indicator.
 
 The visual reference is gitahomedesign.co.il — the artist's own store — with two
 deliberate departures noted in project.md.
@@ -30,6 +39,9 @@ Defined in `app/tokens.css`. One light theme; no dark mode, no `data-theme`.
 | `--surface-sunk` | `#EBDFC1` | Inset areas: footer, filter bar |
 | `--surface-tint` | `#EBD9CE` | Clay tint. Background only |
 | `--surface-tint-hover` | `#D4C3B9` | The clay pressed — hover and active for a control filled with it |
+| `--surface-band` | `#DDCABD` | The header. The dusty clay of the artist's own shop, lightened. Background only |
+| `--text-muted-on-band` | `#574D46` | The secondary ink on the band, where `--text-muted` fails |
+| `--line-on-band` | `#C7AF9F` | Hairlines and hover underlines on the band |
 | `--text-primary` | `#2C2723` | Body and headings. Warm near-black — never `#000` |
 | `--text-muted` | `#6B6058` | Medium, dimensions, captions |
 | `--text-on-accent` | `#FBF7F3` | Text on the accent |
@@ -73,7 +85,8 @@ One button treatment was added with the cart, and it is the site's whole
 emphasis scale rather than a new style: `ButtonLink`'s hairline outline carries
 "see more of this", and a **filled `--accent`** carries "this is the thing to do
 here". There is only ever one of those in view — the buy button on an artwork page,
-the checkout button in the cart. The artwork page's second control, the inert
+the checkout button in the cart, and the homepage hero's way into the gallery
+(`ButtonLink`'s `primary` variant). The artwork page's second control, the inert
 "buy now", is **not** a second fill: it is `--surface-tint` with a
 `--line-strong` hairline, which is the third step on this scale and the one to
 copy for any future secondary button. A surface fill is only 1.11:1 against the
@@ -102,8 +115,28 @@ so nothing on the site casts a differently-coloured one.
 left in Hebrew and the right in English from one rule. It hides by translating
 by its own width in the direction it is pinned to, which is the one place a
 logical property does not exist — `--drawer-hidden-shift` is set per `[dir]`
-and is the only direction-conditional value in the stylesheets. Everything else
-still falls out of logical properties, as i18n.md requires.
+for exactly that reason. **There is one other direction-conditional value**,
+and it is a token for the same reason: `--origin-inline-start` in
+`app/tokens.css` names the physical edge a line starts from, because
+`transform-origin` has no logical keywords either. The header's hover hairline
+grows from it, so the line draws in the direction the words are read. It is set
+for `[dir='ltr']` as well as `[dir='rtl']`, so an English fragment inside a
+Hebrew document does not inherit the right-hand edge.
+
+**Two placements are physical rather than logical, and they are the only
+ones.** The floating WhatsApp button takes the bottom left in both languages
+and the hero's pause control the bottom right in both — `left` and `right`,
+written out, each with its reason in its own stylesheet and the argument
+recorded in i18n.md. They are a pair rather than two decisions: the button
+claims a physical corner deliberately, so the control that used to mirror into
+that corner had to stop. Everything else still
+falls out of logical properties, as i18n.md requires.
+
+**Every word in the header is set one way** — Assistant Light at `--text-md`,
+full ink — the destinations, the language switch and the cart alike. A light
+line is the foil to the brush name, and it is the artist's own shop's
+navigation voice. Two sizes and two inks either side of a centred mark is what
+made the bar read lopsided before.
 
 `app/globals.css` holds the reset and base element styles. Nothing component-
 specific belongs there.
@@ -142,5 +175,10 @@ Two faces at most: one for headings, one for body. Both must carry Hebrew and
 Latin glyphs properly — a font that looks elegant in English and renders Hebrew
 badly is disqualified regardless of how it looks in a mockup. Check Hebrew before
 committing to a face.
+
+**The header's brush name is not a third face.** It is a drawing of one word —
+Comforter Brush outlined into an SVG, `public/brand/wordmark.svg` — and the page
+loads no font for it. Keep it that way: setting any other text in a brush or
+script face is a third typeface, and the rule above still applies to it.
 
 Loaded once, through Next's font handling. Not imported ad hoc in a component.

@@ -30,6 +30,19 @@ const nextConfig = {
   agentRules: false,
 
   /**
+   * The development overlay sits bottom-left by default, which is exactly
+   * where the floating WhatsApp button is — see
+   * components/layout/WhatsAppButton. Two controls in one corner means the
+   * button cannot be tested in the browser it is developed in.
+   *
+   * **Moved rather than switched off.** `devIndicators: false` would clear
+   * the corner and take with it the thing that reports a failed compile;
+   * the first symptom of that is a page that silently stops updating. It
+   * costs nothing in production, where the overlay does not exist at all.
+   */
+  devIndicators: { position: 'bottom-right' },
+
+  /**
    * `X-Robots-Tag` on the admin area and on the design-system page at /dev —
    * the second of the two ways both are kept out of search, beside
    * `app/robots.js` and each one's own root-layout metadata.

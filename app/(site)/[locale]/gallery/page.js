@@ -80,7 +80,8 @@ export default async function GalleryPage({ params, searchParams }) {
   return (
     <Section>
       <Container>
-        <SectionHeading intro={dictionary.gallery.intro}>
+        {/* The page's <h1>, so each card's title is an <h2> beneath it. */}
+        <SectionHeading as="h1" intro={dictionary.gallery.intro}>
           {dictionary.gallery.title}
         </SectionHeading>
 
@@ -127,6 +128,7 @@ export default async function GalleryPage({ params, searchParams }) {
                   locale={locale}
                   dictionary={dictionary}
                   sizes={CARD_SIZES}
+                  titleAs="h2"
                 />
               </li>
             ))}

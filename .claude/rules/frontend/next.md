@@ -68,7 +68,8 @@ file. Keep those small and push them to the leaves — a `'use client'` on a pag
 drags its whole subtree into the browser.
 
 On this site, almost everything is a server component. The genuine client
-components are the ones with interaction: the mobile navigation toggle, the
+components are the ones with interaction: the primary navigation (for its
+current-page mark — on a phone it is a visible row, not a toggle), the
 language switcher, gallery filters, the cart, and image zoom on an artwork page.
 A grid of paintings is not interactive and must not be a client component.
 

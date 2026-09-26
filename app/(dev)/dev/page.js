@@ -307,6 +307,10 @@ export default async function DesignSystemPage() {
             <span className={styles.stateLabel}>Button · focus ring</span>
           </div>
           <div className={styles.state}>
+            <ButtonLink href="/dev" variant="primary">Primary</ButtonLink>
+            <span className={styles.stateLabel}>Button · primary, live — one in view at most</span>
+          </div>
+          <div className={styles.state}>
             <Link className={styles.link} href="/dev">
               A text link
             </Link>
