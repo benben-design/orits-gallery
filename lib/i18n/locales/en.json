@@ -16,12 +16,12 @@
     "languageLabel": "Choose language",
     "switchTo": "Switch to {language}",
     "cartWithCount": "Cart ({count})",
-    "whatsapp": "Message on WhatsApp",
+    "whatsapp": "Message us on WhatsApp",
     "whatsappMessage": "Hi Orit, I'd love to hear more about your paintings"
   },
   "home": {
     "hero": {
-      "positioning": "[PLACEHOLDER POSITIONING LINE — real copy not written yet]",
+      "positioning": "Paintings that bring light into a home",
       "posterAlt": "Orit Bar Shai painting in her studio — a loaded brush meeting wet oil paint on canvas",
       "pauseMotion": "Stop the video",
       "playMotion": "Play the video",

@@ -1,0 +1,205 @@
+/**
+ * Pinned to the bottom-left of the viewport, and it stays there while the page
+ * scrolls under it.
+ *
+ * **`left`, not `inset-inline-start`, and that is deliberate.** Every other
+ * rule on this site is written logically so the layout mirrors itself between
+ * Hebrew and English — i18n.md makes that close to absolute, and this is the
+ * exception it does not cover. A control fixed to the screen rather than
+ * placed in the text is not part of the reading order: it is furniture, and
+ * furniture that moved to the other corner when somebody switched language
+ * would read as having been lost rather than translated. It is the same
+ * physical corner in both languages on purpose.
+ *
+ * The offsets carry `env(safe-area-inset-*)`, which is 0 everywhere except an
+ * iPhone with a home indicator — where without it the button sits in the strip
+ * the system reserves for its own gesture, and a tap either does nothing or
+ * leaves the site.
+ *
+ * **z-index 30.** Above the page and above the sticky header's 20, below the
+ * cart drawer's 100 — so an open drawer covers it rather than the other way
+ * round — and below the skip link's 100, which must be reachable over
+ * everything. Those three values are the whole stacking order on this site;
+ * there is no scale, so each one names its neighbours.
+ */
+.button {
+  position: fixed;
+  inset-block-end: calc(var(--contact-button-inset) + env(safe-area-inset-bottom));
+  left: calc(var(--contact-button-inset) + env(safe-area-inset-left));
+  z-index: 30;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /*
+    46px drawn, 48px to a thumb — and those being two different numbers is the
+    whole arrangement rather than a rounding.
+
+    It was 52px, sized to read as the same object as the hero's 44px square
+    control: a disc reads smaller than a square of the same dimension, because
+    the corners that would have carried its weight are gone. That argument was
+    about the *ring*, and it stopped applying the moment the glyph inside grew
+    — the mark now carries the weight the extra 6px of mat used to, so the
+    button holds its own against that control while drawing less of the page.
+    See the glyph below: the two changes are one change, and tuning either
+    alone puts this back where it was.
+
+    The 48px floor is untouched by any of that, which is why it is its own
+    token and its own box. See the hit area under `::after`.
+  */
+  inline-size: var(--contact-button-size);
+  block-size: var(--contact-button-size);
+
+  /*
+    The same surface the hero's pause control brings with it: the mat board the
+    paintings are mounted on, at full opacity, with a hairline holding its edge
+    — 1.18:1 of fill against the wall is a wash, so the border is what makes it
+    a control rather than a pale patch. The shadow is the frames' own, reused
+    rather than invented: it exists to lift a canvas off this wall by exactly
+    as much as it takes, which is the job here too.
+
+    **A circle, which is the one exception to the radius rule** — see
+    --radius-round in tokens.css for why a disc is not the soft corner that
+    rule forbids. It was built square first, against that rule, and the shape
+    was reversed deliberately rather than drifted into.
+
+    The thing a circle here has to avoid is being the other cliché: every shop
+    on the internet puts a green circular WhatsApp button in this corner, and
+    the drawing is so familiar that it reads as a plugin somebody installed
+    rather than part of the site. What keeps this one out of that: no brand
+    green, no elevation shadow, a hairline, and a mark that stops well short of
+    the edge rather than filling the disc the way an app icon does.
+  */
+  background-color: var(--surface-mat);
+  border: var(--border-hairline) solid var(--line);
+  border-radius: var(--radius-round);
+  box-shadow: var(--shadow-frame);
+  color: var(--text-primary);
+
+  /*
+    Colour only. There is deliberately no entrance animation and nothing that
+    moves: it is present from the first paint, in the same place, on every
+    page — which is the whole of why a visitor stops noticing it and starts
+    relying on it.
+  */
+  transition: color var(--duration) var(--ease);
+}
+
+/**
+ * The tappable square, drawn by nothing and felt by everything.
+ *
+ * The disc is 46px and a touch target must be at least 48px, so the anchor's
+ * own box is 2px short in each direction. This is a transparent square of
+ * `--contact-button-hit`, centred on the disc — a child of the anchor still
+ * receives the press and hands it up, so the button is 48px to a thumb while
+ * remaining 46px to the eye.
+ *
+ * **Growing the disc to 48px would have been the shorter fix and it is the
+ * wrong one.** It re-spends on the ring exactly what this change set out to
+ * take back, and it welds the accessibility floor onto a drawing decision, so
+ * the next person who wants a quieter button silently breaks it. Here the two
+ * move independently, and `max(…, 100%)` is what makes that safe in both
+ * directions: a disc drawn *larger* than the floor keeps its whole surface
+ * pressable rather than having the hit area shrink to 48px inside it.
+ *
+ * No `position: relative` is needed — the anchor is `position: fixed`, which
+ * is already a containing block.
+ *
+ * **It is given its size outright rather than a negative `inset`**, and that
+ * is worth a line because the short version is wrong in a way that measures
+ * as almost right. `inset` on an absolutely positioned child resolves against
+ * the containing block's *padding* box — inside the hairline border — so
+ * `inset: -1px` on a 46px disc with a 1px border yields 46px, not 48: the
+ * whole expansion is spent climbing back out over the border. Probed rather
+ * than reasoned about, and it read as a hit area that existed and did
+ * nothing. A declared width and height cannot make that mistake.
+ *
+ * Centred with physical `left`/`top` on purpose. A square centred on a circle
+ * is the same square in both writing directions, and the logical properties
+ * would need the translate flipped with them for no gain.
+ */
+.button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  inline-size: max(var(--contact-button-hit), 100%);
+  block-size: max(var(--contact-button-hit), 100%);
+  transform: translate(-50%, -50%);
+}
+
+/**
+ * 26px in a 46px disc: the mark now holds about 57% of its ground, where it
+ * held 42% before and read as a small thing adrift in a large pale circle.
+ *
+ * The ratio it was built on is ArtworkFrame's — a work needs generous ground
+ * rather than filling its box — and borrowing it here was the error. That rule
+ * is about a *painting*, which carries its own detail and wants a mat to hold
+ * it off the wall. A 22px monochrome glyph has no detail to protect: at that
+ * scale the ground stopped reading as a mat and started reading as a button
+ * whose icon had failed to load. A mark in a disc this small is closer to a
+ * stamp than to a hung canvas, and a stamp fills its field.
+ *
+ * It still stops well short of the edge, which is what keeps it from the other
+ * failure — a glyph that fills its circle is what makes a control read as an
+ * app icon somebody installed, and that is the cliché this button is drawn
+ * against. 10px of ring on every side is the version that is neither.
+ *
+ * The mark is never mirrored between the languages — i18n.md lists a logo
+ * among the things that carry no direction — so it is centred geometrically
+ * and identically in both.
+ */
+.icon {
+  inline-size: 1.625rem;
+  block-size: 1.625rem;
+
+  /*
+    Lifted 1px off centre, and it is an optical correction rather than a fudge.
+    The mark is a bubble with a tail projecting down and to the left, so its
+    ink hangs low in a square box, and a disc shows that immediately because
+    the ring around it is even and the eye has something to compare against.
+
+    **What is off centre is the ink's mass, not its bounding box**, and the
+    distinction decides whether this rule survives a resize. Rasterised at 16x
+    and scanned, the box is centred to within a rounding error at both sizes —
+    so a correction derived from the box would be zero and the mark would
+    still look low. The alpha-weighted centre sits 0.66px below the middle at
+    26px, and sat 0.56px below it at 22px: it scales with the glyph, which is
+    why one pixel goes on covering it rather than needing to be re-derived
+    every time this number moves.
+
+    Vertical only. The horizontal error is 0.68px and in the other direction,
+    which is under the threshold where a correction is worth more than the
+    rule it costs.
+  */
+  transform: translateY(-1px);
+}
+
+/**
+ * The glyph answers in the accent, which is reserved for exactly this: a thing
+ * that can be pressed. As a graphic rather than text it needs 3:1 against the
+ * mat and clears it at 6.40:1, a pairing check:contrast already asserts.
+ *
+ * Focus takes the same colour as hover, on top of the global focus ring in
+ * globals.css — the ring says "this is where you are", the colour says "and it
+ * is the same thing the pointer lights up".
+ */
+@media (hover: hover) {
+  .button:hover {
+    color: var(--accent);
+  }
+}
+
+.button:focus-visible {
+  color: var(--accent);
+}
+
+/**
+ * Not on paper. A fixed element prints on the first page, over whatever is
+ * beneath it, and a link to a chat is worth nothing there anyway.
+ */
+@media print {
+  .button {
+    display: none;
+  }
+}

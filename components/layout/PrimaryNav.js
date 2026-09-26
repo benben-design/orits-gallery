@@ -2,13 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 import NavLabel from './NavLabel';
 import styles from './PrimaryNav.module.css';
 
 /**
- * The three destinations, which one you are on, and the WhatsApp shortcut
- * beside "contact".
+ * The three destinations, and which one you are on.
  *
  * CLIENT COMPONENT, for one reason: marking the current page needs the current
  * path, and the header is rendered by a shared layout that cannot know which
@@ -25,12 +23,13 @@ import styles from './PrimaryNav.module.css';
  * the one link a visitor from Instagram most needs — behind a tap they have to
  * think of making.
  *
- * **The shortcut sits closer to "contact" than the destinations sit to each
- * other**, so it reads as one of the ways to make contact rather than as a
- * fourth destination. It opens WhatsApp rather than a page of ours, and is
- * absent entirely when no number is configured — see lib/contact.js.
+ * **The WhatsApp shortcut used to be the fourth item here**, pulled in tight
+ * against "contact" so it read as a way of making contact rather than as a
+ * destination. It is now a button fixed to the corner of the screen, on every
+ * public page — see components/layout/WhatsAppButton. Nothing replaced it in
+ * this row: three destinations are what this navigation is.
  */
-export default function PrimaryNav({ links, label, shortcut = null, className = '' }) {
+export default function PrimaryNav({ links, label, className = '' }) {
   const pathname = usePathname() ?? '';
 
   return (
@@ -54,23 +53,6 @@ export default function PrimaryNav({ links, label, shortcut = null, className = 
             </li>
           );
         })}
-
-        {shortcut?.href ? (
-          <li className={styles.shortcutItem}>
-            {/* A plain anchor: it leaves the site, so there is nothing for
-                next/link to prefetch or route. A new tab keeps the painting
-                the visitor was looking at open behind the chat. */}
-            <a
-              href={shortcut.href}
-              className={styles.shortcut}
-              aria-label={shortcut.label}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <WhatsAppIcon className={styles.shortcutIcon} />
-            </a>
-          </li>
-        ) : null}
       </ul>
     </nav>
   );

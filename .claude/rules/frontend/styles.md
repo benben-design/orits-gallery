@@ -121,7 +121,15 @@ and it is a token for the same reason: `--origin-inline-start` in
 `transform-origin` has no logical keywords either. The header's hover hairline
 grows from it, so the line draws in the direction the words are read. It is set
 for `[dir='ltr']` as well as `[dir='rtl']`, so an English fragment inside a
-Hebrew document does not inherit the right-hand edge. Everything else still
+Hebrew document does not inherit the right-hand edge.
+
+**Two placements are physical rather than logical, and they are the only
+ones.** The floating WhatsApp button takes the bottom left in both languages
+and the hero's pause control the bottom right in both — `left` and `right`,
+written out, each with its reason in its own stylesheet and the argument
+recorded in i18n.md. They are a pair rather than two decisions: the button
+claims a physical corner deliberately, so the control that used to mirror into
+that corner had to stop. Everything else still
 falls out of logical properties, as i18n.md requires.
 
 **Every word in the header is set one way** — Assistant Light at `--text-md`,

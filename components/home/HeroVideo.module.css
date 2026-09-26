@@ -55,19 +55,34 @@
  * pairings `npm run check:contrast` already asserts, and it holds whatever the
  * video is doing underneath.
  *
- * Placed with logical properties, so it sits in the trailing bottom corner of
- * the frame in both writing directions — where a media control is looked for,
- * and clear of the positioning line below.
+ * **`right`, not `inset-inline-end`, and that is a change from how this was
+ * first written.** It used to be placed logically, so it sat in the trailing
+ * bottom corner of the frame in both directions — which in Hebrew is the
+ * bottom *left*, the corner the floating WhatsApp button is now fixed to.
  *
- * Note that the footage is **not** mirrored between the two languages while the
- * control is: in English it lands over the gloved hand and in Hebrew over the
- * pale canvas. That is exactly why the fill is opaque rather than a tint — the
- * glyph has to hold against either, and against every frame in between.
+ * Measured rather than guessed: in Hebrew the two shared the boundary exactly,
+ * the button's right edge and this control's left edge both landing on x=64 at
+ * every width from 900px to 1280px, while the vertical overlap ran to 42px on
+ * a short laptop window. Not technically a collision — they touch rather than
+ * cover — which is worse than one, because nothing would ever flag it and a
+ * single pixel of gutter either way turns it into one. Two 44px controls
+ * sharing an edge in the corner of the screen read as one cluster, and one of
+ * them is site furniture while the other belongs to this video.
+ *
+ * So it is pinned to the same physical corner in both languages, exactly as
+ * the WhatsApp button is and for the same reason — see
+ * components/layout/WhatsAppButton.module.css, which carries the argument. It
+ * also settles something this comment used to note as an oddity: **the footage
+ * is not mirrored between the two languages**, so a control that moved while
+ * the picture underneath it stayed put was always the thing out of step. Now
+ * neither moves. In English it lands over the gloved hand and in Hebrew over
+ * the pale canvas — which is why the fill is opaque rather than a tint, since
+ * the glyph has to hold against either and against every frame in between.
  */
 .control {
   position: absolute;
   inset-block-end: var(--space-4);
-  inset-inline-end: var(--space-4);
+  right: var(--space-4);
   z-index: 1;
   display: inline-flex;
   align-items: center;

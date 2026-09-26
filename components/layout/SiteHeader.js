@@ -5,14 +5,19 @@ import PrimaryNav from './PrimaryNav';
 import LanguageSwitcher from './LanguageSwitcher';
 import CartLink from './CartLink';
 import { localeHref } from '@/lib/i18n/config';
-import { whatsappHref } from '@/lib/contact';
 import styles from './SiteHeader.module.css';
 
 /**
  * The public top navigation: one bar with the artist's name centred in it —
- * the three destinations and the WhatsApp shortcut at the inline start, the
- * language switcher and the cart at the end. Every word in it is set the same
- * way, so the two sides of the name read as one row of type.
+ * the three destinations at the inline start, the language switcher and the
+ * cart at the end. Every word in it is set the same way, so the two sides of
+ * the name read as one row of type.
+ *
+ * **The WhatsApp shortcut used to be a fourth item beside "contact" and is not
+ * here any more.** It is a button fixed to the corner of the screen, on every
+ * public page — see components/layout/WhatsAppButton. Nothing took its place
+ * in the bar: the side it left is emptier by one 44px glyph, and the name
+ * stays centred either way because the outer tracks are equal.
  *
  * A server component. Three leaves inside it run on the client: the primary
  * navigation, which marks the current page; the language switcher, which needs
@@ -28,11 +33,12 @@ import styles from './SiteHeader.module.css';
  * same at the top of the page as everywhere else, and it costs the first screen
  * one row instead of two.
  *
- * **Below 64rem it is two short rows** — a phone and a tablet alike: the name
- * between the language and the cart, the destinations beneath. Three links, a
- * shortcut, a name, a language and a cart do not fit one row until then, which
- * was measured rather than assumed — see the stylesheet. It is one `<nav>` and
- * one set of controls in both layouts, rearranged by grid areas.
+ * **Below 56rem it is two short rows**: the name between the language and the
+ * cart, the destinations beneath. That used to be 64rem, and losing the
+ * shortcut is what moved it — the old figure was measured with the glyph in
+ * the row, so it outlived the thing it was measuring. Re-measured in both
+ * languages; the stylesheet carries the numbers. It is one `<nav>` and one set
+ * of controls in both layouts, rearranged by grid areas.
  */
 export default function SiteHeader({ locale, dictionary }) {
   const links = [
@@ -40,14 +46,6 @@ export default function SiteHeader({ locale, dictionary }) {
     { key: 'about', href: localeHref(locale, '/about'), label: dictionary.nav.about },
     { key: 'contact', href: localeHref(locale, '/contact'), label: dictionary.nav.contact },
   ];
-
-  /* Built here rather than in the navigation so the message is resolved on the
-     server, in the visitor's language, and the client component is only handed
-     a URL. Null when no number is configured, and then nothing renders. */
-  const whatsapp = {
-    href: whatsappHref(dictionary.nav.whatsappMessage),
-    label: dictionary.nav.whatsapp,
-  };
 
   return (
     <header className={styles.header}>
@@ -59,7 +57,6 @@ export default function SiteHeader({ locale, dictionary }) {
         <PrimaryNav
           links={links}
           label={dictionary.nav.primaryLabel}
-          shortcut={whatsapp}
           className={styles.nav}
         />
 

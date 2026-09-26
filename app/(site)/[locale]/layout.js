@@ -4,8 +4,10 @@ import { fontVariables } from '@/app/fonts';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import CartProvider from '@/components/cart/CartProvider';
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
+import { whatsappHref } from '@/lib/contact';
 import { locales, isLocale, getDirection, getLocaleTag } from '@/lib/i18n/config';
 import styles from './layout.module.css';
 
@@ -104,6 +106,21 @@ export default async function SiteLayout({ children, params }) {
             {children}
           </main>
           <SiteFooter locale={locale} dictionary={dictionary} year={year} />
+          {/*
+            The way to reach the artist directly, on every public page but
+            checkout — which the button decides for itself, because a layout
+            cannot know which page it is wrapping. See WhatsAppButton.
+
+            The href is built here so the message is resolved on the server, in
+            the language the visitor is reading, and the client component is
+            handed nothing but a string. `whatsappHref` returns null when no
+            number is configured, and then nothing renders at all.
+          */}
+          <WhatsAppButton
+            href={whatsappHref(dictionary.nav.whatsappMessage)}
+            label={dictionary.nav.whatsapp}
+            locale={locale}
+          />
         </CartProvider>
       </body>
     </html>

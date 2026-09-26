@@ -1,10 +1,11 @@
-/* Centred in a row of their own on a phone and a tablet; from 64rem they sit
-   at the inline start of the one-row bar, opposite the language and the cart
-   — see SiteHeader.module.css for why the bar waits until 64rem.
+/* Centred in a row of their own on a phone and a tablet in portrait; from
+   56rem they sit at the inline start of the one-row bar, opposite the language
+   and the cart — see SiteHeader.module.css for where that breakpoint came from
+   and what was measured to move it there.
 
-   The gap is a custom property because the WhatsApp shortcut is placed
-   against it — see .shortcutItem. It opens up from 48rem, where the row has
-   the width to spare. */
+   The gap is a custom property so its two widths are declared together rather
+   than in a rule and an override. It opens up at 48rem, which is still inside
+   the two-row layout, where the row has the full width to spare. */
 .list {
   --nav-gap: var(--space-5);
 
@@ -20,7 +21,7 @@
   }
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 56rem) {
   .list {
     justify-content: flex-start;
   }
@@ -52,41 +53,4 @@
   font-weight: var(--weight-light);
   letter-spacing: var(--tracking-slight);
   color: var(--text-primary);
-}
-
-/**
- * The shortcut, pulled in towards "contact": the destinations stand
- * --nav-gap apart, this one --space-2 from the edge of its touch target, so
- * proximity says it belongs to the word before it.
- */
-.shortcutItem {
-  display: flex;
-  margin-inline-start: calc(var(--space-2) - var(--nav-gap));
-}
-
-.shortcut {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
-  color: var(--text-primary);
-  transition: color var(--duration) var(--ease);
-}
-
-/* 1.25rem, the same size as the cart's bag on the other side of the name. */
-.shortcutIcon {
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-}
-
-/**
- * A glyph cannot take the words' hairline, so it answers in the accent, which
- * is reserved for exactly this — something that can be pressed. As a graphic
- * rather than text it needs 3:1 on the band, and the accent clears it.
- */
-@media (hover: hover) {
-  .shortcut:hover {
-    color: var(--accent);
-  }
 }

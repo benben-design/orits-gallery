@@ -117,8 +117,25 @@ export default function Hero({ locale, dictionary }) {
             WCAG 1.3.1. It must render exactly as the paragraph it replaced —
             the one property the global heading rule would change is pinned in
             Hero.module.css.
+
+            **It is in English on the Hebrew site too, by the owner's decision,
+            and `lang="en"` is what makes that honest rather than a bug.** The
+            locale files hold the same value in both languages — deliberately,
+            the way `site.wordmark` already does, because this line is being
+            treated as part of the mark rather than as copy. i18n.md's rule
+            against setting language on an inner element is about *patching a
+            layout*; this is the case the attribute exists for, and the same
+            one Wordmark's alt text answers. Without it a Hebrew screen reader
+            pronounces Latin letters with Hebrew phonetics, so the one sentence
+            on the first screen is the one sentence it reads as nonsense.
+
+            No `dir` beside it: the run is pure Latin, so bidi resolves it
+            left-to-right on its own, and `.text` centres the line in both
+            languages, so there is no alignment for a direction to change.
           */}
-          <h1 className={styles.positioning}>{dictionary.home.hero.positioning}</h1>
+          <h1 className={styles.positioning} lang="en">
+            {dictionary.home.hero.positioning}
+          </h1>
           <ButtonLink href={localeHref(locale, '/gallery')} variant="primary">
             {dictionary.home.hero.cta}
           </ButtonLink>

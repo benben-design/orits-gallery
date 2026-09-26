@@ -226,8 +226,24 @@
    * ================================================================ */
   --radius-none: 0;
   --radius-sm: 2px;
-  --radius-md: 4px;      /* the ceiling */
+  --radius-md: 4px;      /* the ceiling, for anything with corners */
   --radius: var(--radius-sm);
+
+  /**
+   * THE ONE EXCEPTION, and it is a circle rather than a softer corner.
+   *
+   * The rule above is about corners: a 12px corner reads as a widget because
+   * it is a rectangle pretending to be friendly. A full circle is not on that
+   * scale at all — it has no corners to round, so it cannot sit at the soft
+   * end of one. It reads as a disc, which is a different kind of object.
+   *
+   * It exists for the floating contact button and nothing else, and that is
+   * the whole licence. Use it only where the shape is genuinely a circle: a
+   * disc of hardware fixed to the page, not a control in the flow. Anything
+   * rectangular still stops at --radius-md, and "half of a pill" is not a use
+   * of this token.
+   */
+  --radius-round: 50%;
 
   /* ================================================================ *
    * LAYOUT
@@ -237,6 +253,33 @@
   --measure-list: 52rem; /* a list of items with a picture: the cart */
   --page-gutter: var(--space-5);
   --section-gap: var(--space-11);
+
+  /**
+   * The floating contact button: how big it is, how big it is to a thumb, and
+   * how far it sits from the corner of the screen. See
+   * components/layout/WhatsAppButton.
+   *
+   * These are tokens rather than values inside that component because a second
+   * stylesheet needs them and cannot see them. The button is fixed, so it
+   * takes up no space in the flow and nothing below it knows it is there —
+   * which is how it came to sit on the last line of the footer. SiteFooter
+   * reserves the room from these, so the clearance and the thing being cleared
+   * cannot drift apart.
+   *
+   * **The drawn size and the tappable size are two tokens, not one**, and that
+   * separation is the point rather than an accident of tuning. How big the
+   * disc should look is a question about the page — it is furniture sitting
+   * over a painting, and the quieter it is the better. How big it must be to a
+   * thumb is a fixed accessibility floor that has nothing to do with taste:
+   * 48px, hit at the very edge of the screen where a miss lands on whatever is
+   * behind it. Holding them in one value means every future nudge to the
+   * drawing silently moves the floor, which is exactly the kind of regression
+   * nothing on the page shows. The hit area is centred on the disc and
+   * invisible, so it may be larger with no visual cost at all.
+   */
+  --contact-button-size: 2.875rem;
+  --contact-button-hit: 3rem;
+  --contact-button-inset: var(--space-4);
 
   /* ================================================================ *
    * THE FRAME
