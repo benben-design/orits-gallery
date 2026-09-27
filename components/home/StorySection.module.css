@@ -5,24 +5,6 @@
   align-items: center;
 }
 
-/* Empty frame at portrait proportions, waiting for the real photograph. */
-.portrait {
-  aspect-ratio: 4 / 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6);
-  background-color: var(--surface-sunk);
-  border: var(--border-hairline) dashed var(--line-strong);
-}
-
-.portraitLabel {
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-align: center;
-  color: var(--text-muted);
-}
-
 .text {
   display: flex;
   flex-direction: column;
@@ -40,8 +22,13 @@
   color: var(--text-muted);
 }
 
+/*
+  Two columns only when there is a photograph to fill one. Without it the
+  section is the text alone, at its measure — not a text column beside a gap
+  where a portrait would be.
+*/
 @media (min-width: 48rem) {
-  .layout {
+  .withPortrait {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: var(--space-10);
   }

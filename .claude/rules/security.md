@@ -82,6 +82,13 @@
   signature older than an hour, so one that leaks out of the page stops working
   on its own.
 
+  **The folder is chosen by the signing action, never by the browser.** There
+  are two — `orit-works` for paintings and `orit-site` for the artist's
+  portrait, kept apart because the planned automation treats the paintings'
+  folder as a queue of new works. `signPortraitUpload` passes its key in its own
+  body, and `savePortrait` refuses any asset outside the portrait folder, so a
+  browser cannot have a painting's photograph recorded as her portrait.
+
   **Nothing the browser reports about the finished upload is believed.** It
   hands back an identifier; the server asks the host for the asset under its own
   credentials and stores the width, the height and the URL from that answer.

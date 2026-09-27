@@ -5,10 +5,14 @@ through `lib/db.js` — see database.md for the schema. The swap cost one file a
 changed nothing above it: same function names, same arguments, same returned
 shapes, which is what the indirection was for.
 
-**There are two data modules now.** `lib/data/orders-repository.js` joined it
-with the checkout: it prices a basket and writes an order, and it follows the
-same three rules — every function async, plain serializable objects out, and
-these two are the only modules that touch the database.
+**There are three data modules now.** `lib/data/orders-repository.js` joined it
+with the checkout: it prices a basket and writes an order.
+`lib/data/settings-repository.js` joined with the admin's settings page: it
+reads and writes the one row of `site_settings`, and a missing row or table
+throws `SiteSettingsMissingError` naming migration 011 rather than falling back
+to defaults. All three follow the same three rules — every function async,
+plain serializable objects out, and these three are the only modules that touch
+the database.
 
 The one thing to know before adding to it: **every amount inside it is agorot**,
 read from `works.price_agorot` and written to `orders.total_agorot`. It hands

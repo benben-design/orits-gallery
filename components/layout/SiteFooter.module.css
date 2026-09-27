@@ -65,6 +65,17 @@
   transition: color var(--duration) var(--ease);
 }
 
+/*
+  An email address and a phone number read left to right inside Hebrew, like
+  every other Latin run on the site, while the line still starts where the rest
+  of the list starts.
+*/
+.ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  align-self: flex-start;
+}
+
 .rights {
   margin-block-start: var(--space-9);
   padding-block-start: var(--space-5);
@@ -79,9 +90,16 @@
   }
 }
 
+/*
+  As many equal columns as there are, rather than a fixed three. A column with
+  nothing in it is not rendered — no social pages yet, or no contact details —
+  and a fixed track count would leave its cell standing empty in the row.
+*/
 @media (min-width: 48rem) {
   .columns {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: var(--space-8);
   }
 }

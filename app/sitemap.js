@@ -1,5 +1,7 @@
 import { locales, defaultLocale, localeHref, getLocaleTag } from '@/lib/i18n/config';
 import { getAllWorks } from '@/lib/data/works-repository';
+import { getSiteSettings } from '@/lib/data/settings-repository';
+import { contactMethods } from '@/lib/contact';
 import { absoluteUrl } from '@/lib/site-url';
 import { INDEXABLE_PATHS } from '@/lib/public-routes';
 
@@ -49,9 +51,24 @@ function alternatesFor(pathFor) {
 
 export default async function sitemap() {
   const works = await getAllWorks();
+  const settings = await getSiteSettings();
+
+  /*
+    The two pages whose content is the artist's own settings are offered only
+    when they have some. Each page applies the same test to its own robots
+    metadata, so the sitemap never lists a page that asks not to be indexed.
+    The About text is stored in both languages or neither, so one test covers
+    every locale.
+  */
+  const hasNothingToSay = {
+    '/about': !settings.about.he,
+    '/contact': contactMethods(settings).length === 0,
+  };
+
+  const offered = INDEXABLE_PATHS.filter((path) => !hasNothingToSay[path]);
 
   const pages = locales.flatMap((locale) =>
-    INDEXABLE_PATHS.map((path) => ({
+    offered.map((path) => ({
       url: absoluteUrl(localeHref(locale, path)),
       alternates: alternatesFor((other) => localeHref(other, path)),
     }))

@@ -56,8 +56,7 @@
     "story": {
       "heading": "[PLACEHOLDER HEADING] About the artist",
       "body": "[PLACEHOLDER] A short paragraph about Orit and her work goes here. This text is a stand-in and has not been written yet.",
-      "link": "More about the artist",
-      "portraitPlaceholder": "[PLACEHOLDER] Artist photograph not supplied yet"
+      "link": "More about the artist"
     }
   },
   "gallery": {
@@ -84,12 +83,18 @@
     "buyNow": "Buy now"
   },
   "about": {
-    "title": "About",
-    "body": "[PLACEHOLDER] The about page has not been written yet."
+    "title": "About"
   },
   "contact": {
     "title": "Contact",
-    "body": "[PLACEHOLDER] The contact page has not been built yet."
+    "lead": "You can reach Orit in any of these ways.",
+    "methods": {
+      "whatsapp": "WhatsApp",
+      "phone": "Phone",
+      "email": "Email",
+      "instagram": "Instagram",
+      "facebook": "Facebook"
+    }
   },
   "cart": {
     "title": "Cart",
@@ -146,7 +151,9 @@
     "unavailableAction": "Back to the cart",
     "errorEmpty": "There is nothing to pay for.",
     "errorPayment": "We could not open the payment page. Nothing was charged — please try again.",
+    "amountChanged": "The amount to pay has changed since this page was opened, and is now {total}. Nothing has been charged. Check the updated total below and confirm again with the payment button.",
     "errorRequired": "Some fields still need filling in.",
+    "errorDeliveryChanged": "The delivery options changed since this page was opened: collecting in person is no longer available. Nothing has been charged. Delivery is now selected; add an address to continue.",
     "errors": {
       "nameRequired": "Please enter your full name.",
       "emailRequired": "Please enter your email address.",
@@ -157,7 +164,8 @@
       "postalCodeRequired": "Please enter a postal code.",
       "postalCodeInvalid": "An Israeli postal code is five or seven digits.",
       "deliveryMethodInvalid": "Please choose how to receive the work.",
-      "tooLong": "That is too long."
+      "tooLong": "That is too long.",
+      "deliveryMethodNotOffered": "Collecting in person is no longer available. Please choose delivery."
     },
     "requiredMark": "(required)"
   },
@@ -204,8 +212,6 @@
     "followLabel": "Follow",
     "contactLabel": "Contact",
     "legalLabel": "Legal",
-    "emailPlaceholder": "[PLACEHOLDER] name@example.invalid",
-    "phonePlaceholder": "[PLACEHOLDER] 000-0000000",
     "social": {
       "instagram": "Instagram",
       "facebook": "Facebook"
@@ -234,6 +240,7 @@
       "works": "Works",
       "newWork": "New work",
       "orders": "Orders",
+      "settings": "Settings",
       "signOut": "Sign out"
     },
     "works": {
@@ -374,6 +381,56 @@
         "refunded": "The refund is recorded and the paintings are back to draft.",
         "refundSettled": "Recorded that the refund has been made.",
         "notAllowed": "That action is not possible from the order’s current state."
+      }
+    },
+    "settings": {
+      "title": "Site settings",
+      "intro": "What the site says about the studio: the About text, how to get in touch, and delivery. A field left empty is simply not shown on the site.",
+      "saved": "The settings have been saved.",
+      "portrait": {
+        "legend": "The artist's photograph",
+        "hint": "Shown on the homepage and the About page, always whole and never cropped. Up to {megabytes} MB and {megapixels} megapixels. It is saved as soon as the upload finishes, separately from the rest of the form.",
+        "notFound": "The image was not found at the image service. Please upload it again."
+      },
+      "form": {
+        "sections": {
+          "about": "About",
+          "contact": "Contact",
+          "social": "Social media",
+          "delivery": "Delivery and pickup"
+        },
+        "aboutHe": "About text (Hebrew)",
+        "aboutEn": "About text (English)",
+        "email": "Email",
+        "phone": "Phone",
+        "whatsappNumber": "WhatsApp number",
+        "instagramUrl": "Instagram link",
+        "facebookUrl": "Facebook link",
+        "shippingFee": "Shipping (ILS)",
+        "selfPickupOffered": "Offer self-pickup",
+        "hints": {
+          "about": "Saved in both languages together. Clearing both leaves the About page without text.",
+          "whatsappNumber": "Write the number as you normally would, for example 052-4321817.",
+          "social": "The full address of the page, as it appears in the browser address bar.",
+          "shippingFee": "One flat rate anywhere in Israel. 0 means free shipping. Changing it does not change orders already placed.",
+          "selfPickupOffered": "When this is off, buyers can only choose shipping. Orders already placed do not change."
+        },
+        "save": "Save settings",
+        "submitting": "Saving…",
+        "errors": {
+          "summary": "Some fields need correcting. Each one says what is wrong.",
+          "required": "This field is required.",
+          "notANumber": "Write a number, for example 40.",
+          "mustNotBeNegative": "The rate cannot be negative. 0 means free shipping.",
+          "tooLarge": "That rate is too high. Check that no digit was added by mistake.",
+          "whatsappInvalid": "That does not look like a phone number. Write it as you normally would, for example 052-4321817.",
+          "mustBeHttps": "The link has to start with https://. The easiest way is to copy it from the browser address bar.",
+          "notALink": "That does not look like a web address. The easiest way is to copy it from the browser address bar.",
+          "aboutEnglishRequired": "The English text is missing. Translate it from the Hebrew or write it by hand.",
+          "aboutHebrewRequired": "The Hebrew text is missing. The About text is saved in both languages together.",
+          "notSignedIn": "Your session has ended. Sign in again and try once more.",
+          "unexpected": "Something went wrong while saving. Please try again."
+        }
       }
     },
     "workForm": {

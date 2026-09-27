@@ -85,6 +85,34 @@ video — a pan across a canvas, a turntable — it is still a work for sale and
 is still never cropped. `object-fit: cover` belongs on footage of the artist and
 nowhere else. The rule is written at both call sites for exactly this reason.
 
+## The artist's portrait fills its slot (decided 27-09-2026)
+
+**The one still image that may be cropped, and it is her, not a work.** Her
+photograph on the homepage story section and the About page fills its slot edge
+to edge, with no mat, cropped to fit and **anchored to the top** so a
+head-and-shoulders shot never loses the face. The slot is 4:5 at every width —
+`--portrait-ratio`, a token of its own so that reshaping the paintings' frame
+cannot reshape it.
+
+It was hung in `ArtworkFrame` first, which is the correct treatment for a
+painting and the wrong one for a photograph: it sat small on a white mat inside
+a larger box and read as a painting *of* her. Do not "fix" it back into a mat.
+
+Three things keep the exception from spreading:
+
+- **It has its own component, `components/ui/PortraitFrame`**, rather than a
+  tone on `ArtworkFrame`. A cropping mode inside the painting frame would be one
+  prop away from cropping a painting.
+- **The cropping is CSS, never the image host.** The file is delivered whole
+  through `lib/image-loader.js` like everything else, so the delivery rule —
+  `c_limit`, width only — covers it unchanged.
+- **`npm run check:crop` now also asserts that `ArtworkFrame`'s stylesheet
+  never contains `object-fit: cover`**, so the portrait's declaration cannot be
+  copied into the frame every painting uses without the check failing.
+
+The admin's thumbnail of the portrait, on `/admin/settings`, stays in
+`ArtworkFrame`: it is a preview of the file she uploaded, whole, not the page.
+
 ## No badge is ever overlaid on a painting
 
 Status lives in the caption, beside the price, in all four states. It is
@@ -354,6 +382,15 @@ worth buying that risk to solve.
 
 Only the **main** image can be attached this way. `detail` and `in-situ` slot
 into the same table and the same page without a redesign, and are not built.
+
+**The artist's portrait goes through the same panel**, on `/admin/settings`,
+and is held to the same upload rules: signed, and read back from the host rather
+than believed. It is **not** held to the never-crop rule on the page — it fills
+its slot in `PortraitFrame`, anchored to the top; see "The artist's portrait
+fills its slot" above. It uploads into
+its **own folder**, `orit-site`, not the paintings' — the planned automation
+turns a file in `orit-works` into a draft work, and a portrait there would
+become one. Its alt text is her name.
 
 **And a work cannot be published without one.** Now that attaching a photograph
 is possible, publishing without one is a mistake rather than a state the admin

@@ -1,0 +1,25 @@
+/* Matches the heading treatment the other admin pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-2);
+}
+
+.intro {
+  color: var(--text-muted);
+  margin-block-end: var(--space-6);
+}
+
+/**
+ * "That saved." The same band the works list shows after a save: bordered and
+ * worded on the clay tint, never colour alone.
+ */
+.saved {
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-block-end: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--surface-tint);
+}

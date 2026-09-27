@@ -158,7 +158,7 @@ address, a default of `self-pickup` silently waives the fee.
 
 - **`delivery_fee_agorot` is what was charged, not what we charge.** Required,
   minor units, written once at checkout and never recomputed. The rate lives in
-  one place in code — `lib/delivery.js`, 40 ILS flat, destined for
+  one place — `site_settings.shipping_fee_agorot` (migration 011), edited at
   `/admin/settings` — and the column exists precisely so that changing it cannot
   rewrite what an old order cost. It is a *component* of `total_agorot`, and
   nothing enforces that arithmetic, for the reason 003 gave about line prices.
@@ -340,6 +340,40 @@ policy that 004 deferred.
 - `ip` is text rather than `inet`: it arrives from a proxy header, it may be v4
   or v6, and a value that fails to parse must still be countable rather than
   raising mid-login.
+
+### `site_settings` — one row, the studio's own facts
+
+Added by migration 011. The About text (`about_he`, `about_en`), `email`,
+`phone`, `whatsapp_number`, `instagram_url`, `facebook_url`,
+`shipping_fee_agorot`, `self_pickup_offered`, the portrait
+(`portrait_image_ref`, `portrait_pixel_width`, `portrait_pixel_height`) and
+`updated_at`.
+
+- **One row with a typed column per field, never key-value.** The list is closed
+  and small, and as columns the database enforces each one's type. Adding a
+  setting is a migration, which is the right price at this size.
+- **A second row is impossible.** The key is `id boolean primary key default
+  true check (id)` — it has exactly one legal value. **Deleting the row is not
+  prevented**, deliberately: the application never deletes it, and its read must
+  fail loudly and name 011 rather than fall back to defaults.
+- **"Not provided" is `null` and only `null`.** Every text column refuses a
+  value that is blank once trimmed, so a caller has one thing to check.
+- **The About text is both languages or neither**
+  (`site_settings_about_both_languages`). The approval gate is form state, so
+  the database cannot know the English was approved — but it can refuse a
+  Hebrew text with no English at all, which is the half that stops the gate
+  being stepped around.
+- **`whatsapp_number` is the wa.me form** — digits only, country code first, no
+  leading zero — because it becomes a link, not text. `instagram_url` and
+  `facebook_url` must start `https://`, because each becomes an `href` on every
+  public page. Email and phone are unchecked, as everywhere else here.
+- **`shipping_fee_agorot` is what checkout would charge now**, never what an old
+  order was charged — that is `orders.delivery_fee_agorot`, and it is why this
+  one may be edited. Zero is allowed (a promotion). Neither it nor
+  `self_pickup_offered` has a default: a default rate is a price nobody chose.
+- **The portrait is stored the way `work_images` stores a painting**, and is all
+  three columns or none. No alt columns: the alt derives from the artist's name
+  in the locale files.
 
 ## Rules
 

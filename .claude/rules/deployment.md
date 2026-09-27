@@ -349,6 +349,13 @@ Beyond a green build, these are launch blockers and are easy to forget:
   privacy, accessibility. See commerce.md.
 - **A custom domain**, not the host's own preview URL.
 - **Both languages walked end to end**, including checkout, in right-to-left.
+- **Migration 011 applied to Neon before this code deploys.** The public layout
+  reads `site_settings` on every page, so a build against a database without it
+  **fails, naming the migration** — verified on 27-09-2026 against a throwaway
+  database carrying 001 through 010, where `next build` stopped with
+  `SiteSettingsMissingError`. That is the safe failure: the previous deploy stays
+  live. The same holds at runtime only for pages rendered per request; a
+  prerendered page whose revalidation fails keeps serving its last good render.
 - **A production database — done.** Neon's "Orit's gallery" carries 001 through
   010 and the catalogue, since 12-09-2026. **The blocker that replaces it is
   `DATABASE_URL` set in the Netlify site**, pointing at the **pooled**

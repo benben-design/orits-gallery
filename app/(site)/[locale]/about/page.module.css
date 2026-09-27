@@ -1,0 +1,39 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--measure);
+}
+
+/* Matches the heading treatment the other content pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-2);
+}
+
+/*
+  Her own line breaks survive: a blank line in the admin is a paragraph, and a
+  single break inside one stays a break rather than collapsing into a space.
+*/
+.paragraph {
+  white-space: pre-line;
+}
+
+/*
+  Two columns only when there is a photograph to fill one — the same rule as
+  the homepage's story section, so the two read as one design.
+*/
+@media (min-width: 48rem) {
+  .withPortrait {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-10);
+  }
+}

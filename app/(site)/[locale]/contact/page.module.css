@@ -1,0 +1,75 @@
+/* Matches the heading treatment the other content pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-5);
+}
+
+.lead {
+  color: var(--text-muted);
+  margin-block-end: var(--space-6);
+}
+
+/*
+  One row per way of reaching her: what it is, then the link. Stacked on a
+  phone, side by side from 40rem, with a hairline between rows so a list of one
+  and a list of five read as the same object.
+*/
+.methods {
+  display: flex;
+  flex-direction: column;
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-block: var(--space-4);
+  border-block-end: var(--border-hairline) solid var(--line);
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.value {
+  margin: 0;
+}
+
+/* The accent, because these are the interactive things on the page. */
+.link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  overflow-wrap: anywhere;
+  transition: color var(--duration) var(--ease);
+}
+
+/*
+  Left to right inside Hebrew, as an isolated run, while the line still starts
+  where the other rows start.
+*/
+.ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--accent-hover);
+  }
+}
+
+@media (min-width: 40rem) {
+  .row {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-5);
+  }
+
+  .label {
+    min-inline-size: 9rem;
+  }
+}

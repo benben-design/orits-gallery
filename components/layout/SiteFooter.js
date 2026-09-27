@@ -2,24 +2,30 @@ import Link from 'next/link';
 import Container from '@/components/ui/Container';
 import { localeHref } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
+import { telHref, mailtoHref } from '@/lib/contact';
 import styles from './SiteFooter.module.css';
 
 /**
  * The public footer: social links, contact details and the legal pages.
  *
- * The social hrefs point at the reserved `.invalid` TLD on purpose — they are
- * stand-ins, and a stand-in that resolves to a real site is worse than one that
- * visibly does not. Swap them when the real accounts exist.
+ * **The social links and contact details are site settings**, edited by the
+ * artist at `/admin/settings` and handed down by the layout. Each is rendered
+ * only when it is filled in, and a column left with nothing in it is not
+ * rendered at all — no heading over an empty list, no placeholder, no link to
+ * nowhere. The stylesheet sizes the row to however many columns remain.
  *
  * The copyright year is fixed at build time rather than read from `new Date()`
  * in render, which would differ between the server and the browser and produce
  * a hydration mismatch.
  */
-export default function SiteFooter({ locale, dictionary, year }) {
+export default function SiteFooter({ locale, dictionary, year, contact }) {
   const social = [
-    { key: 'instagram', href: 'https://instagram.example.invalid', label: dictionary.footer.social.instagram },
-    { key: 'facebook', href: 'https://facebook.example.invalid', label: dictionary.footer.social.facebook },
-  ];
+    { key: 'instagram', href: contact.instagramUrl, label: dictionary.footer.social.instagram },
+    { key: 'facebook', href: contact.facebookUrl, label: dictionary.footer.social.facebook },
+  ].filter((item) => item.href);
+
+  const phoneHref = telHref(contact.phone);
+  const emailHref = mailtoHref(contact.email);
 
   const legal = [
     { key: 'terms', href: localeHref(locale, '/legal/terms'), label: dictionary.legal.terms.title },
@@ -32,31 +38,43 @@ export default function SiteFooter({ locale, dictionary, year }) {
     <footer className={styles.footer}>
       <Container>
         <div className={styles.columns}>
-          <section className={styles.column}>
-            <h2 className={styles.columnTitle}>{dictionary.footer.followLabel}</h2>
-            <ul className={styles.list}>
-              {social.map((item) => (
-                <li key={item.key}>
-                  <a
-                    href={item.href}
-                    className={styles.link}
-                    rel="noreferrer noopener"
-                    target="_blank"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {social.length > 0 ? (
+            <section className={styles.column}>
+              <h2 className={styles.columnTitle}>{dictionary.footer.followLabel}</h2>
+              <ul className={styles.list}>
+                {social.map((item) => (
+                  <li key={item.key}>
+                    <a
+                      href={item.href}
+                      className={styles.link}
+                      rel="noreferrer noopener"
+                      target="_blank"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-          <section className={styles.column}>
-            <h2 className={styles.columnTitle}>{dictionary.footer.contactLabel}</h2>
-            <address className={styles.list}>
-              <p>{dictionary.footer.emailPlaceholder}</p>
-              <p>{dictionary.footer.phonePlaceholder}</p>
-            </address>
-          </section>
+          {emailHref || phoneHref ? (
+            <section className={styles.column}>
+              <h2 className={styles.columnTitle}>{dictionary.footer.contactLabel}</h2>
+              <address className={styles.list}>
+                {emailHref ? (
+                  <a href={emailHref} className={styles.link + ' ' + styles.ltr}>
+                    {contact.email}
+                  </a>
+                ) : null}
+                {phoneHref ? (
+                  <a href={phoneHref} className={styles.link + ' ' + styles.ltr}>
+                    {contact.phone}
+                  </a>
+                ) : null}
+              </address>
+            </section>
+          ) : null}
 
           <section className={styles.column}>
             <h2 className={styles.columnTitle}>{dictionary.footer.legalLabel}</h2>

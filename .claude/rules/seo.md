@@ -79,8 +79,14 @@ spells out a language, so adding one stays the two-step job i18n.md promises.
 
 **Only pages that exist.** A stub is not a page, and offering one is worse than
 offering nothing: thin content indexed early is expensive to undo, and a first
-deployment is exactly when it would happen. `/about`, `/contact` and the four
-`/legal` pages are absent until they carry real copy.
+deployment is exactly when it would happen. The four `/legal` pages are absent
+until they carry real copy.
+
+**`/about` and `/contact` are built, and conditional.** Their content is the
+artist's site settings, so either can exist and still be empty. While it is,
+the page marks itself `noindex, follow` and `app/sitemap.js` leaves it out, by
+the same test in both places, so the sitemap never offers a page that asks not
+to be indexed.
 
 **How a path joins.** The three lists are in `lib/public-routes.js` and
 `scripts/check-sitemap.mjs` holds them against the filesystem: every public page

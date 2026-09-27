@@ -18,6 +18,20 @@
  * shape as the other three guards: no dependencies, run by `npm run lint`,
  * prints a table either way, not in the build.
  *
+ * THE ONE IMAGE THAT MAY BE CROPPED, AND WHY THIS STILL COVERS IT
+ *
+ * The artist's portrait fills its slot and is cropped to it, from the top —
+ * decided 27-09-2026, because a photograph of a person hung on a painting's mat
+ * read as a painting of her. That cropping is CSS inside
+ * `components/ui/PortraitFrame`, never a transformation: the portrait is
+ * delivered whole through the same loader, so everything below applies to it
+ * unchanged.
+ *
+ * What this script adds for it is the other direction: the painting frame's
+ * stylesheet must never acquire the portrait's `object-fit: cover`. The
+ * exception lives in its own component precisely so that it cannot leak into
+ * `ArtworkFrame`, and this is what notices if it does.
+ *
  * WHAT IT CANNOT SEE
  *
  * A cropping transformation that is already inside a **stored** `image_ref`.
@@ -29,6 +43,7 @@
  * missing or does not export what this expects, which means it moved and this
  * script needs to move with it.
  */
+import { readFileSync } from 'node:fs';
 import { transformationFor } from '../lib/image-loader.js';
 import imageLoader from '../lib/image-loader.js';
 
@@ -136,11 +151,27 @@ const foreignOk = imageLoader({ src: foreign, width: 640 }) === foreign;
 console.log('  ' + 'an unrecognised host'.padEnd(28) + (foreignOk ? 'passed through' : 'REFUSED'));
 if (!foreignOk) failures.push({ width: 640, url: foreign, foreign: true });
 
+/*
+  The painting frame never fills. Comments are stripped first, because the
+  stylesheet's own comments name the declaration they forbid.
+*/
+const FRAME_STYLES = new URL('../components/ui/ArtworkFrame.module.css', import.meta.url);
+const frameCss = readFileSync(FRAME_STYLES, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const frameFills = /object-fit\s*:\s*cover/.test(frameCss);
+
+console.log(
+  '  ' + 'ArtworkFrame stylesheet'.padEnd(28) + (frameFills ? 'FILLS — object-fit: cover' : 'fits, never fills')
+);
+console.log('  ' + 'the artist\'s portrait'.padEnd(28) + 'cropped by CSS in PortraitFrame, delivered whole');
+if (frameFills) failures.push({ frame: true, url: 'components/ui/ArtworkFrame.module.css' });
+
 if (failures.length > 0) {
   console.error('\n  ' + failures.length + ' variant(s) break the never-crop rule:\n');
 
   for (const failure of failures) {
-    const reason = failure.local
+    const reason = failure.frame
+      ? 'the painting frame fills its box — that belongs to PortraitFrame and nothing else'
+      : failure.local
       ? 'a local file is no longer going to the built-in optimiser'
       : failure.foreign
         ? 'an unrecognised reference was rewritten instead of passed through'
@@ -152,7 +183,7 @@ if (failures.length > 0) {
               ? 'does not use ' + REQUIRED_MODE
               : 'does not bind the requested width';
 
-    console.error('    w_' + failure.width + ' — ' + reason);
+    console.error('    ' + (failure.frame ? 'frame' : 'w_' + failure.width) + ' — ' + reason);
     console.error('      ' + failure.url);
   }
 

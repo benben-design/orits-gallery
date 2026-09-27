@@ -19,7 +19,9 @@ drives most of the non-obvious rules in this repo.
 2. **Nothing outside `lib/data` imports `lib/data/artworks.js`.** Pages and
    components go through `lib/data/works-repository.js`. → data-layer.md
 3. **Never crop a painting.** Mixed aspect ratios are the norm here, not an
-   edge case. Fit inside a fixed container; never fill it. → images.md
+   edge case. Fit inside a fixed container; never fill it. The artist's own
+   portrait is the one exception — it is not a work — and it has its own
+   component so the exception cannot reach a painting. → images.md
 4. **Status is not a boolean, and it is not visibility.**
    `available | reserved | sold | not-for-sale`, plus the channel it sold
    through — and separately a publication timestamp, where empty means a draft.
@@ -120,8 +122,8 @@ Admin, Hebrew only, outside the locale structure, never indexed:
 `/admin/login`, `/admin`, `/admin/works/new`, `/admin/works/[id]`,
 `/admin/orders`, `/admin/orders/[id]`, `/admin/settings`.
 
-All of the above exist as routes except **`/admin/settings`**, which has not been
-built — nothing has needed a setting yet. `/admin` is the dashboard itself, not a
+All of the above exist as routes. `/admin/settings` was the last, built on
+27-09-2026 over migration 011. `/admin` is the dashboard itself, not a
 redirect to one.
 
 ## Homepage section order (locked)
@@ -168,9 +170,8 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Design tokens, global styles, the two faces via `next/font` | Done |
 | The 16 painting images in `public/paintings/` | Done |
 | Both root layouts, public shell, admin shell | Done |
-| Every route in the locked map above | Done — as stubs, except the homepage |
+| Every route in the locked map above | Done. The four legal pages are still stubs; About and contact are built from the site settings |
 | The four homepage sections + UI primitives | Done |
-| `/admin/settings` | Not built |
 | Gallery | Built — the full catalogue, filtered by category through the URL. **Pagination deliberately not built** at sixteen works |
 | Deleting a painting | Built — from the works list, behind a confirmation that asks a **different question** of a draft and of a published work, and offers taking it off the site instead of breaking a permanent address. One click never deletes. A work on an order cannot be deleted at all |
 | Finding a painting in the admin | Built — `/admin` **is** the works list: every work with its publication state, sale status and sale channel, drafts sorted first, each row opening its edit page. It reads `getWorksForAdmin`, the admin-scoped list added for it |
@@ -186,7 +187,8 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | The admin's orders | **Built.** `/admin/orders` is every order newest first, and **the only notification the artist gets that anything sold** — nothing emails her. It surfaces two things no schema can answer: orders pending over an hour, which may be a buyer who paid and closed the window (check the Hyp console), and orders carrying an **owed refund**, which is money to give back by hand. `/admin/orders/[id]` carries the buyer, the paintings, the delivery, the timeline and the actions — offering only transitions the schema permits, with the repository re-checking each in SQL. Cancelling or refunding returns the paintings to **draft** with the channel cleared, so nothing silently re-lists. It surfaces **all three** reconciliation jobs no schema can do: stale pending orders, owed refunds, and dispatches nobody has confirmed as received — the last after seven days, because the 14-day window is counted from receipt and cannot be computed until somebody marks it |
 | Order logic after payment | **Built, and proven against simulated returns rather than against Hyp — there is no account yet.** Both return routes call VERIFY first and do nothing before it answers; a forged, declined, unreadable or unverifiable return changes nothing anywhere, and missing credentials can never read as success. A verified success seizes every painting by one conditional write (`status = 'available'`, the row count deciding), all-or-nothing, then marks the order paid, then clears the cart — idempotently, so a refresh writes nothing twice. If the painting went to somebody else in between, the charge is voided if it can be and flagged `refund_due_at` if it cannot, and the buyer is told plainly. `/[locale]/order/[id]` is the confirmation. Still missing: the admin's orders pages. See deployment.md for exactly what remains unproven |
 | Sitemap, OG images, hreflang tags | **Built for the artwork page**, which carries its title, description, canonical, both alternates and the painting as its share image. `app/sitemap.js` covers every **built** public page in both languages plus one entry per painting per language, published only — the stubs are kept out by `scripts/check-sitemap.mjs` rather than by memory. **Still missing:** hreflang on the other public pages, and structured data anywhere |
-| Database schema | Written — **ten** migrations in `database/migrations/`, run by hand in numeric order against both databases. 010 is the most recent: `refund_due_at`, for a charge that could not be voided |
+| Database schema | Written — **eleven** migrations in `database/migrations/`, run by hand in numeric order against both databases. 011 is the most recent: `site_settings`, the one-row table `/admin/settings` will edit. Nothing reads it yet |
+| `/admin/settings` | **Built, and the public site reads it.** One form over migration 011's single row: the About text in both languages (she writes the Hebrew, the English arrives through the work form's own translate-and-approve flow and blocks saving until approved), email, phone, WhatsApp number, Instagram and Facebook links, the flat shipping rate in shekels, a self-pickup switch, and her portrait, uploaded into its own `orit-site` folder. Every database rule is checked first and explained in Hebrew; a cleared field saves as empty, and **an empty field renders nothing anywhere on the site**. The footer, the WhatsApp button, the story section, the About and contact pages and checkout all read it; nothing about them is hardcoded any more |
 | Local seed data | `npm run seed:local` fills a local database from `lib/data/artworks.js` |
 | Database connection module | `lib/db.js`, imported by the repository and by nothing else |
 | Reading painting data from Postgres | **Done.** Every page reads the database through the repository; `lib/data/artworks.js` is the seed fixture |
@@ -199,7 +201,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | Not started |
 
-**Twelve client components exist, and four of them are the cart.** The tenth is the
+**Thirteen client components exist, and four of them are the cart.** The tenth is the
 checkout form, which is one for the reason the admin's two forms are: a rejected
 submission has to come back with its errors *and* the typed values intact,
 without either travelling through a URL — an address lost to one bad postal
@@ -207,6 +209,8 @@ code, one field from paying, is a purchase abandoned. **The twelfth is the
 floating WhatsApp button**, and it is one for a reason worth knowing: it is
 rendered by the public layout, and a layout cannot know which page it wraps —
 so being absent from checkout has to be decided where the path is known.
+**The thirteenth is the admin's settings form**, a client component for the
+same reason as the other two admin forms.
 
 The other six are the header's primary navigation — client only to mark the
 current page — the language switcher, the hero's studio loop, the admin's login
@@ -287,9 +291,9 @@ the argument and the caution. **And it has not been through her**, so it is
 real copy in the sense that it no longer announces itself as a stand-in, not in
 the sense that anybody whose shop it is has approved it.
 
-No photograph of the artist has been supplied. `StorySection` renders a labelled
-empty frame at the right proportions rather than a stock portrait or a stand-in
-face.
+No photograph of the artist has been supplied yet. It is a site setting now,
+uploaded at `/admin/settings`, and until there is one the story section and the
+About page show no frame at all rather than a labelled empty one.
 
 One placeholder has no home in the database. **Medium is a closed set of two
 keys there** — `oil-on-canvas` and `pastel-on-paper`, translated in the

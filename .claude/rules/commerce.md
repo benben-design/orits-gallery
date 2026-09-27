@@ -530,13 +530,33 @@ maintain for a country four hours long, and it would be the artist keeping it
 current.
 
 **The fee charged is stored on the order and never recomputed.** The rate lives
-in exactly one place in code — `lib/delivery.js` — and it is expected to move to
-`/admin/settings`. The day it changes, anything that recalculated an old order's
+in exactly one place — `site_settings.shipping_fee_agorot`, edited by the artist
+at `/admin/settings` — beside `self_pickup_offered`, which decides whether
+pickup is on offer at all. The day it changes, anything that recalculated an old order's
 delivery cost from the current rate would rewrite what that buyer was charged,
 silently, in a record that has to read the same in three years in front of an
 accountant. That is the rule `order_lines.price_agorot` already follows for the
 paintings, applied to the other line on the invoice. Do not scatter the rate, and
 do not derive an old order's delivery cost from it.
+
+**A buyer is never charged an amount they were not shown (decided 27-09-2026).**
+Once the rate is an editable setting (migration 011), it can change between the
+checkout page rendering and the buyer submitting it — and `createPendingOrder`
+re-prices at submit, which is correct but would charge the new fee. So when the
+fee re-priced at submit differs from the one on the page, **checkout does not
+proceed to payment**: it shows the updated total with a message saying why and
+lets the buyer confirm again. **Built**, and it compares the **whole total**
+rather than only the fee, because a painting's price edited while the page is
+open is the same failure by another route. The form sends the total on screen;
+`createPendingOrder` compares it with the total it has just computed and, on any
+difference, rolls back before an order exists or Hyp is asked for anything. The
+figure from the browser is only ever compared — what is charged is always
+computed from the database.
+
+**Switching pickup off narrows what is offered, never what is stored.** The
+checkout stops drawing the option and refuses a submitted pickup at validation
+with a sentence; `orders.delivery_method` still accepts both, because an order
+placed for pickup last month is still a pickup order.
 
 **A pickup order has no address** — not an empty one, and not the studio's own
 address typed into the buyer's field, which is what a required column invites.

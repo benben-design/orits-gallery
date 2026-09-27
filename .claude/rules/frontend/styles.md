@@ -60,6 +60,9 @@ Defined in `app/tokens.css`. One light theme; no dark mode, no `data-theme`.
    Nothing else. `--text-muted` there is 4.46:1 and is forbidden.
 3. **A painting is never cropped.** Fixed container, painting fitted inside at
    its own ratio, centred. `object-fit: cover` on a work is a bug. See images.md.
+   The artist's portrait is the one still image that fills and crops, in
+   `PortraitFrame` — never copy that into `ArtworkFrame`; `check:crop` fails if
+   anyone does.
 
 `npm run check:contrast` enforces 1 and 2 — every permitted pairing must clear
 AA, and the forbidden ones must keep failing. Run it after touching a colour.

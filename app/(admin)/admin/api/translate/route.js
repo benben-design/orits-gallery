@@ -27,7 +27,7 @@ import {
  * Cross-site abuse is covered separately by the cookie's `sameSite: lax`: a
  * POST from another origin arrives without the session and is refused here.
  *
- * Request:  `{ "text": "<hebrew>", "kind": "title" | "description" }`
+ * Request:  `{ "text": "<hebrew>", "kind": "title" | "description" | "about" }`
  * Success:  `{ "ok": true, "text": "<english>" }`
  * Failure:  `{ "ok": false, "error": "<code>" }`
  *

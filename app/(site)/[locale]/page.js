@@ -3,6 +3,7 @@ import WorksGrid from '@/components/home/WorksGrid';
 import PromisesRow from '@/components/home/PromisesRow';
 import StorySection from '@/components/home/StorySection';
 import { getDictionary } from '@/lib/i18n/dictionaries';
+import { getSiteSettings } from '@/lib/data/settings-repository';
 import { getRecentWorks } from '@/lib/data/works-repository';
 
 /**
@@ -47,13 +48,14 @@ export default async function HomePage({ params }) {
   const dictionary = await getDictionary(locale);
 
   const works = await getRecentWorks(GRID_SIZE);
+  const { portrait } = await getSiteSettings();
 
   return (
     <>
       <Hero locale={locale} dictionary={dictionary} />
       <WorksGrid works={works} locale={locale} dictionary={dictionary} />
       <PromisesRow dictionary={dictionary} />
-      <StorySection locale={locale} dictionary={dictionary} />
+      <StorySection locale={locale} dictionary={dictionary} portrait={portrait} />
     </>
   );
 }
