@@ -3,7 +3,7 @@
 PostgreSQL, and **there are two databases now.** Development runs against a
 **local Postgres**, created by hand in pgAdmin and called `art_studio`.
 Production is a **Neon project named "Orit's gallery"** — region US East
-(Ohio), PostgreSQL 18 — carrying migrations 001 through 010 and both admin
+(Ohio), PostgreSQL 18 — carrying migrations 001 through 012 (011 and 012 since 28-09-2026) and both admin
 accounts as of 12-09-2026.
 
 The schema is plain SQL in `database/migrations/`, and **the application reads

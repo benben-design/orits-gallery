@@ -133,7 +133,7 @@ starting with these exclusions.
 
 **Connected, as of 12-09-2026.** The production database is a Neon project
 named **"Orit's gallery"**, region **US East (Ohio)**, **PostgreSQL 18**. It
-carries migrations **001 through 010**, the catalogue, and **both admin
+carries migrations **001 through 012** (011 and 012 since 28-09-2026), the catalogue, and **both admin
 accounts**. Development is unchanged and stays on the local Postgres.
 
 **That is not the same as being deployed.** `DATABASE_URL` is set on no host,
@@ -459,8 +459,12 @@ Beyond a green build, these are launch blockers and are easy to forget:
   privacy, accessibility. See commerce.md.
 - **A custom domain**, not the host's own preview URL.
 - **Both languages walked end to end**, including checkout, in right-to-left.
-- **Migration 012 applied to Neon — and to the local database — before the
-  sign-in throttle change deploys or runs.** Unlike 011 this one **does not
+- ~~**Migration 012 applied to Neon — and to the local database — before the
+  sign-in throttle change deploys or runs.**~~ **Done on 28-09-2026, on both**,
+  before the merge that ships the code, and proven through
+  `lib/auth/login-throttle.js` on each: all three counters write, a success
+  clears them, and the constraints and indexes match. Kept here for its reason,
+  which applies to any future database: Unlike 011 this one **does not
   fail the build**: nothing prerendered touches `admin_login_attempts`. It fails
   at runtime, on the first wrong password, because the throttle now writes a row
   with a null `ip` and 006's `not null` refuses it — so a missing 012 surfaces

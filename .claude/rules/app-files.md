@@ -283,7 +283,7 @@ minor units, the uuid key, the publication filter, medium — is in data-layer.m
 and those reconciliations are live code now rather than a plan.
 
 Development runs against a local Postgres. **Neon carries the production schema
-now** — 001 through 010, the catalogue and both admin accounts, since
+now** — 001 through 012 (011 and 012 since 28-09-2026), the catalogue and both admin accounts, since
 12-09-2026 — but nothing is deployed against it, so `DATABASE_URL` is set on no
 host. See database.md.
 
