@@ -310,13 +310,18 @@ order unstorable.
 The counter behind the sign-in rate limit. Added by migration 006, which is the
 policy that 004 deferred.
 
-`id`, `email_lower` (nullable), `ip`, `failures`, `blocked_until`,
-`first_failure_at`, `last_failure_at`.
+`id`, `email_lower` (nullable), `ip` (nullable since 012), `failures`,
+`blocked_until`, `first_failure_at`, `last_failure_at`.
 
-- **A row is one counter, and which counter depends on `email_lower`.** Set, it
-  counts one address from one source — the tight limit. Null, it counts one
-  source across every address it has tried — the looser ceiling. Both are
-  checked on every attempt and the strictest block wins.
+- **A row is one counter, and which counter depends on which half is null.**
+  Both set: one address from one source — the tight limit. `email_lower` null:
+  one source across every address it has tried — the looser ceiling. **`ip`
+  null (migration 012): one address across every source** — the ceiling that
+  keeps counting when the source is rotated or forged, 20 in 60 minutes. Both
+  null is refused (`admin_login_attempts_keyed`). All three are checked on every
+  attempt and the strictest block wins; a successful sign-in clears all three
+  for the address it proved. `admin_login_attempts_address` is its partial unique
+  index, for the same reason as the other two.
 - **It is keyed on the pair, not on either half.** Address alone would let any
   stranger lock the artist out of her own account; source alone is defeated by
   rotating addresses.

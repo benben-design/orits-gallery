@@ -115,9 +115,10 @@ export async function signIn(previousState, formData) {
     return FAILED;
   }
 
-  // Proving the password clears both counters, so a person who mistyped four
-  // times and then got it right starts from zero rather than one attempt away
-  // from locking themselves out.
+  // Proving the password clears all three counters — this address from this
+  // source, this source, and this address from everywhere — so a person who
+  // mistyped four times and then got it right starts from zero rather than one
+  // attempt away from locking themselves out.
   await clearFailedLogins(email, ip);
 
   await startAdminSession(account.id);

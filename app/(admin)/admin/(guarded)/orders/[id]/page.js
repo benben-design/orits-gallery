@@ -201,9 +201,23 @@ export default async function AdminOrderPage({ params, searchParams }) {
             )}
           </dd>
 
+          {/*
+            **A paid order with no reference is not the same as a pending one
+            with none.** Hyp can sign a successful charge without naming the
+            transaction, and the return settles it anyway — the buyer paid the
+            right amount for the right order. What is missing is the link to
+            Hyp's own record, which she needs for any refund, so it is said in
+            words rather than as a quiet "none".
+          */}
           <dt>{copy.referenceLabel}</dt>
           <dd>
-            <bdi dir="ltr">{order.paymentReference ?? copy.referenceNone}</bdi>
+            {order.paymentReference ? (
+              <bdi dir="ltr">{order.paymentReference}</bdi>
+            ) : order.dates.paid ? (
+              <span className={styles.referenceMissing}>{copy.referenceMissing}</span>
+            ) : (
+              copy.referenceNone
+            )}
           </dd>
         </dl>
 

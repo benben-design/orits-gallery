@@ -356,6 +356,7 @@
       "totalLabel": "סך הכול",
       "referenceLabel": "אסמכתת תשלום",
       "referenceNone": "אין",
+      "referenceMissing": "Hyp לא מסרה מספר עסקה לתשלום הזה. התשלום אומת, אבל כדי לקשר אותו לעסקה צריך לחפש אותו במסוף של Hyp לפי מספר ההזמנה שלמעלה — ובלעדיו אי אפשר לבצע החזר.",
       "timelineTitle": "מה קרה עד כה",
       "timelineCreated": "ההזמנה נוצרה",
       "timelinePaid": "התשלום התקבל",

@@ -252,6 +252,13 @@ test terminals start with `00100`, and the failure that rail prevents — a real
 card charged during a test — is not one you can recover from by noticing it
 afterwards.
 
+**The rail runs the other way in production**: a test terminal there is refused
+too, because a buyer on the live site would pay nothing and be sent a painting.
+The one exception is `HYP_ALLOW_TEST_TERMINAL`, **production only, normally
+absent**, which lifts it when set to exactly `true` — for the pre-launch
+walk-through on the real domain and nothing else. It comes off before launch;
+deployment.md has it on the checklist beside the override.
+
 Development runs against Hyp's documented **test** terminal; the production
 terminal is provisioned separately, so the two environments differ by these
 three values and by nothing in the code. Two further settings are not variables

@@ -356,6 +356,7 @@
       "totalLabel": "Total",
       "referenceLabel": "Payment reference",
       "referenceNone": "None",
+      "referenceMissing": "Hyp did not send a transaction number for this payment. The payment was verified, but to match it to its transaction, look it up in the Hyp console by the order number above — a refund cannot be made without it.",
       "timelineTitle": "What has happened",
       "timelineCreated": "Order created",
       "timelinePaid": "Payment received",

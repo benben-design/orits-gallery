@@ -135,6 +135,25 @@
     not either alone.** Address alone lets a stranger lock the artist out of her
     own account by hammering it; source alone is defeated by rotating. A looser
     ceiling per source, across all addresses, bounds working through a list.
+  - **And one counter on the address alone, across every source — a trade
+    taken deliberately on 28-09-2026.** The pair key has a hole: every rotated
+    source is a fresh pair, so someone who can vary the source (rotating
+    machines, or forging `x-forwarded-for` wherever it is not rewritten) never
+    reaches the pair threshold, and nothing counted per address at all. The
+    comment in `lib/auth/client-ip.js` that claimed otherwise was wrong.
+    Migration 012 adds the counter: **20 failures on one address within 60
+    minutes block that address from every source for 15 minutes**, with the
+    same message as every other block.
+    **What it costs, accepted knowingly: a stranger who knows the artist's
+    address can keep her out of her own admin fifteen minutes at a time**, for
+    as long as they keep sending twenty wrong guesses an hour. That is precisely
+    what the pair key was designed to avoid, and it is accepted because the
+    alternative is an unbounded guess rate against her account. The block is
+    flat, never laddered past fifteen minutes, and **a successful sign-in
+    clears it**, from whichever source it comes. Only the correct password can
+    do that, so it hands an attacker nothing — whoever can clear it can already
+    sign in — and it stops one typo of hers, just after an attack, from blocking
+    her for another fifteen minutes.
   - **Failures are counted against the address as typed, whether or not an
     account exists.** Throttling only real accounts would make the site behave
     differently for an address that exists, which is precisely what the shared
@@ -217,9 +236,15 @@ they are already inside it.
   signal that exists. api.md carries the full amendment.
 
   What survives unchanged is the half that matters: **nothing the browser hands
-  us is believed.** The redirect's parameters are an input to VERIFY and never a
-  statement of what happened — not the amount, not the status, not which order
-  it was. A redirect that fails verification writes nothing at all, and an order
+  us is believed on its own say-so.** Before VERIFY answers, the redirect's
+  parameters are an input to VERIFY and nothing else — not the amount, not the
+  status, not which order it was. After VERIFY confirms Hyp's signature over
+  them, they are Hyp's signed statement and are read as one: the payment's
+  `CCode`, the `Order` and `Amount` it was for, and the `Id` that names it
+  (amended 28-09-2026; VERIFY itself answers `CCode` alone). A charge that does
+  not match its order at exactly its total is voided, never settled. A return
+  carrying one of our own keys, or any key twice, is refused before VERIFY is
+  asked. A redirect that fails verification writes nothing at all, and an order
   with no verified return stays `pending` until a human reconciles it against
   the Hyp console. An order wrongly marked paid is a painting given away; an
   order left pending is a phone call.
