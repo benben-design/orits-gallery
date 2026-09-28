@@ -289,6 +289,14 @@
    * inside them is. See components/ui/ArtworkFrame.
    * ================================================================ */
   --frame-ratio: 4 / 5;
+
+  /*
+    The artist's portrait slot. The same value as the frame today, and a token
+    of its own on purpose: the portrait fills its slot and is cropped to it,
+    where a painting is fitted inside its frame and never is — so changing one
+    must not quietly reshape the other. See components/ui/PortraitFrame.
+  */
+  --portrait-ratio: 4 / 5;
   --frame-inset: clamp(var(--space-4), 2.2vw, var(--space-7));
   --frame-grid-min: 15rem;
 

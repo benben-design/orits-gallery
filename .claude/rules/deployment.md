@@ -133,7 +133,7 @@ starting with these exclusions.
 
 **Connected, as of 12-09-2026.** The production database is a Neon project
 named **"Orit's gallery"**, region **US East (Ohio)**, **PostgreSQL 18**. It
-carries migrations **001 through 010**, the catalogue, and **both admin
+carries migrations **001 through 012** (011 and 012 since 28-09-2026), the catalogue, and **both admin
 accounts**. Development is unchanged and stays on the local Postgres.
 
 **That is not the same as being deployed.** `DATABASE_URL` is set on no host,
@@ -251,26 +251,76 @@ makes every test transaction fail with nothing to explain why. See api.md.
 **There is no Hyp account yet**, and there will not be one until the site is
 otherwise ready to sell — registration and the second terminal are the last step,
 not the first. The whole return path is nonetheless built and exercised, against
-a local stand-in that answers the two calls the application makes. This section
-is the honest ledger of which half is which, so nobody has to guess later.
+a local stand-in that answers the calls the application makes. This section is
+the honest ledger of which half is which, so nobody has to guess later.
+
+**The first stand-in flattered the code, and that is worth remembering.** It
+answered VERIFY with a transaction id as well as `CCode`; the real API answers
+`CCode` and nothing else. Every test passed, and against a real terminal every
+order would have been settled with no reference, every void would have been
+impossible, and the unique index on `payment_reference` would have protected
+nothing. It was rebuilt on 28-09-2026 to model the documentation and no more:
+VERIFY answers `CCode` alone, a repeated key keeps its **last** value, the
+signature is a real HMAC over the redirect's fields, and `CancelTrans` answers
+in its documented shape. It is disposable and lives outside the repository.
+**A stand-in is only worth the documentation it models** — build the next one
+from the docs, not from what the code expects.
 
 ### Proven, without the provider
 
-Against simulated returns, end to end through the real routes, the real
-transaction and the real database:
+Against the rebuilt stand-in, end to end through the real routes, the real
+transaction and the local database, on 28-09-2026. Each of these **writes
+nothing and sells nothing**, and VERIFY is never asked about the first five:
 
-- A **forged** return claiming success changes nothing — no order moves, no
-  painting is sold, no cookie is cleared.
-- **Missing credentials never read as success.** With no `HYP_*` at all — the
-  project's actual state today — every return takes the "not confirmed" branch.
-- A **declined** `CCode`, an **HTML** body, an empty body, a body with no `CCode`
-  and a 500 carrying `CCode=0` are each refused, and each changes nothing.
-- A **verified success** seizes the paintings conditionally, marks the order paid
-  with its date and reference, and clears the cart — in that order.
-- A **refreshed** return URL writes nothing a second time.
+- a return with `What=SIGN` appended;
+- a genuinely signed return with a second `CCode=0` appended;
+- a return carrying `Masof`, `KEY`, or `passp` in lower case;
+- an empty return;
+- a **forged** return, and a signed return whose `Amount` was edited — VERIFY
+  is asked, and refuses;
+- a **genuinely signed decline** (`CCode` 33) arriving on the error URL —
+  VERIFY passes, and nothing changes because it is not a charge.
+
+And these do what they must:
+
+- A signed return whose **`Amount` is below the order total** voids the charge
+  with `CancelTrans` using the redirect's `Id`, sent **without `KEY`**; the order
+  becomes `cancelled` with the reference and `paid_at` kept, **the painting stays
+  available**, and the cart is kept. Refreshed, it writes nothing and does not
+  void again. With the void failing, the order is `paid` with `refund_due_at`.
+- A verified charge naming **no order we have** is voided, and nothing is
+  written.
+- A **second genuine charge** — same order, same total, a different `Id` —
+  against an order already paid is voided with that `Id`, and the order and its
+  painting are left exactly as they were: no `refund_due_at`, the first
+  reference kept. The same against a **cancelled** order is voided the same way.
+  An `Id` equal to the stored reference is a refresh and does nothing.
+- A return with a **`;`** in it — raw, or inside a value — is refused without
+  VERIFY being asked.
+- A **genuine success** marks the order paid with `payment_reference` set to the
+  redirect's `Id`, sells the painting through this site, and clears the cart. A
+  **refresh** writes nothing, and the same success arriving on the error URL
+  writes nothing either.
 - The **race**: a painting sold between order and return triggers the losing
-  branch, attempts the void, and records either `cancelled` or a `refund_due_at`
-  — with the other buyer's sale untouched.
+  branch, calls `CancelTrans` with the redirect's `Id`, and records `cancelled`,
+  or `refund_due_at` when the void fails — with the other sale untouched.
+- A verified, matching success **with no `Id`** is settled with a null
+  reference, logged at full volume, and the admin order page says the reference
+  is missing; its refresh writes nothing.
+- **Every response on both routes is `Cache-Control: no-store`**, all of the
+  above included.
+- **Missing credentials never read as success.** With no `HYP_*` at all —
+  the project's actual state today — every return takes the "not confirmed"
+  branch.
+- A **declined** VERIFY `CCode`, an **HTML** body, an empty body, a body with no
+  `CCode` or two of them, a 500 carrying `CCode=0`, and a SIGN-shaped answer
+  (`action`, `Masof`, `signature`) are each refused — as pure functions, with
+  the gate and the amount parser, fifty-odd cases in all.
+- **The amount we send parses back to the same agorot**, over two thousand
+  amounts, with no floating point either way.
+- **In production a test terminal is refused** before anything is fetched,
+  unless `HYP_ALLOW_TEST_TERMINAL` is exactly `true`; `TRUE` and `1` do not
+  count. `HYP_ENDPOINT_OVERRIDE` is ignored there too.
 - The redirect's parameters reach VERIFY **in their original order**, with our
   credentials in front of them.
 
@@ -278,19 +328,70 @@ transaction and the real database:
 
 - **That Hyp accepts the VERIFY request as assembled.** The shape follows the
   documentation — our five parameters, then the return's query verbatim — but no
-  real terminal has ever answered it. If Hyp's return carries its own `action`,
-  `Masof`, `KEY`, `PassP` or `What`, the pairing produces a duplicate key and has
-  to be revisited. The documented return fields contain none of them.
-- **The cancellation call.** `CancelTrans` fires on the losing branch and its
-  handling is proven, but **the parameter name carrying the transaction id is
-  unconfirmed** — it is sent as `TransId`. The docblock on `cancelTransaction` in
-  `lib/payments/hyp.js` is the flag. If it is wrong, the void fails and the order
-  correctly falls back to `refund_due_at`: the failure mode is a manual refund,
-  never money silently kept.
+  real terminal has ever answered it. If a real return carries its own
+  `action`, `Masof`, `KEY`, `PassP` or `What`, or any key twice, **every
+  payment is now refused before VERIFY** and the order stays pending. The
+  pre-launch transaction will show it; that is the safe way for this to be
+  wrong. The documented return fields contain none of them.
+- **The exact form of the redirect's `Amount`.** The documented example sends
+  `10`; we send `1040.00`. Both parse. If a real terminal echoes anything else
+  — a thousands separator, three decimals — every payment is treated as a
+  mismatch and voided. Safe for the buyer's money, fatal for sales, and visible
+  on the first transaction.
+- **Whether a real success always carries `Id`.** The documentation shows it on
+  every redirect. Without one a payment settles with no reference and nothing
+  can void it automatically.
+- **`CancelTrans` as sent.** Since 28-09-2026 it goes in the documented shape —
+  `action`, `Masof`, `PassP`, `TransId`, and **no `KEY`** — where it previously
+  sent `KEY` too. The field name is no longer a question (the documentation
+  names `TransId`, carrying the redirect's `Id`), but **no real terminal has
+  ever answered it, with or without `KEY`.** If it fails, the order correctly
+  falls back to `refund_due_at`: the failure mode is a manual refund, never
+  money silently kept.
+- **That Hyp checks its signature over decoded values, not over raw bytes.**
+  Measured on 28-09-2026: **Next rebuilds a request's query before any route
+  handler sees it**, with form encoding — `request.url` and `request.nextUrl`
+  alike. Hyp's own documented `Fild1=Jenny%20Parkington` reaches our handler as
+  `Jenny+Parkington`; `~!()` arrive percent-encoded and a raw `;` as `%3B`. Keys,
+  order and decoded values survive; the bytes do not, and there is no way for a
+  route handler to recover them. So the replay to VERIFY is faithful in content
+  and not in encoding. If Hyp verifies decoded values — the ordinary way for a
+  server to do it, and what the stand-in does — this is invisible. If it
+  verifies the raw text, **every payment fails VERIFY and stays pending**: the
+  safe way to be wrong, and the first real transaction shows it, most visibly
+  for a buyer whose name has a space in it. Netlify's adapter may re-encode
+  again on top; that is unmeasured.
+- **Whether Hyp signs decline redirects at all**, and what it sends to the
+  error URL. A signed decline is handled; an unsigned one fails VERIFY. Both
+  write nothing.
+
+### Known residuals: refunds that exist only in the logs
+
+Two paths end with money owed and **no row anywhere that says so**. Both were
+chosen knowingly on 28-09-2026, and both log the same line, so one search finds
+them:
+
+    [payments] REFUND OWED — NOT RECORDED ON ANY ORDER
+
+1. **A failed void of a duplicate charge.** A buyer who pays twice for one
+   order, or pays for an order the artist has since cancelled: the second charge
+   is voided and the order is deliberately left alone, because its first
+   payment bought the painting and a `refund_due_at` would tell a buyer who owns
+   it that it is unavailable. If that void fails, the log line — naming the
+   transaction's `Id` — is the whole record.
+2. **A refresh of that same return.** Nothing remembers which duplicates were
+   voided, so a refresh sends `CancelTrans` again. It moves no money, but Hyp
+   most likely answers `920` for a transaction already voided, which logs the
+   same line for money that has already gone back. That line carries a note
+   saying so, and the check is the transaction in the Hyp console before
+   refunding anything.
+
+The alternative — a table of voided transactions, migration 012, and an admin
+surface — was considered and not built: it removes both residuals and was more
+than a buyer paying twice and then refreshing warranted. Build it if the search
+below ever finds something that is not a refresh.
 - **`zikoyAPI`**, the refund for any day but the day of the charge, is not built
   at all. An owed refund is made by hand.
-- **Which field carries the transaction id on the way back.** The reference is
-  read from the VERIFY response as `Id`, falling back to `TransId`.
 
 ### What has to be done on the terminal, at that point
 
@@ -317,9 +418,18 @@ transaction and the real database:
    `lib/payments/hyp.js` exists solely to make the above provable before the
    account existed. It is ignored in production, so it is not a hole — but it
    stops earning its keep the day there is a test terminal to point at.
-5. **Walk one real transaction end to end**, in both languages, including closing
+5. **Set `HYP_ALLOW_TEST_TERMINAL=true` for the pre-launch walk-through only, and
+   remove it before launch.** Production refuses to sign against a test terminal
+   without it, because a buyer on the live site would pay nothing and be sent a
+   painting. It exists so step 6 can be run on the real domain against the test
+   terminal, and it comes off the Netlify site the moment that is done — at the
+   same time as the override above, and before the production terminal's
+   credentials go in.
+6. **Walk one real transaction end to end**, in both languages, including closing
    the window mid-payment. That branch leaves an order pending with money taken
-   and only the Hyp console can see it.
+   and only the Hyp console can see it. **Also send one return with the `Amount`
+   edited on the payment page**, with the signature still off, and confirm it is
+   voided rather than settled — it is the attack the matching exists to stop.
 
 ## Before going live
 
@@ -349,6 +459,35 @@ Beyond a green build, these are launch blockers and are easy to forget:
   privacy, accessibility. See commerce.md.
 - **A custom domain**, not the host's own preview URL.
 - **Both languages walked end to end**, including checkout, in right-to-left.
+- ~~**Migration 012 applied to Neon — and to the local database — before the
+  sign-in throttle change deploys or runs.**~~ **Done on 28-09-2026, on both**,
+  before the merge that ships the code, and proven through
+  `lib/auth/login-throttle.js` on each: all three counters write, a success
+  clears them, and the constraints and indexes match. Kept here for its reason,
+  which applies to any future database: Unlike 011 this one **does not
+  fail the build**: nothing prerendered touches `admin_login_attempts`. It fails
+  at runtime, on the first wrong password, because the throttle now writes a row
+  with a null `ip` and 006's `not null` refuses it — so a missing 012 surfaces
+  as the admin's sign-in erroring on a typo, on the live site, with nothing in
+  the build to warn. Apply it first. A correct password still signs in without
+  it, since success writes nothing.
+- **Remove `/admin/api/client-ip` in the session after the merge that ships
+  it.** A temporary diagnostic, signed in only, that reports four
+  client-address headers so the live behaviour can be measured: request it once
+  plainly and once with `x-forwarded-for` and `x-nf-client-connection-ip`
+  forged, record what Netlify did with each in `lib/auth/client-ip.js`'s
+  comment, and delete the route and its rows in app-files.md and api.md.
+- ~~**Migration 011 applied to Neon before this code deploys.**~~ **Done on
+  28-09-2026**, applied from a session and reconciled against the local schema
+  and read back through `getSiteSettings()`. The row on Neon holds only the
+  seeded values — the WhatsApp number, 40 ILS, pickup on — so her About text,
+  email, phone and portrait still have to be entered there. The public layout
+  reads `site_settings` on every page, so a build against a database without it
+  **fails, naming the migration** — verified on 27-09-2026 against a throwaway
+  database carrying 001 through 010, where `next build` stopped with
+  `SiteSettingsMissingError`. That is the safe failure: the previous deploy stays
+  live. The same holds at runtime only for pages rendered per request; a
+  prerendered page whose revalidation fails keeps serving its last good render.
 - **A production database — done.** Neon's "Orit's gallery" carries 001 through
   010 and the catalogue, since 12-09-2026. **The blocker that replaces it is
   `DATABASE_URL` set in the Netlify site**, pointing at the **pooled**
@@ -365,6 +504,20 @@ Beyond a green build, these are launch blockers and are easy to forget:
 - **The paid hosting tier**, from the day the site can take money. See the plan
   at the top of this file: the free tier stops a site rather than billing for
   it, and cannot be topped up while it is off.
+- **A standing habit, from the first sale: after any day with a sale, search
+  Netlify's function logs for this exact phrase**:
+
+      [payments] REFUND OWED — NOT RECORDED ON ANY ORDER
+
+  Each hit is money owed that no order records — see "Known residuals" above.
+  Check the named `Id` in the Hyp console first: a hit carrying the `920` note
+  is most likely a refresh of a charge already voided. The phrase is the
+  constant `UNRECORDED_REFUND` in `lib/payments/handle-return.js`; change one
+  and the other goes with it.
+- **`HYP_ALLOW_TEST_TERMINAL` and `HYP_ENDPOINT_OVERRIDE` absent from the
+  Netlify site**, and the override deleted from `lib/payments/hyp.js`. The first
+  is set only for the pre-launch walk-through on the real domain; see step 5 of
+  the terminal list above.
 - **The production Hyp terminal**, provisioned and its three credentials set in
   the Netlify site — a second terminal under the same business, with its own
   monthly cost. The test terminal cannot take a real payment.

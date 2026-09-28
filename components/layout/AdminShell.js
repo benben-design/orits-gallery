@@ -29,6 +29,8 @@ export default function AdminShell({ dictionary, signedIn, children }) {
         { key: 'works', href: '/admin', label: dictionary.admin.nav.works },
         { key: 'newWork', href: '/admin/works/new', label: dictionary.admin.nav.newWork },
         { key: 'orders', href: '/admin/orders', label: dictionary.admin.nav.orders },
+        /* Last, because it is visited least — but in the bar, not behind a menu. */
+        { key: 'settings', href: '/admin/settings', label: dictionary.admin.nav.settings },
       ]
     : [];
 

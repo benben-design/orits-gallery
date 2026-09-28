@@ -3,7 +3,7 @@
 PostgreSQL, and **there are two databases now.** Development runs against a
 **local Postgres**, created by hand in pgAdmin and called `art_studio`.
 Production is a **Neon project named "Orit's gallery"** — region US East
-(Ohio), PostgreSQL 18 — carrying migrations 001 through 010 and both admin
+(Ohio), PostgreSQL 18 — carrying migrations 001 through 012 (011 and 012 since 28-09-2026) and both admin
 accounts as of 12-09-2026.
 
 The schema is plain SQL in `database/migrations/`, and **the application reads
@@ -158,7 +158,7 @@ address, a default of `self-pickup` silently waives the fee.
 
 - **`delivery_fee_agorot` is what was charged, not what we charge.** Required,
   minor units, written once at checkout and never recomputed. The rate lives in
-  one place in code — `lib/delivery.js`, 40 ILS flat, destined for
+  one place — `site_settings.shipping_fee_agorot` (migration 011), edited at
   `/admin/settings` — and the column exists precisely so that changing it cannot
   rewrite what an old order cost. It is a *component* of `total_agorot`, and
   nothing enforces that arithmetic, for the reason 003 gave about line prices.
@@ -310,13 +310,18 @@ order unstorable.
 The counter behind the sign-in rate limit. Added by migration 006, which is the
 policy that 004 deferred.
 
-`id`, `email_lower` (nullable), `ip`, `failures`, `blocked_until`,
-`first_failure_at`, `last_failure_at`.
+`id`, `email_lower` (nullable), `ip` (nullable since 012), `failures`,
+`blocked_until`, `first_failure_at`, `last_failure_at`.
 
-- **A row is one counter, and which counter depends on `email_lower`.** Set, it
-  counts one address from one source — the tight limit. Null, it counts one
-  source across every address it has tried — the looser ceiling. Both are
-  checked on every attempt and the strictest block wins.
+- **A row is one counter, and which counter depends on which half is null.**
+  Both set: one address from one source — the tight limit. `email_lower` null:
+  one source across every address it has tried — the looser ceiling. **`ip`
+  null (migration 012): one address across every source** — the ceiling that
+  keeps counting when the source is rotated or forged, 20 in 60 minutes. Both
+  null is refused (`admin_login_attempts_keyed`). All three are checked on every
+  attempt and the strictest block wins; a successful sign-in clears all three
+  for the address it proved. `admin_login_attempts_address` is its partial unique
+  index, for the same reason as the other two.
 - **It is keyed on the pair, not on either half.** Address alone would let any
   stranger lock the artist out of her own account; source alone is defeated by
   rotating addresses.
@@ -340,6 +345,40 @@ policy that 004 deferred.
 - `ip` is text rather than `inet`: it arrives from a proxy header, it may be v4
   or v6, and a value that fails to parse must still be countable rather than
   raising mid-login.
+
+### `site_settings` — one row, the studio's own facts
+
+Added by migration 011. The About text (`about_he`, `about_en`), `email`,
+`phone`, `whatsapp_number`, `instagram_url`, `facebook_url`,
+`shipping_fee_agorot`, `self_pickup_offered`, the portrait
+(`portrait_image_ref`, `portrait_pixel_width`, `portrait_pixel_height`) and
+`updated_at`.
+
+- **One row with a typed column per field, never key-value.** The list is closed
+  and small, and as columns the database enforces each one's type. Adding a
+  setting is a migration, which is the right price at this size.
+- **A second row is impossible.** The key is `id boolean primary key default
+  true check (id)` — it has exactly one legal value. **Deleting the row is not
+  prevented**, deliberately: the application never deletes it, and its read must
+  fail loudly and name 011 rather than fall back to defaults.
+- **"Not provided" is `null` and only `null`.** Every text column refuses a
+  value that is blank once trimmed, so a caller has one thing to check.
+- **The About text is both languages or neither**
+  (`site_settings_about_both_languages`). The approval gate is form state, so
+  the database cannot know the English was approved — but it can refuse a
+  Hebrew text with no English at all, which is the half that stops the gate
+  being stepped around.
+- **`whatsapp_number` is the wa.me form** — digits only, country code first, no
+  leading zero — because it becomes a link, not text. `instagram_url` and
+  `facebook_url` must start `https://`, because each becomes an `href` on every
+  public page. Email and phone are unchecked, as everywhere else here.
+- **`shipping_fee_agorot` is what checkout would charge now**, never what an old
+  order was charged — that is `orders.delivery_fee_agorot`, and it is why this
+  one may be edited. Zero is allowed (a promotion). Neither it nor
+  `self_pickup_offered` has a default: a default rate is a price nobody chose.
+- **The portrait is stored the way `work_images` stores a painting**, and is all
+  three columns or none. No alt columns: the alt derives from the artist's name
+  in the locale files.
 
 ## Rules
 

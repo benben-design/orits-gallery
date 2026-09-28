@@ -8,6 +8,7 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
 import { whatsappHref } from '@/lib/contact';
+import { getSiteSettings } from '@/lib/data/settings-repository';
 import { locales, isLocale, getDirection, getLocaleTag } from '@/lib/i18n/config';
 import styles from './layout.module.css';
 
@@ -71,6 +72,19 @@ export default async function SiteLayout({ children, params }) {
   const year = new Date().getFullYear();
 
   /**
+   * The studio's own facts — how to reach her, where she is on social media —
+   * from the one settings row, read once here for the footer and the floating
+   * button.
+   *
+   * **This read is also what stops a broken deploy.** The layout wraps every
+   * prerendered page, so a database without migration 011 fails `next build`
+   * here, with an error naming the migration, and the previous deploy stays
+   * live. It is not cached separately: `revalidatePublicSite()` already clears
+   * the whole tree when a setting is saved.
+   */
+  const settings = await getSiteSettings();
+
+  /**
    * The slices of the dictionary the cart drawer needs, and only those.
    *
    * The drawer is a client component, so whatever it is handed is serialized
@@ -105,7 +119,17 @@ export default async function SiteLayout({ children, params }) {
           <main id="main" className={styles.main}>
             {children}
           </main>
-          <SiteFooter locale={locale} dictionary={dictionary} year={year} />
+          <SiteFooter
+            locale={locale}
+            dictionary={dictionary}
+            year={year}
+            contact={{
+              email: settings.email,
+              phone: settings.phone,
+              instagramUrl: settings.instagramUrl,
+              facebookUrl: settings.facebookUrl,
+            }}
+          />
           {/*
             The way to reach the artist directly, on every public page but
             checkout — which the button decides for itself, because a layout
@@ -113,11 +137,11 @@ export default async function SiteLayout({ children, params }) {
 
             The href is built here so the message is resolved on the server, in
             the language the visitor is reading, and the client component is
-            handed nothing but a string. `whatsappHref` returns null when no
-            number is configured, and then nothing renders at all.
+            handed nothing but a string. `whatsappHref` returns null when the
+            number is empty in the settings, and then nothing renders at all.
           */}
           <WhatsAppButton
-            href={whatsappHref(dictionary.nav.whatsappMessage)}
+            href={whatsappHref(settings.whatsappNumber, dictionary.nav.whatsappMessage)}
             label={dictionary.nav.whatsapp}
             locale={locale}
           />

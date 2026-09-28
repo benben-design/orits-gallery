@@ -1,0 +1,24 @@
+/**
+ * The portrait slot. One proportion at every width, filled edge to edge.
+ *
+ * This is the one place `object-fit: cover` is allowed on the site outside the
+ * hero's studio footage, and it is allowed because the image is the artist, not
+ * a work for sale. See PortraitFrame.js and images.md. Never copy these two
+ * declarations into ArtworkFrame.
+ */
+.slot {
+  position: relative;
+  aspect-ratio: var(--portrait-ratio);
+  overflow: hidden;
+  background-color: var(--surface-sunk);
+}
+
+/*
+  Anchored to the top: a photograph taller than the slot loses its bottom, one
+  wider loses its sides equally, and the face at the top of a portrait survives
+  either way.
+*/
+.photo {
+  object-fit: cover;
+  object-position: top center;
+}

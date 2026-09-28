@@ -137,6 +137,15 @@
   line-height: var(--leading-normal);
 }
 
+/**
+ * The sentence that stands in for a payment reference Hyp never sent. Full ink,
+ * unlike the pickup note: this one is something she has to go and do.
+ */
+.referenceMissing {
+  color: var(--text-primary);
+  line-height: var(--leading-normal);
+}
+
 /* ------------------------------------------------------------------ *
  * The paintings
  * ------------------------------------------------------------------ */

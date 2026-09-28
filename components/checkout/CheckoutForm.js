@@ -55,7 +55,15 @@ const FIELD_ORDER = [
  *   so a second copy of this form cannot drift from the one binding.
  * @param {string} props.locale
  * @param {object} props.dictionary
- * @param {{subtotal: object, methods: Record<string, {deliveryFee: object, total: object}>}} props.amounts
+ * @param {{subtotal: object, methods: Record<string, {deliveryFee: object, total: object, totalAgorot: number}>}} props.amounts
+ *   Only the methods on offer today are in `methods`, so a method switched off
+ *   in the settings is never drawn.
+ *
+ * **The figures can be replaced by the action.** When the submit finds that
+ * the total has changed since the page rendered, or that pickup has been
+ * switched off, it hands back the current figures and the form draws those
+ * instead — the page's own props are what was true when it loaded, and the
+ * action's are what is true now.
  */
 export default function CheckoutForm({ action, locale, dictionary, amounts }) {
   const [state, formAction, isPending] = useActionState(action, null);
@@ -70,11 +78,21 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
     an action completes, and the one thing that must survive a rejected submit is
     the choice that decides which fields exist.
   */
-  const [method, setMethod] = useState('shipping');
+  const [selected, setMethod] = useState('shipping');
+
+  /* The newest figures the form has: the action's, once it has returned any. */
+  const current = state?.amounts ?? amounts;
+
+  /*
+    If the chosen method has gone from the offer — pickup switched off while the
+    page was open — the form falls back to shipping, which is always offered,
+    rather than drawing a total for a method that no longer exists.
+  */
+  const method = current.methods[selected] ? selected : 'shipping';
 
   const copy = dictionary.checkout;
   const errors = state?.errors ?? {};
-  const chosen = amounts.methods[method];
+  const chosen = current.methods[method];
   const wantsAddress = method === 'shipping';
 
   /*
@@ -87,6 +105,9 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
 
   /** What was rejected, in page order, with the wording to point at it. */
   const rejected = FIELD_ORDER.filter((field) => errors[field.name]);
+
+  /** Pickup was switched off in the settings while this page was open. */
+  const deliveryWithdrawn = errors.deliveryMethod === 'deliveryMethodNotOffered';
 
   /**
    * Where the keyboard goes when a submission comes back rejected.
@@ -104,8 +125,11 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
    */
   const summaryRef = useRef(null);
 
+  const changedRef = useRef(null);
+
   useEffect(() => {
     if (state?.error === 'invalid') summaryRef.current?.focus();
+    if (state?.error === 'amountChanged') changedRef.current?.focus();
   }, [state]);
 
   return (
@@ -140,6 +164,24 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         </div>
       ) : null}
 
+      {/*
+        The total changed between the page loading and the buyer pressing pay:
+        the shipping rate, or a painting's price, was edited meanwhile. Nothing
+        was charged and no order was written. The figures below are already the
+        new ones; this says so, and pressing pay again is the confirmation.
+        Focused when it appears, like the error summary, so it is heard before
+        anything else.
+      */}
+      {state?.error === 'amountChanged' ? (
+        <div className={styles.stop} role="alert" tabIndex={-1} ref={changedRef}>
+          <p className={styles.stopLead}>
+            {interpolate(copy.amountChanged, {
+              total: formatPrice(chosen.total, locale),
+            })}
+          </p>
+        </div>
+      ) : null}
+
       {state?.error === 'paymentUnavailable' || state?.error === 'paymentNotConfigured' ? (
         <p className={styles.stop} role="alert">
           {copy.errorPayment}
@@ -168,10 +210,23 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         field may be below the fold. It is the same arrangement the admin's work
         form uses for its unapproved translations, and the same idea as the
         orders list: the block explains, the link locates.
+
+        **A withdrawn delivery option is not a field left empty**, and the
+        summary says so. Pickup switched off while the page was open is
+        something that happened to the buyer rather than something they got
+        wrong, so it leads with `errorDeliveryChanged`. The fill-in sentence
+        follows only if some other field was rejected in the same submission,
+        so the list of links beneath is never introduced by the wrong sentence.
       */}
       {state?.error === 'invalid' ? (
         <div className={styles.stop} role="alert" tabIndex={-1} ref={summaryRef}>
-          <p className={styles.stopLead}>{copy.errorRequired}</p>
+          {deliveryWithdrawn ? (
+            <p className={styles.stopLead}>{copy.errorDeliveryChanged}</p>
+          ) : null}
+
+          {!deliveryWithdrawn || rejected.length > 1 ? (
+            <p className={styles.stopLead}>{copy.errorRequired}</p>
+          ) : null}
 
           {rejected.length > 0 ? (
             <ul className={styles.stopList}>
@@ -193,7 +248,7 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         <legend className={styles.legend}>{copy.deliveryLegend}</legend>
 
         <div className={styles.choices}>
-          {DELIVERY_METHODS.map((value, index) => (
+          {DELIVERY_METHODS.filter((value) => current.methods[value]).map((value, index) => (
             <DeliveryChoice
               key={value}
               value={value}
@@ -212,9 +267,9 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
                 the total below is a fee that feels added rather than chosen.
               */
               price={
-                amounts.methods[value].deliveryFee.amount === 0
+                current.methods[value].deliveryFee.amount === 0
                   ? copy.deliveryFree
-                  : formatPrice(amounts.methods[value].deliveryFee, locale)
+                  : formatPrice(current.methods[value].deliveryFee, locale)
               }
             />
           ))}
@@ -324,7 +379,7 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         <p className={styles.row}>
           <span className={styles.rowLabel}>{copy.subtotal}</span>
           <span className={styles.rowAmount}>
-            <bdi>{formatPrice(amounts.subtotal, locale)}</bdi>
+            <bdi>{formatPrice(current.subtotal, locale)}</bdi>
           </span>
         </p>
 
@@ -353,6 +408,14 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
         submitting twice would write two pending orders and sign two payment
         pages for one purchase.
       */}
+      {/*
+        The total on the screen, in agorot, so the server can refuse to charge
+        anything else. It is only ever compared — the amount charged is computed
+        from the database again — so a buyer who edits it gains nothing but a
+        request to confirm the real figure.
+      */}
+      <input type="hidden" name="expectedTotalAgorot" value={chosen.totalAgorot} />
+
       <button type="submit" className={styles.submit} disabled={isPending}>
         <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
         <span>{isPending ? copy.submitting : copy.submit}</span>

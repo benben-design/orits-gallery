@@ -1,0 +1,146 @@
+/* ------------------------------------------------------------------ *
+ * The opening: who she is, in her own words, beside her photograph.
+ * ------------------------------------------------------------------ */
+
+.opening {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.text {
+  max-inline-size: var(--measure);
+}
+
+/*
+  The page's own name, demoted. The same treatment as SectionHeading's
+  overline, so a label reads as a label wherever it appears.
+*/
+.label {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/*
+  Her name at the display step — the largest type on the site, and the only
+  place it is spent. `letter-spacing: inherit` because the global heading rule
+  tracks English headings, and a name set in light display weight at this size
+  needs no air let into it.
+*/
+.name {
+  margin-block-start: var(--space-3);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
+  letter-spacing: inherit;
+}
+
+/*
+  Her first paragraph, as the page's opening voice: the display face, a step
+  up from reading size, in full ink. It was small grey body text under a small
+  heading, which is how a good paragraph gets whispered.
+*/
+.lead {
+  margin-block-start: var(--space-6);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  white-space: pre-line;
+  text-wrap: pretty;
+}
+
+/*
+  The rest at reading size in full ink. Her own line breaks survive: a blank
+  line in the admin is a paragraph, a single break inside one stays a break.
+*/
+.paragraph {
+  margin-block-start: var(--space-5);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  white-space: pre-line;
+}
+
+/* On a phone the photograph must not fill a whole screen on its own. */
+.portrait {
+  inline-size: 100%;
+  max-inline-size: 22rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * The close: three paintings and the way on.
+ * ------------------------------------------------------------------ */
+
+.works {
+  display: grid;
+  gap: var(--space-8);
+  margin-block-start: var(--space-8);
+}
+
+.work {
+  display: flex;
+}
+
+.work > * {
+  inline-size: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4) var(--space-7);
+  margin-block-start: var(--space-9);
+}
+
+/* With no works to show, the buttons are the whole section. */
+.actions:first-child {
+  margin-block-start: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Wider screens.
+ * ------------------------------------------------------------------ */
+
+/*
+  Text and photograph side by side, the text centred on the photograph: her
+  three paragraphs run close to a 4:5 portrait's height, and centring absorbs
+  whatever difference her next edit makes.
+*/
+@media (min-width: 40rem) {
+  .withPortrait {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: center;
+  }
+
+  .withPortrait .portrait {
+    max-inline-size: none;
+  }
+}
+
+@media (min-width: 48rem) {
+  .works {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-8) var(--space-6);
+  }
+}
+
+/*
+  On a wide screen, a column of air between the two: text in the first six of
+  twelve columns, the photograph in the last five.
+*/
+@media (min-width: 60rem) {
+  .withPortrait {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--space-6);
+  }
+
+  .withPortrait .text {
+    grid-column: 1 / 7;
+  }
+
+  .withPortrait .portrait {
+    grid-column: 8 / 13;
+  }
+}

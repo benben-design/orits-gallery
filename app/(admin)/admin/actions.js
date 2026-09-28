@@ -47,7 +47,12 @@ import {
   advanceOrder as advanceOrderRecord,
   closeOrder as closeOrderRecord,
 } from '@/lib/data/orders-repository';
-import { signImageUpload, readUploadedImage } from '@/lib/image-host';
+import {
+  updateSiteSettings as updateSiteSettingsRecord,
+  setPortrait as setPortraitRecord,
+} from '@/lib/data/settings-repository';
+import { validateSettingsInput } from '@/lib/data/settings-input';
+import { signImageUpload, readUploadedImage, UPLOAD_FOLDERS } from '@/lib/image-host';
 import { safeReturnTo, ADMIN_LOGIN_PATH } from '@/lib/auth/admin-guard';
 import { readClientIp } from '@/lib/auth/client-ip';
 import {
@@ -110,9 +115,10 @@ export async function signIn(previousState, formData) {
     return FAILED;
   }
 
-  // Proving the password clears both counters, so a person who mistyped four
-  // times and then got it right starts from zero rather than one attempt away
-  // from locking themselves out.
+  // Proving the password clears all three counters — this address from this
+  // source, this source, and this address from everywhere — so a person who
+  // mistyped four times and then got it right starts from zero rather than one
+  // attempt away from locking themselves out.
   await clearFailedLogins(email, ip);
 
   await startAdminSession(account.id);
@@ -606,7 +612,7 @@ export async function returnWorkToSale(workId) {
 export async function signMainImageUpload() {
   if (!(await readAdminSession())) return { ok: false, error: 'notSignedIn' };
 
-  return signImageUpload();
+  return signImageUpload('works');
 }
 
 /**
@@ -649,6 +655,115 @@ export async function saveMainImage(workId, publicId) {
   revalidatePublicSite();
 
   return { ok: true, image };
+}
+
+/* ------------------------------------------------------------------ *
+ * Site settings
+ * ------------------------------------------------------------------ */
+
+/**
+ * Saves the site settings form.
+ *
+ * **Verifies the session itself**, like every mutation here — the page guard
+ * has no say over a Server Action, which is a POST endpoint Next reaches
+ * directly. See security.md.
+ *
+ * Takes no id: there is one settings row, and the repository addresses it by
+ * the only key it can have. So there is nothing for the browser to repoint.
+ *
+ * **Every rule the database enforces is checked first**, in
+ * `validateSettingsInput`, so a refusal comes back as a code the form turns
+ * into Hebrew rather than as a constraint name. What that cannot know — whether
+ * the English About text was approved — the form holds back by refusing to
+ * submit, the same gate the work form uses.
+ *
+ * Ends back on the settings page with `?saved=1`, rather than on the works list
+ * as a work save does. There is nowhere else a setting "appears" in the admin,
+ * so the page itself, reloaded from the database, is the confirmation.
+ */
+export async function saveSettings(previousState, formData) {
+  if (!(await readAdminSession())) {
+    return { status: 'error', errors: { form: 'notSignedIn' } };
+  }
+
+  const submitted = Object.fromEntries(formData);
+  const validated = validateSettingsInput(submitted);
+
+  if (!validated.ok) {
+    return { status: 'error', errors: validated.errors, values: submitted };
+  }
+
+  try {
+    await updateSiteSettingsRecord(validated.value);
+  } catch (error) {
+    // Includes a missing row, whose message names migration 011 — for the log,
+    // not for her.
+    console.error('[admin] saveSettings failed', error);
+    return { status: 'error', errors: { form: 'unexpected' }, values: submitted };
+  }
+
+  // The footer, the contact details and the About text are on every public
+  // page, and the homepage is prerendered. One helper clears the whole tree.
+  revalidatePublicSite();
+
+  redirect('/admin/settings?saved=1');
+}
+
+/**
+ * Signs one upload of the artist's portrait — into its own folder.
+ *
+ * The same signing as a painting's, with one difference that is the whole
+ * point: the destination is `portrait`, fixed here in the action's own body.
+ * The planned automation reads the paintings' folder as a queue of new works,
+ * and a portrait landing there would become a draft painting. See
+ * `UPLOAD_FOLDERS` in lib/image-host.js.
+ *
+ * Its own session check, like every action here.
+ */
+export async function signPortraitUpload() {
+  if (!(await readAdminSession())) return { ok: false, error: 'notSignedIn' };
+
+  return signImageUpload('portrait');
+}
+
+/**
+ * Records a finished portrait upload, after asking the host what it is.
+ *
+ * **Only an asset in the portrait folder is accepted.** The id arrives from the
+ * browser, and nothing else about it is believed — the dimensions and the URL
+ * are read back from the host under our own credentials, exactly as for a
+ * painting. The folder check closes the one thing that read-back does not: a
+ * browser naming some *other* asset in her account, a painting's photograph
+ * included, and having it recorded as her portrait.
+ *
+ * Takes no id to bind: there is one settings row. Saves the moment the upload
+ * lands, as the work edit page's panel does, and clears the public site's
+ * caches because the portrait is on the homepage and the About page.
+ *
+ * @param {string} publicId - As reported by the upload. An identifier only.
+ */
+export async function savePortrait(publicId) {
+  if (!(await readAdminSession())) return { ok: false, error: 'notSignedIn' };
+
+  if (typeof publicId !== 'string' || !publicId.startsWith(UPLOAD_FOLDERS.portrait + '/')) {
+    return { ok: false, error: 'notFound' };
+  }
+
+  const asset = await readUploadedImage(publicId);
+  if (!asset.ok) return asset;
+
+  let saved;
+
+  try {
+    saved = await setPortraitRecord(asset.image);
+  } catch (error) {
+    console.error('[admin] savePortrait failed', error);
+    return { ok: false, error: 'unexpected' };
+  }
+
+  revalidatePublicSite();
+
+  return { ok: true, image: saved.portrait };
 }
 
 /* ------------------------------------------------------------------ *

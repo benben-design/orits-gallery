@@ -9,9 +9,10 @@ below is filled in as more land — the previous project kept a full method / pa
 | Method | Path | Body | Returns | Notes |
 |---|---|---|---|---|
 | GET | `/api/health` | — | `{ status, works, dataIsPlaceholder }` | Liveness, and proof the repository and the database are reachable from a handler |
-| POST | `/admin/api/translate` | `{ text, kind }` — Hebrew, at most 5,000 characters, and `title` or `description` | `{ ok: true, text }`, or `{ ok: false, error }` | The admin work form filling an English field in from its Hebrew twin. Verifies the session itself and returns 401 without one. 400 empty, unparseable or an unknown kind, 413 too long, 429 the provider is rate limiting, 503 no key or a key it refuses, 502 anything else |
-| GET | `/api/payments/hyp/return` | — (Hyp's query string) | 307 to `/[locale]/order/[id]` | The terminal's **success** return. Calls VERIFY first and does nothing before it answers; on a verified success it seizes the paintings and marks the order paid in one transaction, then clears the cart. A route rather than a page for the cookie reason — only an action or a handler may set one |
-| GET | `/api/payments/hyp/error` | — (Hyp's query string) | 307 to `/[locale]/order/[id]` | The terminal's **error** return, and it runs **the same handler**. Which URL the browser lands on is the provider's opinion; `CCode` is the fact. Ordinarily verification declines too and nothing changes — but a landing here that verifies as genuine is settled, because the alternative is keeping money on the strength of a redirect path |
+| POST | `/admin/api/translate` | `{ text, kind }` — Hebrew, at most 5,000 characters, and `title`, `description` or `about` | `{ ok: true, text }`, or `{ ok: false, error }` | The admin work form filling an English field in from its Hebrew twin. Verifies the session itself and returns 401 without one. 400 empty, unparseable or an unknown kind, 413 too long, 429 the provider is rate limiting, 503 no key or a key it refuses, 502 anything else |
+| GET | `/admin/api/client-ip` | — | `{ ok: true, 'x-forwarded-for', 'x-nf-client-connection-ip', 'client-ip', 'x-real-ip' }`, or 401 `{ ok: false, error: 'notSignedIn' }`; always `no-store` | **Temporary**, and removed in the session after it ships. Measures on the deployed site which client-address headers Netlify sets and whether it overwrites forged ones. Verifies the session itself |
+| GET | `/api/payments/hyp/return` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **success** return. Refuses a query carrying one of our keys or any key twice, then calls VERIFY, and does nothing before it answers; on a verified redirect whose `CCode` is `0` and whose `Order` and `Amount` match, it seizes the paintings and marks the order paid in one transaction, then clears the cart. A verified charge that does not match is voided. A route rather than a page for the cookie reason — only an action or a handler may set one |
+| GET | `/api/payments/hyp/error` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **error** return, and it runs **the same handler**. Which URL the browser lands on is the provider's opinion; the signed redirect's `CCode` is the fact. A signed decline here changes nothing — but a landing here that verifies as a genuine, matching charge is settled, because the alternative is keeping money on the strength of a redirect path |
 
 Health predates the envelope and keeps its own shape; **`{ ok }` is the shape
 every route from here on shares**, with `error` a *code* rather than a sentence,
@@ -159,9 +160,27 @@ What replaces it:
 - **The only trusted writer of payment state is our own server, after it has
   validated the redirect with the provider's VERIFY call.** Not the browser, not
   the redirect, not a person reading a confirmation page.
-- **Raw redirect parameters are never trusted.** They arrive in a URL the buyer
-  can edit. They are evidence that a transaction *may* have happened, and an
-  input to VERIFY — never an amount, a status or an identity.
+- **Before VERIFY answers, the redirect's parameters are nothing. After it,
+  they are Hyp's signed statement.** *(Amended 28-09-2026; it used to read
+  "raw redirect parameters are never trusted".)* They arrive in a URL the buyer
+  can edit, so until VERIFY has confirmed Hyp's signature over them they are an
+  input to VERIFY and nothing else — never an amount, a status or an identity,
+  and read before it for one thing only: which language to answer in. **Once
+  VERIFY has confirmed the signature, the redirect is the only statement of the
+  payment there is**, because VERIFY itself answers `CCode` and nothing more: it
+  says the signature is genuine, not that a payment succeeded, and it names no
+  transaction. So after verification the redirect's `CCode` is read to learn
+  whether a charge happened, its `Order` and `Amount` to learn whether it was
+  the charge we asked for, and its `Id` to name it.
+- **A return that repeats a key, or carries one of ours, is refused before
+  VERIFY is asked.** `action`, `What`, `Masof`, `KEY` and `PassP` in any letter
+  case, any key twice, an empty query, a key that is not a plain name, or a `;`
+  anywhere — raw, or inside a decoded value, since some stacks split on it and
+  Next hands a raw one over as `%3B`. Our
+  five are sent in front of the redirect and Hyp most likely keeps the last
+  value of a repeated key, so a return carrying one would change the question
+  Hyp is asked. It is a gate, not a rewrite: the query is still never parsed
+  and rebuilt on its way to VERIFY.
 - **An unverified or failed redirect changes nothing.** No order moves to
   `paid`, no work is marked sold, and the buyer is told something they can act
   on. Silence is the safe direction: an order left `pending` is recoverable, and
@@ -190,9 +209,20 @@ to get this wrong that no test of ours would catch:
 
 - **VERIFY takes every parameter from the redirect, in its original order.**
   Reordering or dropping one fails the check, so the handler passes the query
-  through as it arrived rather than rebuilding it from named fields.
+  through as it received it rather than rebuilding it from named fields.
+  **"As it received it" is not "as Hyp sent it"**, measured on 28-09-2026: Next
+  re-encodes a request's query before any route handler runs, so `%20` becomes
+  `+` and `~!()` are percent-encoded. Keys, order and decoded values survive.
+  Whether Hyp accepts that is unproven — see deployment.md.
 - **The response is judged by its `CCode` value, never by HTTP status.** A 200
   carrying a failure code is a failure.
+- **A VERIFY answer is `CCode=0` and nothing else** — no transaction id, no
+  amount. It counts as success only in that shape: exactly one `CCode`, exactly
+  `'0'`, and none of the keys a SIGN answer carries (`signature`, `action`,
+  `Masof`). A success of the wrong kind is not a success. The stand-in this
+  was first tested against answered with more than `CCode`, which is how an
+  earlier version came to read the transaction id from the answer and would
+  have recorded none against a real terminal.
 - **An HTML response means a system error**, not a declined payment. It is the
   "we do not know" case, and it takes the `pending` branch above rather than
   being reported to the buyer as a refusal.
@@ -201,11 +231,52 @@ to get this wrong that no test of ours would catch:
   therefore fixed by configuration, not chosen per request.
 - **Undoing a charge is two different calls**, and which applies is a question
   about the date: `CancelTrans` voids a transaction the same day, before
-  settlement; `zikoyAPI` refunds one afterwards. Neither is built.
+  settlement (until 22:00 Israel time); `zikoyAPI` refunds one afterwards.
+  `CancelTrans` is built, sent as documented — `action`, `Masof`, `PassP` and
+  `TransId`, which is the redirect's `Id`, and no `KEY` — and answers
+  `CCode=0&ReversalStatus=777`, or `CCode=920` when it is too late. `zikoyAPI`
+  is not built.
+- **Hyp recommends configuring no error URL at all**, leaving declines on its
+  own payment page. Both of ours run the same handler, so either choice is safe
+  here; what the recommendation adds is that with an error URL set, anything
+  that is not a standard immediate charge (codes 700 and 800) lands on it.
 - **The payment-page signature must be ON in our terminal** — switched on **only
   after our verification code is built and tested.** Enabling it first makes
   every test transaction fail, with nothing to say why. That code now exists, so
   this is a task for the day the account does; deployment.md holds the list.
+
+### What a verified return is allowed to settle
+
+VERIFY says the redirect is genuine. What the redirect then says decides
+everything, in this order:
+
+- **Its `CCode` is not exactly `'0'`: nothing changes**, exactly as for a failed
+  verification. A decline signed by Hyp is authentic and is still not a charge.
+- **`CCode` is `'0'`, `Order` is this order's id and `Amount` is its total: it
+  is settled.** `Amount` is parsed strictly as shekels with at most two
+  decimals — `1040`, `1040.5`, `1040.50` — and converted to agorot as text,
+  never through a float, by `parseAmountParameter` beside the function that
+  wrote it. Compared with the order's `total_agorot`, which is what we asked
+  Hyp to charge.
+- **`CCode` is `'0'` and either does not match: money moved for something we
+  did not sell.** It takes the lost-race path below — voided, or recorded as a
+  refund owed — and **the paintings are never seized**. Both amounts are logged
+  at full volume. A buyer who edits `Amount` on a payment page (possible
+  whenever payment-page signing is off on the terminal) gets a genuinely signed
+  return for the smaller amount, and this is the branch that stops it
+  settling. A verified charge naming no order we have is voided the same way,
+  and with no row to record it against, the log line is the whole record.
+- **The transaction's name is the redirect's `Id`** — `payment_reference`, and
+  `TransId` for a void. **A matching success with no `Id` is still settled**:
+  Hyp signed a charge for this order at its total, so the buyer really paid,
+  and leaving it pending would keep the painting on sale to somebody else and
+  tell the payer it failed. It is written with a null reference, logged at full
+  volume, and the admin order page says the reference is missing so she can
+  match it against the Hyp console. A refresh is still caught, by the order's
+  status.
+- **Every response on both routes carries `Cache-Control: no-store`**,
+  whatever the outcome, including an exception nobody anticipated. Nothing on
+  the money path depends on a platform's default.
 
 ### What a verified success actually does
 
@@ -245,10 +316,28 @@ The charge already happened, so the money goes back immediately if it can:
 artist's cue to refund by hand. **The order records which of the two happened**,
 and the cart is left alone, because nothing was sold to this buyer.
 
+**A second genuine charge against an order already settled is voided, and the
+order is left alone.** Same order, same total, a different `Id` from the one the
+order records — a buyer who paid twice, or paid for an order since cancelled.
+The first payment bought the painting, so no `refund_due_at` is set: the order
+page would then tell a buyer who owns it that it is unavailable. An `Id` equal
+to the stored reference is a refresh and does nothing. If the void fails, the
+log line is the whole record, under the phrase deployment.md's checklist names.
+
+**The same path takes a verified charge that does not match its order.** Either
+way the transaction's `Id` is written to the order, which is how a refresh of
+that return is recognised and not voided a second time. Only a **pending**
+order can carry the outcome; a stray charge against an order already settled,
+or against none, is logged at full volume and reconciled by hand.
+
 Amounts crossing this boundary are **minor units** — agorot — because that is
 how they are stored and how a provider charges. Convert once, in the repository,
 and never in a route handler; two conversion sites is how one of them gets
-missed and a charge comes out a hundred times too large.
+missed and a charge comes out a hundred times too large. **The one exception is
+the provider's own decimal `Amount`**, which `lib/payments/hyp.js` writes
+(`toAmountParameter`) and reads back (`parseAmountParameter`) as a pair, side
+by side, with integer arithmetic both ways — proven to round-trip over two
+thousand amounts.
 
 A checkout must also capture the **language the buyer was reading** and write it
 to the order. It is required, it cannot be recovered afterwards, and the tax

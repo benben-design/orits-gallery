@@ -1,28 +1,39 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import ButtonLink from '@/components/ui/ButtonLink';
+import PortraitFrame from '@/components/ui/PortraitFrame';
 import { localeHref } from '@/lib/i18n/config';
 import styles from './StorySection.module.css';
 
 /**
- * Homepage section 4 — a photograph of the artist, a short paragraph, and a
- * link through to the about page.
+ * Section 4 — the artist: her photograph, a short paragraph, the way to About.
  *
- * No photograph of Orit has been supplied yet, so the image slot renders a
- * labelled empty frame at the right proportions rather than a stock portrait
- * or a stand-in face. Drop the real photograph in and swap this block for an
- * <Image>; the layout around it does not change.
+ * **The photograph is a site setting**, uploaded by the artist at
+ * `/admin/settings`. It fills its slot in `PortraitFrame` — cropped from the top
+ * if it has to be, and deliberately **not** hung on a painting's mat. The
+ * never-crop rule is for works for sale; she is not one. See PortraitFrame.
+ *
+ * **With no photograph there is no frame.** The labelled empty box that stood
+ * here while none existed is gone; the section becomes the text alone, and the
+ * stylesheet only opens a second column when there is something to put in it.
+ * An empty frame on the homepage is the one thing a stranger would read as the
+ * site being unfinished.
+ *
+ * Its alt text is her name. The photograph has not been chosen yet, so nothing
+ * more specific can be true of it; the name is.
  */
-export default function StorySection({ locale, dictionary }) {
+export default function StorySection({ locale, dictionary, portrait }) {
   return (
     <Section>
       <Container>
-        <div className={styles.layout}>
-          <div className={styles.portrait} role="img" aria-label={dictionary.home.story.portraitPlaceholder}>
-            <span className={styles.portraitLabel}>
-              {dictionary.home.story.portraitPlaceholder}
-            </span>
-          </div>
+        <div className={[styles.layout, portrait ? styles.withPortrait : ''].filter(Boolean).join(' ')}>
+          {portrait ? (
+            <PortraitFrame
+              image={portrait}
+              alt={dictionary.site.artistName}
+              sizes="(min-width: 48rem) 40vw, 100vw"
+            />
+          ) : null}
 
           <div className={styles.text}>
             <h2 className={styles.heading}>{dictionary.home.story.heading}</h2>
