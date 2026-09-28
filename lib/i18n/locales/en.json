@@ -83,7 +83,9 @@
     "buyNow": "Buy now"
   },
   "about": {
-    "title": "About"
+    "title": "About",
+    "worksHeading": "Recent work",
+    "contactLink": "Get in touch with Orit"
   },
   "contact": {
     "title": "Contact",

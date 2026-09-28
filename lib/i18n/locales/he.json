@@ -83,7 +83,9 @@
     "buyNow": "לקנייה מהירה"
   },
   "about": {
-    "title": "אודות"
+    "title": "אודות",
+    "worksHeading": "עבודות אחרונות",
+    "contactLink": "ליצירת קשר עם אורית"
   },
   "contact": {
     "title": "יצירת קשר",
