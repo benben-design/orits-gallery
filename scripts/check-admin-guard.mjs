@@ -1,5 +1,17 @@
 /**
- * Asserts that every page in the guarded admin group actually calls the guard.
+ * Asserts that every page in the guarded trees actually calls the guard.
+ *
+ * THE TREES
+ *
+ *   app/(admin)/admin/(guarded)/  every admin page but the login form
+ *   app/(dev)/                    the design system at /admin/dev. It has its
+ *                                 own root layout (English, left-to-right), so it
+ *                                 cannot sit in the admin group, and it is under
+ *                                 /admin because the session cookie is scoped to
+ *                                 that path: a guard anywhere else never sees one.
+ *
+ * Each tree must exist and hold at least one page; one that has moved exits 2
+ * rather than passing while checking nothing.
  *
  * WHY THIS EXISTS
  *
@@ -16,19 +28,16 @@
  * dependencies, run by `npm run lint`, prints a table either way.
  *
  * Exit codes: 0 every guarded page calls the guard, 1 one does not,
- * 2 the guarded directory is missing, which means the structure moved and this
+ * 2 a guarded tree is missing or empty, which means the structure moved and this
  * script needs to move with it.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
-const GUARDED_DIR = join(
-  process.cwd(),
-  'app',
-  '(admin)',
-  'admin',
-  '(guarded)'
-);
+const GUARDED_DIRS = [
+  join(process.cwd(), 'app', '(admin)', 'admin', '(guarded)'),
+  join(process.cwd(), 'app', '(dev)'),
+];
 
 /** The call every page in that tree must make. */
 const REQUIRED_CALL = 'requireAdminSession(';
@@ -61,22 +70,27 @@ async function collectPages(directory) {
   return pages;
 }
 
-const pages = await collectPages(GUARDED_DIR);
+const pages = [];
 
-if (pages === null) {
-  console.error(
-    '\nCannot find ' +
-      relative(process.cwd(), GUARDED_DIR).split(sep).join('/') +
-      '.\n' +
-      'The guarded admin group has moved or been renamed. This check has to\n' +
-      'move with it, or it silently passes while guarding nothing.\n'
-  );
-  process.exit(2);
-}
+for (const directory of GUARDED_DIRS) {
+  const found = await collectPages(directory);
+  const name = relative(process.cwd(), directory).split(sep).join('/');
 
-if (pages.length === 0) {
-  console.error('\nNo pages found in the guarded admin group.\n');
-  process.exit(2);
+  if (found === null) {
+    console.error(
+      '\nCannot find ' + name + '.\n' +
+        'A guarded tree has moved or been renamed. This check has to move\n' +
+        'with it, or it silently passes while guarding nothing.\n'
+    );
+    process.exit(2);
+  }
+
+  if (found.length === 0) {
+    console.error('\nNo pages found in ' + name + '.\n');
+    process.exit(2);
+  }
+
+  pages.push(...found);
 }
 
 const results = [];
@@ -98,7 +112,7 @@ const failures = results.filter((r) => !r.calls || !r.imports);
 
 console.log('\nAdmin guard');
 console.log(
-  '  Every page under app/(admin)/admin/(guarded)/ must call requireAdminSession().\n'
+  '  Every page under app/(admin)/admin/(guarded)/ and app/(dev)/ must call requireAdminSession().\n'
 );
 
 for (const result of results) {
@@ -107,7 +121,7 @@ for (const result of results) {
 }
 
 if (failures.length > 0) {
-  console.error('\n  ' + failures.length + ' page(s) in the guarded group do not call the guard:\n');
+  console.error('\n  ' + failures.length + ' page(s) in a guarded tree do not call the guard:\n');
 
   for (const failure of failures) {
     const reason = !failure.imports

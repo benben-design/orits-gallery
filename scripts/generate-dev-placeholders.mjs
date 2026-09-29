@@ -1,7 +1,7 @@
 /**
- * Generates the placeholder paintings used by the design-system page at /dev.
+ * Generates the placeholder paintings used by the design-system page at /admin/dev.
  *
- * Why generated rather than photographed: /dev exists to exercise the layout,
+ * Why generated rather than photographed: /admin/dev exists to exercise the layout,
  * and the only thing that matters there is aspect ratio. Real paintings would
  * make the page a content preview instead of a component specimen, and would
  * tie a developer tool to whatever is currently in public/paintings.
@@ -22,7 +22,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = join(root, 'public', 'dev');
+const outDir = join(root, 'public', 'admin', 'dev');
 
 /** The three orientations in the real body of work: 9 portrait, 5 square, 1 landscape. */
 const SPECS = [
@@ -150,4 +150,4 @@ for (const { name, width, height } of SPECS) {
   console.log(`  ${name}.png  ${width}x${height}  ${(png.length / 1024).toFixed(1)} KB`);
 }
 
-console.log(`Wrote ${SPECS.length} placeholders to public/dev/`);
+console.log(`Wrote ${SPECS.length} placeholders to public/admin/dev/`);

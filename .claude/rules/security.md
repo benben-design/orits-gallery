@@ -42,6 +42,11 @@
   `lib/auth/admin-guard.js` as its first statement; without a valid session the
   request redirects to the login page and the page body is never produced. It
   verifies the cookie's signature and expiry and reads no database.
+  **So does the design system**, at `/admin/dev` in its own `app/(dev)/` group
+  (its own root layout), since 29-09-2026. It was open to anyone at `/dev`, and
+  it moved rather than being guarded in place because a guard at `/dev` could
+  never see a session — the cookie is scoped to `/admin`. `/dev` now 404s like
+  any unknown path.
 - **A guard at the rendering layer is not a security boundary.** This is the
   sentence to remember: it runs when a *page* renders, and nothing else. It does
   **not** run for route handlers under `app/api/`, and it does **not** run for
@@ -137,9 +142,11 @@
     ceiling per source, across all addresses, bounds working through a list.
   - **And one counter on the address alone, across every source — a trade
     taken deliberately on 28-09-2026.** The pair key has a hole: every rotated
-    source is a fresh pair, so someone who can vary the source (rotating
-    machines, or forging `x-forwarded-for` wherever it is not rewritten) never
-    reaches the pair threshold, and nothing counted per address at all. The
+    source is a fresh pair, so someone who can vary the source never reaches
+    the pair threshold, and nothing counted per address at all. On Netlify the
+    source cannot be forged — since 29-09-2026 it is read only from
+    `x-nf-client-connection-ip`, which Netlify was measured to overwrite (see
+    deployment.md) — so varying it means genuinely using many machines. The
     comment in `lib/auth/client-ip.js` that claimed otherwise was wrong.
     Migration 012 adds the counter: **20 failures on one address within 60
     minutes block that address from every source for 15 minutes**, with the
@@ -172,6 +179,84 @@
   an unthrottled form. Against a form that stops after five wrong guesses, it is
   a reasonable floor. **The two are a pair: do not lower the minimum further, and
   do not remove the throttle, without revisiting the other.**
+- **Checkout is rate limited per source, and the counter is in Postgres.**
+  `submitCheckout` is the only write on the site that needs no session, and
+  once Hyp is live every call that gets past validation also asks Hyp to sign
+  a payment page. `lib/checkout/checkout-throttle.js` allows **5 orders per
+  source per hour**, keyed on the same `readClientIp` the sign-in throttle
+  uses, and never in memory, for the same reason. The check runs after
+  validation and **before anything is written or signed**, so a refused source
+  produces no order row and no call to Hyp. It counts orders created: a slot is
+  given back when no order was written after all. A blocked buyer sees one
+  sentence — try again later — and the artist's WhatsApp link when a number is
+  set.
+  **A client address is personal data, and it is removed rather than kept**:
+  every row older than the hour is deleted, for every source, on each checkout,
+  and nothing else reads the table. **There is no scheduler on this project,
+  so that deletion only happens when somebody checks out — and at this site's
+  volume a row can outlast the hour by days, until the next checkout.** That is
+  the honest state of it. If it ever needs to be tighter, a scheduled deletion
+  is the fix, not a longer explanation.
+- **Which header is the client's was measured, not assumed** (29-09-2026, see
+  deployment.md). In production `lib/auth/client-ip.js` reads Netlify's
+  `x-nf-client-connection-ip` and nothing else; `x-forwarded-for` is read only
+  in development, and **nothing reads `x-real-ip`**, which Netlify passes
+  through exactly as the client wrote it.
+- **Every response carries the security headers**, declared in
+  `next.config.mjs` for the same reason as `X-Robots-Tag` (below): a Netlify
+  header rule never reaches a response a function produced. On every path —
+  pages, `/api` and `/admin` alike — since 29-09-2026:
+
+  | Header | Value |
+  |---|---|
+  | `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: https://res.cloudinary.com; media-src 'self'; font-src 'self'; connect-src 'self' https://api.cloudinary.com; frame-src 'none'; frame-ancestors 'none'; form-action 'self' https://pay.hyp.co.il; base-uri 'self'; object-src 'none'` |
+  | `X-Frame-Options` | `DENY` |
+  | `X-Content-Type-Options` | `nosniff` |
+  | `Referrer-Policy` | `strict-origin-when-cross-origin` |
+  | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=()` |
+  | `Cross-Origin-Opener-Policy` | `same-origin` |
+
+  No `X-Powered-By` (`poweredByHeader: false`), and **no HSTS: Netlify sends it**
+  for every site, and a second copy could only disagree with it.
+
+  **Every origin in the policy is one the code uses**, mapped from the repository
+  with the file responsible: `res.cloudinary.com` is where every uploaded
+  painting and the portrait are delivered from (`lib/image-loader.js`);
+  `api.cloudinary.com` is the admin's browser uploading straight to the host
+  (`components/admin/AdminImageUpload.js`, endpoint from `lib/image-host.js`);
+  `blob:` is that same component measuring a file before it is sent;
+  `pay.hyp.co.il` is checkout's redirect to the payment page, which without
+  script follows a form post and is held to `form-action`. The two hosts that
+  already have a constant — the payment page and the upload endpoint — are
+  **imported** into the config from `lib/payments/hyp.js` and
+  `lib/image-host.js`, never restated. Fonts, the hero video and the local
+  paintings are `'self'`: `next/font` makes no request to Google at runtime, and
+  nothing plays from elsewhere, which is why `media-src` names no host and
+  `img-src` has no `data:`. Links a visitor follows (WhatsApp, Instagram,
+  Facebook, `mailto:`, `tel:`) are navigations CSP does not govern; calls the
+  server makes (Gemini, Cloudinary's admin API, Hyp's signing and VERIFY) are
+  not the browser's at all.
+
+  **`script-src` allows inline script, and there is no nonce — a decided
+  trade.** A nonce has to be fresh per response, so it makes every page
+  dynamic: the prerendered homepage and the cached gallery would be rendered on
+  every visit, against a database that sleeps after five minutes. What a nonce
+  defends against is injected script, and there is nowhere for one to come
+  from: **no user-supplied HTML is rendered anywhere, there is no
+  `dangerouslySetInnerHTML`, React escapes everything else, and the admin is the
+  only author** of anything the site displays. If any of those three stops
+  being true, this trade has to be taken again.
+
+  **Development differs in exactly two ways, and neither reaches a build**:
+  `'unsafe-eval'`, which Next's development runtime needs, and the Hyp
+  stand-in's origin in `form-action` while `HYP_ENDPOINT_OVERRIDE` is set. Both
+  are gated on `NODE_ENV`, which is `production` for every `next build` and
+  `next start`. Verified 29-09-2026 with no violation anywhere: the public
+  pages on a production build, the admin in development, and checkout's
+  redirect to the stand-in with and without JavaScript — plus a control proving
+  the no-script redirect really is held to `form-action`. What cannot be
+  verified until the first real transaction is the payment host itself; see
+  deployment.md.
 - **There is still no password-reset mechanism.**
 
 ## The session

@@ -8,14 +8,13 @@ below is filled in as more land — the previous project kept a full method / pa
 
 | Method | Path | Body | Returns | Notes |
 |---|---|---|---|---|
-| GET | `/api/health` | — | `{ status, works, dataIsPlaceholder }` | Liveness, and proof the repository and the database are reachable from a handler |
+| GET | `/api/health` | — | `{ ok: true }`, always `no-store` | Liveness only. **Touches no database**: a public route that queried Postgres on every request was a way for anybody to wake the production database. Nothing in the repository monitors it |
 | POST | `/admin/api/translate` | `{ text, kind }` — Hebrew, at most 5,000 characters, and `title`, `description` or `about` | `{ ok: true, text }`, or `{ ok: false, error }` | The admin work form filling an English field in from its Hebrew twin. Verifies the session itself and returns 401 without one. 400 empty, unparseable or an unknown kind, 413 too long, 429 the provider is rate limiting, 503 no key or a key it refuses, 502 anything else |
-| GET | `/admin/api/client-ip` | — | `{ ok: true, 'x-forwarded-for', 'x-nf-client-connection-ip', 'client-ip', 'x-real-ip' }`, or 401 `{ ok: false, error: 'notSignedIn' }`; always `no-store` | **Temporary**, and removed in the session after it ships. Measures on the deployed site which client-address headers Netlify sets and whether it overwrites forged ones. Verifies the session itself |
 | GET | `/api/payments/hyp/return` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **success** return. Refuses a query carrying one of our keys or any key twice, then calls VERIFY, and does nothing before it answers; on a verified redirect whose `CCode` is `0` and whose `Order` and `Amount` match, it seizes the paintings and marks the order paid in one transaction, then clears the cart. A verified charge that does not match is voided. A route rather than a page for the cookie reason — only an action or a handler may set one |
 | GET | `/api/payments/hyp/error` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **error** return, and it runs **the same handler**. Which URL the browser lands on is the provider's opinion; the signed redirect's `CCode` is the fact. A signed decline here changes nothing — but a landing here that verifies as a genuine, matching charge is settled, because the alternative is keeping money on the strength of a redirect path |
 
-Health predates the envelope and keeps its own shape; **`{ ok }` is the shape
-every route from here on shares**, with `error` a *code* rather than a sentence,
+Health moved onto the envelope on 29-09-2026; **`{ ok }` is the shape every
+route shares**, with `error` a *code* rather than a sentence,
 exactly as the Server Actions return codes. The Hebrew lives in the locale files
 and the browser picks it.
 

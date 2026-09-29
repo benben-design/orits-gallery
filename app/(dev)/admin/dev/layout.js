@@ -5,14 +5,20 @@ import { fontVariables } from '@/app/fonts';
  * Root layout for the design-system page.
  *
  * This is the third root layout, in its own route group, for the same reason
- * the admin has one: /dev sits outside the locale structure and must not
+ * the admin has one: the page sits outside the locale structure and must not
  * inherit the public shell. Because it is not under app/(site)/[locale], it
  * cannot appear in site navigation by construction — there is no link to omit
  * and no menu to remember to edit. See .claude/rules/app-files.md.
  *
- * It is a developer tool and is kept out of search results three ways, matching
- * the admin and all three in effect: the robots metadata below, a disallow in
- * app/robots.js, and an `X-Robots-Tag` header declared in next.config.mjs —
+ * **Its URL is /admin/dev, and the page calls the admin guard.** It is its own
+ * group rather than part of (admin) because it needs this English,
+ * left-to-right document instead of the admin's Hebrew shell; it is under
+ * /admin because the session cookie is scoped to that path, so a guard at /dev
+ * could never have seen a session.
+ *
+ * It is kept out of search results three ways, like the rest of the admin and
+ * all three in effect: the robots metadata below, the /admin disallow in
+ * app/robots.js, and the admin's `X-Robots-Tag` header in next.config.mjs —
  * which is where it belongs rather than in the host's configuration, because a
  * Netlify header rule never reaches a response produced by a function. See
  * .claude/rules/deployment.md.
