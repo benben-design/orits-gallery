@@ -11,7 +11,7 @@ npm run start      # serve the production build locally
 npm run lint       # ESLint, then the six project guards below
 
 npm run images:manifest   # regenerate lib/data/image-manifest.json
-npm run dev:placeholders  # regenerate the /dev placeholder images
+npm run dev:placeholders  # regenerate the /admin/dev placeholder images
 npm run check:contrast    # WCAG check over every permitted colour pairing
 npm run check:guard       # every guarded admin page calls the guard
 npm run check:sitemap     # the sitemap offers built pages only, and all of them
@@ -30,31 +30,31 @@ as an optional argument: `npm run admin:create -- orit@example.com`.
 
 There is one app and one dev server. No separate API process.
 
-## The design system at `/dev`
+## The design system at `/admin/dev`
 
-`http://localhost:3000/dev` renders the whole design system: every colour on the
-surface it is meant to be used on, the spacing and radius scales, the
+`http://localhost:3000/admin/dev` renders the whole design system: every colour
+on the surface it is meant to be used on, the spacing and radius scales, the
 interactive states, and the real artwork component across all three
 orientations and all four statuses.
 
-It needs no database and no real content, so it stays reviewable however little
-of the site is built — and it is the fastest way to see whether a token change
-broke something. It is a permanent developer tool, not a scratch page.
+It reads no painting data and no real content, so it stays reviewable however
+little of the site is built — and it is the fastest way to see whether a token
+change broke something. It is a permanent developer tool, not a scratch page.
 
-It is reachable in production builds and on deploy previews, deliberately: a
-preview URL is where a design change is easiest to review on a real device. It
-is kept out of search results three ways — `noindex` metadata on its own root
-layout, a disallow in `app/robots.js`, and an `X-Robots-Tag` header — and it is
-unreachable from any navigation because it sits outside `app/(site)/[locale]`
-entirely.
+**It needs a signed-in admin session** since 29-09-2026, like every other admin
+page, and it is reachable in production builds and on deploy previews for
+whoever can sign in there. It used to live at `/dev`, open to anyone; it moved
+under `/admin` because the session cookie is scoped to that path, so a guard
+anywhere else never sees a session. `/dev` now goes where any unknown path
+goes — to `/he/dev`, and a 404 — and nothing points at the new address.
 
-The third is declared in `next.config.mjs` rather than in the host's
-configuration, because a Netlify header rule is never applied to a response
-produced by a function. See deployment.md.
-
-To make it developer-only instead, add an `export const dynamic` guard or a
-`notFound()` on `process.env.NODE_ENV === 'production'` in its page. That also
-removes it from previews, which is the trade.
+It has its own route group, `app/(dev)/`, for its own root layout — an English,
+left-to-right document rather than the admin's Hebrew shell — and
+`scripts/check-admin-guard.mjs` scans that group as well as the admin's guarded
+one. Being under `/admin` also puts it under the admin's `robots` disallow and
+`X-Robots-Tag` header, beside its own `noindex` metadata. Its placeholder
+images are files in `public/admin/dev/`, so they are public like everything in
+`public/` — they are generated colour swatches, and nothing else.
 
 ## Linting
 
@@ -62,7 +62,7 @@ removes it from previews, which is the trade.
 the project — including `proxy.js`, the config files and `scripts/` — then
 `scripts/check-contrast.mjs`, the palette guard, then
 `scripts/check-admin-guard.mjs`, which fails if any page in the guarded admin
-group does not call `requireAdminSession`, then `scripts/check-sitemap.mjs`,
+group or the design system's `(dev)` group does not call `requireAdminSession`, then `scripts/check-sitemap.mjs`,
 which fails if the sitemap offers a stub or omits a finished page, then
 `scripts/check-image-crop.mjs`, which fails if the image loader would ask the
 host to crop a painting, then `scripts/check-page-headings.mjs`, which fails if

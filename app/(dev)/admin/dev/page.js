@@ -4,10 +4,11 @@ import ButtonLink from '@/components/ui/ButtonLink';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { defaultLocale } from '@/lib/i18n/config';
 import { WORK_STATUSES } from '@/lib/data/works-repository';
+import { requireAdminSession } from '@/lib/auth/admin-guard';
 import styles from './page.module.css';
 
 /**
- * The design system, rendered.
+ * The design system, rendered — at /admin/dev, behind the admin guard.
  *
  * A permanent developer tool: every colour on the surface it is meant to be
  * used on, the spacing and radius scales, the interactive states, and the real
@@ -97,9 +98,9 @@ const RADII = [
  * ArtworkCard is exercised for real rather than approximated.
  * ------------------------------------------------------------------ */
 const IMAGES = {
-  portrait: { type: 'main', src: '/dev/placeholder-portrait.png', width: 800, height: 1200 },
-  square: { type: 'main', src: '/dev/placeholder-square.png', width: 1000, height: 1000 },
-  landscape: { type: 'main', src: '/dev/placeholder-landscape.png', width: 1400, height: 950 },
+  portrait: { type: 'main', src: '/admin/dev/placeholder-portrait.png', width: 800, height: 1200 },
+  square: { type: 'main', src: '/admin/dev/placeholder-square.png', width: 1000, height: 1000 },
+  landscape: { type: 'main', src: '/admin/dev/placeholder-landscape.png', width: 1400, height: 950 },
 };
 
 const ORIENTATION_TITLES = {
@@ -147,6 +148,13 @@ const STATUS_WORKS = WORK_STATUSES.map((status) =>
 const GRID_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
 
 export default async function DesignSystemPage() {
+  /*
+    Signed in only. Under /admin for the reason the admin api routes are: the
+    session cookie is scoped to that path, so a guard at /dev could never have
+    seen one. Checked by scripts/check-admin-guard.mjs like every guarded page.
+  */
+  await requireAdminSession('/admin/dev');
+
   const locale = defaultLocale;
   const dictionary = await getDictionary(locale);
 
@@ -295,7 +303,7 @@ export default async function DesignSystemPage() {
         </p>
         <div className={styles.states}>
           <div className={styles.state}>
-            <ButtonLink href="/dev">Rest</ButtonLink>
+            <ButtonLink href="/admin/dev">Rest</ButtonLink>
             <span className={styles.stateLabel}>Button · rest</span>
           </div>
           <div className={styles.state}>
@@ -307,11 +315,11 @@ export default async function DesignSystemPage() {
             <span className={styles.stateLabel}>Button · focus ring</span>
           </div>
           <div className={styles.state}>
-            <ButtonLink href="/dev" variant="primary">Primary</ButtonLink>
+            <ButtonLink href="/admin/dev" variant="primary">Primary</ButtonLink>
             <span className={styles.stateLabel}>Button · primary, live — one in view at most</span>
           </div>
           <div className={styles.state}>
-            <Link className={styles.link} href="/dev">
+            <Link className={styles.link} href="/admin/dev">
               A text link
             </Link>
             <span className={styles.stateLabel}>Link · live, hover and focus it</span>

@@ -47,9 +47,9 @@ production build rather than against the host.
   authoritative and does nothing.** Declared in the framework, the header is
   part of the response whatever rendered it.
   The one documented difference is that headers declared there are evaluated
-  **after** the proxy rather than before, and it cannot matter for these two
-  paths, because `proxy.js`'s matcher deliberately excludes both `/admin` and
-  `/dev`.
+  **after** the proxy rather than before, and it cannot matter for the admin,
+  because `proxy.js`'s matcher deliberately excludes `/admin` — the design
+  system included, at `/admin/dev` since 29-09-2026.
 - **`netlify.toml` carries four settings and deliberately nothing else**: the
   build command exactly as `package.json` defines it, `NODE_VERSION = "22"`,
   and two that narrow the secrets scan — see "The secrets scan is narrowed,
@@ -246,6 +246,29 @@ console: the payment-page **signature** setting and the success and failure
 ordering trap — switching it on before our verification code is built and tested
 makes every test transaction fail with nothing to explain why. See api.md.
 
+## The client address, measured on 29-09-2026
+
+Both rate limits — sign-in and checkout — key on the client address, and which
+header carries it on Netlify was an assumption until this date. It was measured
+on the live deploy, signed in, through a temporary route
+(`/admin/api/client-ip`, deleted once it had answered), once plainly and once
+with every header forged by the client:
+
+| Header | What Netlify did |
+|---|---|
+| `x-nf-client-connection-ip` | **Overwritten** with the real address. A forged value never arrives |
+| `x-forwarded-for` | The client's value is **kept**, and Netlify appends after it: `"147.235.217.51, 63.178.53.27"`. The left-most entry is whatever the client wrote; the right-most is **Netlify's own edge address**, the same for every visitor |
+| `x-real-ip` | Passed through **exactly as sent** |
+| `client-ip` | Absent |
+
+So `lib/auth/client-ip.js` reads **`x-nf-client-connection-ip` and nothing
+else** in production, and falls into the shared unknown bucket if it is ever
+missing. Neither end of `x-forwarded-for` identifies a client — the left is
+forgeable, the right would put every buyer in one bucket — so production does
+not read it; development reads its left-most entry only so a test can simulate
+sources. **Nothing reads `x-real-ip`.** If the site ever moves host, this
+measurement has to be taken again before either limit means anything.
+
 ## The payment return: what is proven, and what is not
 
 **There is no Hyp account yet**, and there will not be one until the site is
@@ -364,6 +387,20 @@ And these do what they must:
 - **Whether Hyp signs decline redirects at all**, and what it sends to the
   error URL. A signed decline is handled; an unsigned one fails VERIFY. Both
   write nothing.
+- **That `form-action` names the payment page's real host.** Since 29-09-2026
+  the Content Security Policy allows forms to lead only to this site and to
+  `HYP_PAYMENT_ORIGIN`, which `next.config.mjs` reads from `lib/payments/hyp.js`
+  rather than restating. Without JavaScript, checkout's redirect to the payment
+  page follows a form post and the browser holds it to that list; with
+  JavaScript it is a script navigation and is not held to it. Proven in
+  development against the stand-in, both ways, with a negative control: the
+  stand-in removed from `form-action` and the no-script redirect **blocked**.
+  What cannot be proven is that `pay.hyp.co.il` is the host a real terminal
+  sends buyers to, and not a second host it redirects through. If it is wrong,
+  a buyer **without script** is stopped on our page with nothing charged, and a
+  buyer with script is unaffected. The first real transaction settles it,
+  together with the VERIFY entries above — **walk it once with JavaScript
+  switched off.**
 
 ### Known residuals: refunds that exist only in the logs
 
@@ -471,12 +508,12 @@ Beyond a green build, these are launch blockers and are easy to forget:
   as the admin's sign-in erroring on a typo, on the live site, with nothing in
   the build to warn. Apply it first. A correct password still signs in without
   it, since success writes nothing.
-- **Remove `/admin/api/client-ip` in the session after the merge that ships
-  it.** A temporary diagnostic, signed in only, that reports four
-  client-address headers so the live behaviour can be measured: request it once
-  plainly and once with `x-forwarded-for` and `x-nf-client-connection-ip`
-  forged, record what Netlify did with each in `lib/auth/client-ip.js`'s
-  comment, and delete the route and its rows in app-files.md and api.md.
+- **Migration 013 applied to Neon — and to the local database — before the
+  checkout throttle deploys or runs.** Like 012 it does not fail the build:
+  nothing prerendered touches `checkout_attempts`. It fails at runtime, on the
+  first checkout that gets past validation, because the throttle reads and
+  writes that table before the order is written — so a missing 013 is every
+  buyer's checkout erroring at the last step. Apply it first.
 - ~~**Migration 011 applied to Neon before this code deploys.**~~ **Done on
   28-09-2026**, applied from a session and reconciled against the local schema
   and read back through `getSiteSettings()`. The row on Neon holds only the
@@ -538,12 +575,24 @@ Beyond a green build, these are launch blockers and are easy to forget:
   That branch leaves an order pending with money taken, and the orders list is
   the only place it can be caught — so it has to be seen working before a
   stranger meets it.
-- **The `X-Robots-Tag` header confirmed on the deployed site**, not only in a
-  local production build. It is declared in `next.config.mjs` and therefore
-  carried by Netlify's Next adapter rather than by the host's own header rules —
-  and the adapter honouring it is the one part of this a laptop cannot prove.
-  `curl -I` an admin path and `/dev` on the deployed site and look for all three
-  directives.
+- **The response headers confirmed on the deployed site**, not only in a
+  local production build: the six security headers on every response, the
+  `X-Robots-Tag` directives on the admin, and no `X-Powered-By`. All are
+  declared in `next.config.mjs` and so carried by Netlify's Next adapter rather
+  than by the host's own header rules — and the adapter honouring them is the
+  one part of this a laptop cannot prove. **It is unmeasured for the responses
+  Netlify serves from its own cache**, the reverse of the case security.md
+  describes, so check three kinds of response:
+  a **prerendered page** (`/he`), a **static asset** (any `/_next/static/…`
+  file, or `/video/hero-cherries-poster.jpg`), and an **SSR admin page**
+  (`/admin/login`).
+  **How depends on whether the site is Private.** While it is, Netlify's team
+  login answers an unauthenticated request first, with its own headers, and
+  those look real — so a plain `curl -I` proves nothing. Check from a browser
+  already signed in to the Netlify team, in the developer tools' network panel,
+  reading the response headers of each of the three. **Only once the site is
+  public** does `curl -I` against each become the check. Also confirm the
+  console shows no Content Security Policy violation on the pages walked.
 - **A check that the guard survived the deploy.** It is built, but it is
   ordinary application code rather than infrastructure: browse to an admin page
   signed out on the deployed site and confirm it lands on the login form.

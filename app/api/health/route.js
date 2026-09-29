@@ -1,19 +1,14 @@
-import { getAllWorks } from '@/lib/data/works-repository';
-
 /**
  * GET /api/health
  *
- * A liveness check that also proves the data access layer is reachable from a
- * route handler, not just from pages. It calls the repository like everything
- * else does — it does not read the works file directly.
+ * Liveness only: the function is deployed and answers. **It touches no
+ * database**, deliberately — a public route that queries Postgres on every
+ * request is a way for anybody to wake the production database and spend its
+ * compute, and nothing monitors this route that needs more than a 200.
+ *
+ * Whether the database is reachable is answered by any page that reads a
+ * painting, which fails loudly when it is not.
  */
-export async function GET() {
-  const works = await getAllWorks();
-
-  return Response.json({
-    status: 'ok',
-    works: works.length,
-    /* A reminder in the payload itself that none of the data is real yet. */
-    dataIsPlaceholder: works.some((work) => work.hasPlaceholderData),
-  });
+export function GET() {
+  return Response.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
 }

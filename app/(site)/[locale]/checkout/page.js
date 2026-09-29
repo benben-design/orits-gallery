@@ -10,6 +10,8 @@ import { interpolate } from '@/lib/i18n/interpolate';
 import { readCartIds } from '@/lib/cart/cart-cookie';
 import { quoteCheckout } from '@/lib/data/orders-repository';
 import { getWorksByIds } from '@/lib/data/works-repository';
+import { getSiteSettings } from '@/lib/data/settings-repository';
+import { whatsappHref } from '@/lib/contact';
 import { submitCheckout } from '@/lib/checkout/actions';
 import { isHypConfigured, isTestTerminal } from '@/lib/payments/hyp';
 import styles from './page.module.css';
@@ -78,6 +80,7 @@ export default async function CheckoutPage({ params, searchParams }) {
   const orderedWorks = sellableIds.map((id) => byId.get(id)).filter(Boolean);
 
   const configured = isHypConfigured();
+  const settings = await getSiteSettings();
 
   return (
     <Section>
@@ -163,6 +166,15 @@ export default async function CheckoutPage({ params, searchParams }) {
                     locale={locale}
                     dictionary={dictionary}
                     amounts={{ subtotal: quote.subtotal, methods: quote.methods }}
+                    /*
+                      Only drawn if this source is rate limited, as the way to
+                      buy anyway. Null when no number is set, and the sentence
+                      then stands alone rather than ending in a dead link.
+                    */
+                    whatsappHref={whatsappHref(
+                      settings.whatsappNumber,
+                      dictionary.nav.whatsappMessage
+                    )}
                   />
                 </>
               ) : (

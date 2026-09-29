@@ -346,6 +346,25 @@ policy that 004 deferred.
   or v6, and a value that fails to parse must still be countable rather than
   raising mid-login.
 
+### `checkout_attempts`
+
+The counter behind the checkout rate limit. Added by migration 013 — **written,
+and not yet applied to either database** until it is run by hand.
+
+`id`, `ip` (text, 1 to 64 characters), `created_at`, with an index on
+`(ip, created_at)`.
+
+- **A row is one order slot a source has used**, not a counter: "how many in
+  the last hour" is a count over a sliding window. A slot is taken before the
+  order is written and deleted again if no order was written.
+- **Its own table**, independent of `admin_login_attempts`: different things
+  counted, different pruning, different code.
+- **References nothing, and holds no limit or window** — those are constants in
+  `lib/checkout/checkout-throttle.js`.
+- **`ip` is personal data.** The application deletes every row older than the
+  window on each checkout. With no scheduler, a row can outlast the window
+  until the next checkout — see security.md.
+
 ### `site_settings` — one row, the studio's own facts
 
 Added by migration 011. The About text (`about_he`, `about_en`), `email`,

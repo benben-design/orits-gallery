@@ -20,7 +20,7 @@ TypeScript and no JSX-specific extension.
 The parenthesised folders are **route groups**: they organise files without
 appearing in the URL. They do two jobs here.
 
-The outer ones give the site, the admin and `/dev` **separate root layouts**,
+The outer ones give the site, the admin and the design system (`/admin/dev`) **separate root layouts**,
 which is why there is no top-level `app/layout.js`. Each root layout renders its
 own `<html>` and `<body>`.
 
@@ -104,11 +104,12 @@ whether it reads `searchParams`, not by preference**.
 Three rules around it:
 
 - **Never cache a read that is shared with something that must not be cached.**
-  `getAllWorks` is called by the gallery, by `app/sitemap.js`, and by
-  `app/api/health/route.js` — which calls it *because* a real query proves the
-  database is reachable. A cache on it turns the liveness check into a liveness
-  check that reports success while the database is down. Add a separate cached
-  read; do not wrap the shared one.
+  The gallery's cached read is `getGalleryWorks`, not a cache on
+  `getAllWorks`, which `app/sitemap.js` also calls; wrapping the shared
+  function would cache every caller at once, silently, including the next one
+  added for a reason that needs a live read. (`/api/health` used to be that
+  caller; since 29-09-2026 it touches no database.) Add a separate cached read;
+  do not wrap the shared one.
 - **Never cache anything the cart or checkout reads.** A cart is a wish, not a
   hold, and its whole correctness is that every work is re-read. See commerce.md.
 - **Every write invalidates through `lib/revalidate.js`**, never by calling

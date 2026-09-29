@@ -118,7 +118,7 @@ publication status is not the same question as sale status: a sold work is
 public, an unpublished one is not.
 
 `robots` disallows `/admin`. An `X-Robots-Tag: noindex, nofollow, noarchive`
-header on `/admin` and on `/dev` sits beside it — belt and braces, because an
+header on `/admin` — the design system at `/admin/dev` included — sits beside it: belt and braces, because an
 admin page leaking into search is embarrassing and permanent.
 
 **That header is declared in `next.config.mjs`, and it has to be.** A rule

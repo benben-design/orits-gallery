@@ -58,6 +58,9 @@ const FIELD_ORDER = [
  * @param {{subtotal: object, methods: Record<string, {deliveryFee: object, total: object, totalAgorot: number}>}} props.amounts
  *   Only the methods on offer today are in `methods`, so a method switched off
  *   in the settings is never drawn.
+ * @param {string|null} props.whatsappHref - Built on the server from the site
+ *   settings; offered only when this source is rate limited. Null when no
+ *   number is set.
  *
  * **The figures can be replaced by the action.** When the submit finds that
  * the total has changed since the page rendered, or that pickup has been
@@ -65,7 +68,7 @@ const FIELD_ORDER = [
  * instead — the page's own props are what was true when it loaded, and the
  * action's are what is true now.
  */
-export default function CheckoutForm({ action, locale, dictionary, amounts }) {
+export default function CheckoutForm({ action, locale, dictionary, amounts, whatsappHref }) {
   const [state, formAction, isPending] = useActionState(action, null);
 
   /*
@@ -185,6 +188,27 @@ export default function CheckoutForm({ action, locale, dictionary, amounts }) {
       {state?.error === 'paymentUnavailable' || state?.error === 'paymentNotConfigured' ? (
         <p className={styles.stop} role="alert">
           {copy.errorPayment}
+        </p>
+      ) : null}
+
+      {/*
+        Too many orders from this source within the hour. One sentence, and
+        when the artist has a WhatsApp number set, the way to buy anyway —
+        somebody legitimately stopped here is a sale, and a person can finish
+        it. The number comes from the settings; without one there is no link.
+      */}
+      {state?.error === 'rateLimited' ? (
+        <p className={styles.stop} role="alert">
+          {whatsappHref ? (
+            <>
+              {copy.errorRateLimitedWithWhatsapp}{' '}
+              <a className={styles.stopLink} href={whatsappHref}>
+                {copy.errorRateLimitedWhatsappLink}
+              </a>
+            </>
+          ) : (
+            copy.errorRateLimited
+          )}
         </p>
       ) : null}
 

@@ -1,8 +1,8 @@
 /**
  * robots.txt
  *
- * The admin area and the design-system page at /dev are both kept out of search
- * results three ways, all three in effect: here, in each one's own root-layout
+ * The admin area, and the design-system page at /admin/dev inside it, are kept
+ * out of search results three ways, all three in effect: here, in each one's own root-layout
  * metadata, and via an `X-Robots-Tag: noindex, nofollow, noarchive` header
  * declared in next.config.mjs — in the framework's configuration rather than
  * the host's, because a header rule written for Netlify is applied only to
@@ -22,7 +22,11 @@ export default function robots() {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/dev', '/api/'],
+        /*
+          No /dev: the design system moved under /admin, and naming a path
+          that no longer exists here would only advertise that it once did.
+        */
+        disallow: ['/admin', '/api/'],
       },
     ],
     /* Absolute by specification: a sitemap reference in robots.txt may not be
