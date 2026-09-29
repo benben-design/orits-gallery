@@ -228,8 +228,9 @@
   `pay.hyp.co.il` is checkout's redirect to the payment page, which without
   script follows a form post and is held to `form-action`. The two hosts that
   already have a constant — the payment page and the upload endpoint — are
-  **imported** into the config from `lib/payments/hyp.js` and
-  `lib/image-host.js`, never restated. Fonts, the hero video and the local
+  **imported** into the config from `lib/payments/hyp-endpoint.js` and
+  `lib/image-host-endpoint.js`, never restated — modules holding only the host,
+  because the config cannot load the `server-only` modules that read the keys. Fonts, the hero video and the local
   paintings are `'self'`: `next/font` makes no request to Google at runtime, and
   nothing plays from elsewhere, which is why `media-src` names no host and
   `img-src` has no `data:`. Links a visitor follows (WhatsApp, Instagram,
@@ -313,7 +314,31 @@ they are already inside it.
 - Validate against the exported constants — `WORK_STATUSES`, `WORK_CATEGORIES`,
   `IMAGE_TYPES` — rather than writing whatever value arrived.
 - Uploads are constrained by type and size, and a file's own claimed name or
-  content type is not evidence of what it is.
+  content type is not evidence of what it is. **The type is enforced by the
+  host, not by us guessing**: the upload signature carries
+  `allowed_formats=jpg,jpeg,png,webp,heic`, so the host refuses anything else
+  and a browser that drops the parameter invalidates the signature; and
+  `readUploadedImage` refuses any asset whose detected `format` is not on that
+  list, which also covers an asset named by the create form's field or
+  uploaded through the host's own console. The host files PDF and SVG as
+  images, which is what this keeps out. Verified 29-09-2026 against the real
+  host: a signed GIF refused for its format, the same upload without the
+  parameter refused for its signature, nothing created.
+- **Every module that reads a non-public environment variable is marked
+  `server-only`** — `lib/db.js`, `lib/auth/session.js`, `lib/translate.js`,
+  `lib/image-host.js`, `lib/payments/hyp.js` — so importing one from a client
+  component fails the build instead of shipping the key; proven with a
+  temporary client import of `lib/db.js`, which stopped the build at the
+  marker. Everything else that touches a secret imports one of these five. A
+  new module that reads a secret gets the marker in the same change. Plain
+  Node cannot load a marked module without `--conditions=react-server`, which
+  the two admin scripts are run with; `next.config.mjs` takes its hosts from
+  `hyp-endpoint.js` and `image-host-endpoint.js` instead.
+- **`ADMIN_SESSION_SECRET` cannot be the template's placeholder.** The value in
+  `.env.example` is public and 33 characters long, so the length check alone
+  accepted it — and on `main` a session forged with it verified. `readSecret`
+  now refuses it, and anything carrying its wording, when signing; verifying
+  under it returns null, so every session fails closed.
 - **Payment state is written only by our own server, and only after the
   provider's VERIFY call has validated the redirect.** This amends a stricter
   rule that could not be implemented here: Hyp Pay at our tier has no webhook

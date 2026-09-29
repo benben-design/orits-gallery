@@ -11,8 +11,8 @@
     "lint": "eslint . && node scripts/check-contrast.mjs && node scripts/check-admin-guard.mjs && node scripts/check-sitemap.mjs && node scripts/check-image-crop.mjs && node scripts/check-page-headings.mjs && node scripts/check-locale-strings.mjs",
     "images:manifest": "node scripts/generate-image-manifest.mjs",
     "dev:placeholders": "node scripts/generate-dev-placeholders.mjs",
-    "seed:local": "node --env-file-if-exists=.env.local scripts/seed-local-database.mjs",
-    "admin:create": "node --env-file-if-exists=.env.local scripts/create-admin-user.mjs",
+    "seed:local": "node --conditions=react-server --env-file-if-exists=.env.local scripts/seed-local-database.mjs",
+    "admin:create": "node --conditions=react-server --env-file-if-exists=.env.local scripts/create-admin-user.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:guard": "node scripts/check-admin-guard.mjs",
     "check:sitemap": "node scripts/check-sitemap.mjs",
@@ -25,7 +25,8 @@
     "next": "^16.3.3",
     "pg": "^8.23.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "eslint": "^9.39.5",

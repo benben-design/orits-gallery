@@ -483,6 +483,7 @@
         "donePending": "The photograph is ready, and will be attached when the work is saved.",
         "errors": {
           "notAnImage": "That file is not an image. Choose a JPG or a PNG.",
+          "unsupportedFormat": "The photograph has to be a JPG, PNG, WebP or HEIC file.",
           "unreadable": "The file could not be opened. It may be damaged, or in a format the browser does not recognise.",
           "tooLarge": "The file is {size} MB, and the largest allowed is {max} MB. Save it again at a lower quality and try once more.",
           "tooManyPixels": "The image is {pixels} megapixels, and the most allowed is {max}. Reduce its dimensions and try once more.",

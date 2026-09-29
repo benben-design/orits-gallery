@@ -43,7 +43,8 @@ Every public page needs a sensible OG image; the homepage uses the featured work
 **The crop question, decided.** Platforms want roughly 1200x630 and these
 paintings run from 0.62 to 1.51, so no one file satisfies both that and the rule
 that a painting is never cropped. The artwork page hands over **the painting
-itself, whole**, at its true pixel dimensions, and lets each platform frame it.
+itself, whole** — scaled to at most 1200 wide, never cropped — and lets each
+platform frame it.
 Generating a 1200x630 card with the work letterboxed on the wall colour was
 rejected twice over: most of that image is empty mat, and the platforms with a
 squarer preview crop *it* — so the painting ends up smaller and still cropped, in
@@ -55,13 +56,33 @@ photography lands, a generated letterboxed card is the thing to build.
 A work with no photograph yet ships no image at all, rather than a stand-in
 nobody chose.
 
-**A share image is handed over untransformed**, whichever delivery path it came
-from, and it is the one image URL on the site that does not go through
-`lib/image-loader.js` — a crawler is given the reference itself. That is why
-`absoluteUrl` has to leave an already-absolute URL alone: a painting the artist
-uploaded is already `https://res.cloudinary.com/…`, and prefixing the site
-address to it produced a preview that resolved to nothing. It went unnoticed for
-as long as every image was local.
+**The share image is delivered through the image host, as a JPEG at most 1200
+wide** — `f_jpg,q_auto,c_limit,w_1200`, built by `shareImageFor` in
+`lib/image-loader.js` (since 29-09-2026). It used to be the stored original,
+untransformed, which broke twice over: an original after the re-shoot can be
+10MB, and WhatsApp drops the preview for a heavy image; and an original uploaded
+as HEIC is a file no crawler can show. Every format goes through it, not only
+HEIC.
+
+- **JPEG, fixed, not `f_auto`.** A crawler does not negotiate formats the way a
+  browser does, so the one format every platform reads is asked for outright.
+- **`q_auto`** keeps it light: the fourteen hosted works come out at 75–221 KB,
+  against originals of over a megabyte.
+- **`c_limit`, width only**, so it never crops and never enlarges — an original
+  narrower than 1200 is served at its own width. `check:crop` holds this
+  transformation to the same rule as the loader's.
+- **`og:image:width` and `og:image:height` are the served file's**, computed to
+  match what `c_limit` returns (the height rounded from the painting's ratio).
+  Verified on 29-09-2026 against every published work in both languages: each
+  declared size equal to the served JPEG's, to the pixel.
+- **A local file is handed over as it is** — it is not on the host. That is one
+  work today, `two-pears`, a WhatsApp-compressed JPEG of 1582x1600 and 326 KB.
+  It is absolute, served by this site.
+
+`absoluteUrl` still has to leave an already-absolute URL alone: a hosted share
+image is `https://res.cloudinary.com/…`, and prefixing the site address to one
+produced a preview that resolved to nothing. It went unnoticed for as long as
+every image was local.
 
 ## hreflang
 

@@ -13,6 +13,7 @@ import {
   MAX_UPLOAD_PIXELS,
   MAX_UPLOAD_MEGABYTES,
   MAX_UPLOAD_MEGAPIXELS,
+  ALLOWED_UPLOAD_FORMATS,
 } from '@/lib/image-host';
 import AdminImageUpload from '@/components/admin/AdminImageUpload';
 import { interpolate } from '@/lib/i18n/interpolate';
@@ -151,6 +152,7 @@ export default async function AdminEditWorkPage({ params }) {
                 maxPixels={MAX_UPLOAD_PIXELS}
                 maxMegabytes={MAX_UPLOAD_MEGABYTES}
                 maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+                allowedFormats={ALLOWED_UPLOAD_FORMATS}
               />
             ) : null
           }

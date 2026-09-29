@@ -23,6 +23,12 @@ npm run seed:local        # fill a LOCAL database with the sixteen works
 npm run admin:create      # create an admin account, or change its password
 ```
 
+**Both database scripts run under `node --conditions=react-server`**, and
+that flag is load-bearing: `lib/db.js` is marked `server-only`, and plain Node
+loads the marker's throwing half without it. Any ad-hoc Node script that
+imports `lib/db.js`, `lib/auth/session.js`, `lib/translate.js`,
+`lib/image-host.js` or `lib/payments/hyp.js` needs the same flag.
+
 `admin:create` prompts for the password with the echo off and refuses to run
 without a terminal. The password is never an argument, never an environment
 variable, and there is no default password in the repository. It takes the email

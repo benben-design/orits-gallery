@@ -20,7 +20,12 @@
   `WORK_CATEGORIES`, `IMAGE_TYPES` exist for this reason
 - Keep dependencies minimal. Prefer a platform feature or twenty lines over a
   package. `scripts/generate-image-manifest.mjs` reads JPEG headers by hand
-  rather than pulling in an image library — that is the house style
+  rather than pulling in an image library — that is the house style.
+  **`server-only` is the one exception taken on purpose** (29-09-2026): a
+  two-file marker from the React team with no dependencies, and the mechanism
+  Next documents for making a client import of a server module fail the build.
+  Twenty lines could not replace it, because what it does is resolve
+  differently per React environment
 
 ## The one icon dependency
 

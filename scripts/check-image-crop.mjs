@@ -44,7 +44,7 @@
  * script needs to move with it.
  */
 import { readFileSync } from 'node:fs';
-import { transformationFor } from '../lib/image-loader.js';
+import { transformationFor, shareTransformation, shareImageFor, SHARE_IMAGE_WIDTH } from '../lib/image-loader.js';
 import imageLoader from '../lib/image-loader.js';
 
 /**
@@ -151,6 +151,30 @@ const foreignOk = imageLoader({ src: foreign, width: 640 }) === foreign;
 console.log('  ' + 'an unrecognised host'.padEnd(28) + (foreignOk ? 'passed through' : 'REFUSED'));
 if (!foreignOk) failures.push({ width: 640, url: foreign, foreign: true });
 
+/* ---- the share image: the second transformation, the same rule --------- */
+
+const share = shareTransformation();
+const shareParts = share.split(',');
+const sharedLarge = shareImageFor({ src: HOSTED, width: 3000, height: 4000 });
+const sharedSmall = shareImageFor({ src: HOSTED, width: 800, height: 600 });
+const sharedLocal = { src: LOCAL, width: 1582, height: 1600 };
+const shareOk =
+  shareParts.includes(REQUIRED_MODE) &&
+  shareParts.includes('w_' + SHARE_IMAGE_WIDTH) &&
+  shareParts.includes('f_jpg') &&
+  !shareParts.some((part) => part.startsWith('h_')) &&
+  !CROPPING_MODES.some((mode) => shareParts.includes(mode)) &&
+  sharedLarge.src.includes('/' + share + '/') &&
+  // The declared size is the served file's: scaled to the width, ratio kept,
+  // and never enlarged past the original.
+  sharedLarge.width === SHARE_IMAGE_WIDTH && sharedLarge.height === 1600 &&
+  sharedSmall.width === 800 && sharedSmall.height === 600 &&
+  shareImageFor(sharedLocal) === sharedLocal &&
+  shareImageFor({ src: 'https://example.test/x.jpg', width: 10, height: 10 }).src === 'https://example.test/x.jpg';
+
+console.log('  ' + 'the share image'.padEnd(28) + (shareOk ? share + ', size declared as served' : 'REFUSED — ' + share));
+if (!shareOk) failures.push({ share: true, url: sharedLarge.src });
+
 /*
   The painting frame never fills. Comments are stripped first, because the
   stylesheet's own comments name the declaration they forbid.
@@ -169,7 +193,9 @@ if (failures.length > 0) {
   console.error('\n  ' + failures.length + ' variant(s) break the never-crop rule:\n');
 
   for (const failure of failures) {
-    const reason = failure.frame
+    const reason = failure.share
+      ? 'the share image crops, binds height, is not JPEG, or declares a size it is not served at'
+      : failure.frame
       ? 'the painting frame fills its box — that belongs to PortraitFrame and nothing else'
       : failure.local
       ? 'a local file is no longer going to the built-in optimiser'
@@ -183,7 +209,7 @@ if (failures.length > 0) {
               ? 'does not use ' + REQUIRED_MODE
               : 'does not bind the requested width';
 
-    console.error('    ' + (failure.frame ? 'frame' : 'w_' + failure.width) + ' — ' + reason);
+    console.error('    ' + (failure.share ? 'share' : failure.frame ? 'frame' : 'w_' + failure.width) + ' — ' + reason);
     console.error('      ' + failure.url);
   }
 

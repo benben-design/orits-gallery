@@ -11,6 +11,10 @@ next-env.d.ts
 # production
 /build
 
+# netlify — the CLI's local state and build output, which can hold
+# environment values (see the secrets-scan note in netlify.toml)
+.netlify/
+
 # misc
 .DS_Store
 *.pem
