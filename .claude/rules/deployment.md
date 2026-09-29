@@ -133,7 +133,7 @@ starting with these exclusions.
 
 **Connected, as of 12-09-2026.** The production database is a Neon project
 named **"Orit's gallery"**, region **US East (Ohio)**, **PostgreSQL 18**. It
-carries migrations **001 through 012** (011 and 012 since 28-09-2026), the catalogue, and **both admin
+carries migrations **001 through 013** (011 and 012 since 28-09-2026, 013 since 29-09-2026), the catalogue, and **both admin
 accounts**. Development is unchanged and stays on the local Postgres.
 
 **That is not the same as being deployed.** `DATABASE_URL` is set on no host,
@@ -508,8 +508,12 @@ Beyond a green build, these are launch blockers and are easy to forget:
   as the admin's sign-in erroring on a typo, on the live site, with nothing in
   the build to warn. Apply it first. A correct password still signs in without
   it, since success writes nothing.
-- **Migration 013 applied to Neon — and to the local database — before the
-  checkout throttle deploys or runs.** Like 012 it does not fail the build:
+- ~~**Migration 013 applied to Neon — and to the local database — before the
+  checkout throttle deploys or runs.**~~ **Done on 29-09-2026, on both**, before
+  the merge that ships the code: the catalog matches the file on each (Neon, on
+  PostgreSQL 18, also lists each `NOT NULL` as a named constraint, which 15
+  does not), and a slot was reserved and released through the throttle module
+  over the pooled endpoint. Kept for its reason: like 012 it does not fail the build:
   nothing prerendered touches `checkout_attempts`. It fails at runtime, on the
   first checkout that gets past validation, because the throttle reads and
   writes that table before the order is written — so a missing 013 is every
