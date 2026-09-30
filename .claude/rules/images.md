@@ -327,10 +327,12 @@ without anything looking wrong.
 
 **The share image is the second transformation, and the same rule.** Since
 29-09-2026 the Open Graph image is delivered through the host as
-`f_jpg,q_auto,c_limit,w_1200` — built by `shareImageFor` in
+`q_auto,c_limit,w_1200` on an address ending in **`.jpg` whatever was
+uploaded** (since 30-09-2026) — built by `shareImageFor` in
 `lib/image-loader.js`, beside the loader, and asserted by `check:crop` like
-every srcset width: `c_limit`, width only, no crop mode, and a declared size
-equal to what is served. See seo.md for why it is a JPEG.
+every srcset width: `c_limit`, width only, no crop mode, no format parameter,
+a `.jpg` address, and a declared size equal to what is served. See seo.md for
+why it is a JPEG.
 
 ### Every transformation this site asks the host for
 
@@ -342,7 +344,7 @@ and `npm run check:crop` prints them.
 | Where | Transformation | Widths |
 |---|---|---|
 | Every `next/image` of a hosted painting or portrait (the loader) | `f_auto,q_auto:good,c_limit,w_<width>` | 160, 240, 320, 420, 540, 680, 640, 828, 1080, 1280, 1600, 1920, 2560 — `imageSizes` and `deviceSizes` in `next.config.mjs` |
-| The artwork page's `og:image` and `twitter:image` (`shareImageFor`) | `f_jpg,q_auto,c_limit,w_1200` | 1200 only |
+| The artwork page's `og:image` and `twitter:image` (`shareImageFor`) | `q_auto,c_limit,w_1200`, on an address ending `.jpg` | 1200 only |
 
 The `q_` value in the first row follows `next/image`'s `quality` prop when a
 component passes one; none does today, so it is always `q_auto:good`. **Adding a
@@ -350,6 +352,25 @@ width to either config list, a `quality` prop, or a third transformation adds a
 new entry here** — and, once strict transformations is on, one the host will
 refuse until it is allowed. A painting that stops loading after such a change is
 that, not a crop.
+
+**The host counts an address's extension as part of the transformation.** The
+loader's row is one entry per width whatever the source format, because the
+host allows every format of an `f_auto` transformation. The share row is one
+entry because `shareImageFor` rewrites every hosted address to end in `.jpg` —
+it used to ask for `f_jpg` on the original's own `.png`, `.webp` or
+`.heic` address, which would have been one entry per source format, and the
+first upload in a new format would have lost its share preview silently. Do not
+put a format parameter back into it.
+
+**Changing a width list means allowing the new widths in Cloudinary before the
+deploy that emits them.** Once strict transformations is on, a width the host
+refuses is a 404 for every browser whose srcset picks it — **a blank painting,
+with no fallback**, and nothing in the build or in `check:crop` can see it. So,
+in this order: switch strict transformations off, request each new width once
+against any hosted painting so the host records it, allow each one
+(**Image → Manage Transformations → Log**, ⋮ → *Allowed for strict
+transformations*), switch strict back on, then deploy. Update the table above
+in the same change. A width removed from the list needs nothing.
 
 ## How a photograph gets here
 
@@ -393,7 +414,8 @@ signature, by the read-back, and by the panel before sending — see security.md
 **HEIC displays everywhere**, because neither delivery URL hands over the
 original: the loader asks the host for `f_auto`, and a `.heic` reference comes
 back as AVIF or WebP to a browser (verified 29-09-2026); the share image asks
-for `f_jpg`, which every crawler reads. On a phone this rarely arises, since the
+for the same file under a `.jpg` name, which the host delivers as a JPEG every
+crawler reads. On a phone this rarely arises, since the
 browser's picker usually hands over a JPEG, and desktop Chrome cannot decode HEIC
 to measure it, so the panel refuses one there as unreadable before it is sent.
 

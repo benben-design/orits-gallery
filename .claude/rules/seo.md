@@ -57,15 +57,20 @@ A work with no photograph yet ships no image at all, rather than a stand-in
 nobody chose.
 
 **The share image is delivered through the image host, as a JPEG at most 1200
-wide** — `f_jpg,q_auto,c_limit,w_1200`, built by `shareImageFor` in
-`lib/image-loader.js` (since 29-09-2026). It used to be the stored original,
+wide** — `q_auto,c_limit,w_1200` on an address ending in `.jpg`, built by
+`shareImageFor` in `lib/image-loader.js` (since 29-09-2026; the `.jpg`
+address since 30-09-2026). It used to be the stored original,
 untransformed, which broke twice over: an original after the re-shoot can be
 10MB, and WhatsApp drops the preview for a heavy image; and an original uploaded
 as HEIC is a file no crawler can show. Every format goes through it, not only
 HEIC.
 
 - **JPEG, fixed, not `f_auto`.** A crawler does not negotiate formats the way a
-  browser does, so the one format every platform reads is asked for outright.
+  browser does, so the one format every platform reads is asked for outright —
+  by the address's extension, which the host delivers, and not by `f_jpg`. The
+  host counts the extension as part of the transformation, so `f_jpg` on each
+  original's own extension would be one allowed entry per source format under
+  strict transformations; see images.md.
 - **`q_auto`** keeps it light: the fourteen hosted works come out at 75–221 KB,
   against originals of over a megabyte.
 - **`c_limit`, width only**, so it never crops and never enlarges — an original
