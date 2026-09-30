@@ -376,15 +376,17 @@
       "actionRefund": "Refund",
       "actionSettleRefund": "The refund has been made",
       "actionsNone": "No actions are available at this stage.",
-      "releaseNote": "Cancelling or refunding returns this order’s paintings to draft and clears their sale channel - they do not go straight back onto the site. Republishing is done from the painting itself.",
+      "releaseNote": "Cancelling or refunding returns the paintings this order sold to draft and clears their sale channel - they do not go straight back onto the site. A painting that has since sold again, here or elsewhere, is left as it is. Republishing is done from the painting itself.",
       "refundDueBanner": "Money was taken for a painting that had already sold to someone else, and the charge was not voided. Refund by hand in the Hyp console, then mark it done. The paintings on this order belong to another buyer and will not be released.",
       "workDraft": "Draft",
       "workPublished": "On the site",
       "outcomes": {
         "advanced-shipped": "The order is marked as posted.",
         "advanced-delivered": "The order is marked as received.",
-        "cancelled": "The order is cancelled and its paintings are back to draft.",
-        "refunded": "The refund is recorded and the paintings are back to draft.",
+        "cancelled": "The order is cancelled and the paintings it sold are back to draft.",
+        "cancelledNoneReleased": "The order is cancelled. No painting changed - this order held none.",
+        "refunded": "The refund is recorded and the paintings this order sold are back to draft.",
+        "refundedNoneReleased": "The refund is recorded. No painting changed - none is still held by this order.",
         "refundSettled": "Recorded that the refund has been made.",
         "notAllowed": "That action is not possible from the order’s current state."
       }

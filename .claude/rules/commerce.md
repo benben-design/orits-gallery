@@ -510,6 +510,42 @@ somebody else in the race; taking it back to fix a refund would take it from a
 buyer who is waiting for it. That order gets one action — recording that the
 money was returned — and says so on the page.
 
+**An order releases only the paintings it itself holds** (decided 30-09-2026).
+That a painting is on the order's lines and says sold is not the same thing: a
+line records what the order asked for, and the painting may since have been sold
+by somebody else. Three paths released another sale before this rule existed,
+and each is now refused:
+
+- **An abandoned pending order, cancelled after another buyer paid** for the same
+  painting. The orders list asks her to act on stale pending orders, and anyone
+  can create one, so this was the likely one.
+- **The same abandoned order, cancelled after she sold the painting on under1000**
+  and marked it sold by hand.
+- **A refund recorded after the returned painting was put back on sale and sold
+  again**, through this site or by hand.
+
+So an order holds a painting only when **all three** are true, and nothing else
+is ever touched:
+
+1. **The order held stock at all** — it was `paid`, `shipped` or `delivered`
+   before it was closed, and owes no refund. **A pending order holds nothing**:
+   it reserved nothing and seized nothing.
+2. **The painting is sold through this site.** A painting sold by hand on
+   another channel, or not sold, is never touched, whatever the closed order's
+   status.
+3. **No other paid, shipped or delivered order took it later.** Only one order can
+   seize an available painting at a time, so the one paid last is the one whose
+   sale the painting records. **An order that lost the race does not count**,
+   though it always carries a `paid_at` later than the winner's: voided it is
+   `cancelled`, and not voided it owes a refund. Counting it would stop the
+   winner's own refund releasing the painting.
+
+**Derived, not recorded.** There is no column naming the order that sold a
+painting; the rule is worked out from `order_lines` and `paid_at` inside the
+statement that releases, so there is no window between deciding and writing.
+The admin says which happened: "back to draft" when a painting moved, and "no
+painting changed" when none did.
+
 Nothing writes orders yet. The cart holds work ids in a cookie and ends in a
 deliberately inert checkout button. **The provider is settled — Hyp Pay, on the
 yaad-sarig platform** — and what remains is the checkout itself, the verified

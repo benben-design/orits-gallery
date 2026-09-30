@@ -296,8 +296,10 @@ export default async function AdminOrderPage({ params, searchParams }) {
               What cancelling or refunding does to the paintings, said before she
               presses either. They come back as drafts rather than straight onto
               the site, and that is a decision she should not have to discover.
+              Not on a pending order: it holds no paintings, so there is nothing
+              to warn about, and the sentence would be untrue.
             */}
-            {canCancel || canRefund ? (
+            {(canCancel || canRefund) && order.status !== 'pending' ? (
               <p className={styles.releaseNote}>{copy.releaseNote}</p>
             ) : null}
           </>

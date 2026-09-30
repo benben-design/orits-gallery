@@ -812,8 +812,8 @@ export async function advanceOrderStatus(orderId, to) {
  * artist calling off a sale that had gone through. Both write `cancelled_at` in
  * the same statement.
  *
- * **The paintings come back as drafts**, not straight back onto the site: see
- * `closeOrder`. That is why the public site is revalidated afterwards — a work
+ * **The paintings this order holds come back as drafts**, not straight back onto
+ * the site — and a pending order holds none: see `closeOrder`. That is why the public site is revalidated afterwards — a work
  * that has just become a draft must stop being served, and the gallery, the
  * homepage grid and its own artwork page would otherwise keep their cached
  * render and go on offering a painting that is no longer for sale.
@@ -827,7 +827,9 @@ export async function cancelOrder(orderId) {
 
   if (released > 0) revalidatePublicSite();
 
-  redirect(orderPath(orderId, ok ? 'cancelled' : 'notAllowed'));
+  // Which sentence follows depends on whether anything moved: a pending order,
+  // or one whose painting has since sold again, releases nothing.
+  redirect(orderPath(orderId, !ok ? 'notAllowed' : released > 0 ? 'cancelled' : 'cancelledNoneReleased'));
 }
 
 /**
@@ -847,7 +849,7 @@ export async function refundOrder(orderId) {
 
   if (released > 0) revalidatePublicSite();
 
-  redirect(orderPath(orderId, ok ? 'refunded' : 'notAllowed'));
+  redirect(orderPath(orderId, !ok ? 'notAllowed' : released > 0 ? 'refunded' : 'refundedNoneReleased'));
 }
 
 /**
