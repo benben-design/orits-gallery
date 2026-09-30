@@ -44,7 +44,13 @@
  * script needs to move with it.
  */
 import { readFileSync } from 'node:fs';
-import { transformationFor } from '../lib/image-loader.js';
+import {
+  transformationFor,
+  shareTransformation,
+  shareImageFor,
+  SHARE_IMAGE_WIDTH,
+  SHARE_IMAGE_EXTENSION,
+} from '../lib/image-loader.js';
 import imageLoader from '../lib/image-loader.js';
 
 /**
@@ -151,6 +157,58 @@ const foreignOk = imageLoader({ src: foreign, width: 640 }) === foreign;
 console.log('  ' + 'an unrecognised host'.padEnd(28) + (foreignOk ? 'passed through' : 'REFUSED'));
 if (!foreignOk) failures.push({ width: 640, url: foreign, foreign: true });
 
+/* ---- the share image: the second transformation, the same rule --------- */
+
+const share = shareTransformation();
+const shareParts = share.split(',');
+
+/*
+  JPEG is stated by the address's extension and by nothing else: every hosted
+  share address must end in .jpg whatever was uploaded, and no format parameter
+  may sit in the transformation to overrule it — f_auto there would hand a
+  crawler WebP or AVIF under a .jpg name. One extension is also what keeps the
+  share image to one allowed entry under strict transformations.
+*/
+const UPLOADED = 'https://res.cloudinary.com/kjsom6uz/image/upload/';
+const SHARED = UPLOADED + share + '/';
+
+/** Each stored reference, and the one share address it must become. */
+const SHARE_CASES = [
+  ['v1/orit-works/lemons.jpg', 'v1/orit-works/lemons.jpg'],
+  ['v1/orit-works/lemons.png', 'v1/orit-works/lemons.jpg'],
+  ['v1/orit-works/lemons.webp', 'v1/orit-works/lemons.jpg'],
+  ['v1/orit-works/lemons.heic', 'v1/orit-works/lemons.jpg'],
+  // No extension at all: one is added rather than nothing happening.
+  ['v1/orit-works/lemons', 'v1/orit-works/lemons.jpg'],
+  // A dot in a folder name is not an extension.
+  ['v1/orit.v2/lemons', 'v1/orit.v2/lemons.jpg'],
+];
+const sharesAsJpeg = SHARE_CASES.every(
+  ([stored, served]) =>
+    shareImageFor({ src: UPLOADED + stored, width: 3000, height: 4000 }).src === SHARED + served
+);
+
+const sharedLarge = shareImageFor({ src: HOSTED, width: 3000, height: 4000 });
+const sharedSmall = shareImageFor({ src: HOSTED, width: 800, height: 600 });
+const sharedLocal = { src: LOCAL, width: 1582, height: 1600 };
+const shareOk =
+  SHARE_IMAGE_EXTENSION === '.jpg' &&
+  sharesAsJpeg &&
+  shareParts.includes(REQUIRED_MODE) &&
+  shareParts.includes('w_' + SHARE_IMAGE_WIDTH) &&
+  !shareParts.some((part) => part.startsWith('f_')) &&
+  !shareParts.some((part) => part.startsWith('h_')) &&
+  !CROPPING_MODES.some((mode) => shareParts.includes(mode)) &&
+  // The declared size is the served file's: scaled to the width, ratio kept,
+  // and never enlarged past the original.
+  sharedLarge.width === SHARE_IMAGE_WIDTH && sharedLarge.height === 1600 &&
+  sharedSmall.width === 800 && sharedSmall.height === 600 &&
+  shareImageFor(sharedLocal) === sharedLocal &&
+  shareImageFor({ src: 'https://example.test/x.jpg', width: 10, height: 10 }).src === 'https://example.test/x.jpg';
+
+console.log('  ' + 'the share image'.padEnd(28) + (shareOk ? share + ' + ' + SHARE_IMAGE_EXTENSION + ', size declared as served' : 'REFUSED — ' + share));
+if (!shareOk) failures.push({ share: true, url: sharedLarge.src });
+
 /*
   The painting frame never fills. Comments are stripped first, because the
   stylesheet's own comments name the declaration they forbid.
@@ -169,7 +227,9 @@ if (failures.length > 0) {
   console.error('\n  ' + failures.length + ' variant(s) break the never-crop rule:\n');
 
   for (const failure of failures) {
-    const reason = failure.frame
+    const reason = failure.share
+      ? 'the share image crops, binds height, is not a .jpg address with no format parameter, or declares a size it is not served at'
+      : failure.frame
       ? 'the painting frame fills its box — that belongs to PortraitFrame and nothing else'
       : failure.local
       ? 'a local file is no longer going to the built-in optimiser'
@@ -183,7 +243,7 @@ if (failures.length > 0) {
               ? 'does not use ' + REQUIRED_MODE
               : 'does not bind the requested width';
 
-    console.error('    ' + (failure.frame ? 'frame' : 'w_' + failure.width) + ' — ' + reason);
+    console.error('    ' + (failure.share ? 'share' : failure.frame ? 'frame' : 'w_' + failure.width) + ' — ' + reason);
     console.error('      ' + failure.url);
   }
 

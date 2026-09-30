@@ -10,7 +10,7 @@ below is filled in as more land — the previous project kept a full method / pa
 |---|---|---|---|---|
 | GET | `/api/health` | — | `{ ok: true }`, always `no-store` | Liveness only. **Touches no database**: a public route that queried Postgres on every request was a way for anybody to wake the production database. Nothing in the repository monitors it |
 | POST | `/admin/api/translate` | `{ text, kind }` — Hebrew, at most 5,000 characters, and `title`, `description` or `about` | `{ ok: true, text }`, or `{ ok: false, error }` | The admin work form filling an English field in from its Hebrew twin. Verifies the session itself and returns 401 without one. 400 empty, unparseable or an unknown kind, 413 too long, 429 the provider is rate limiting, 503 no key or a key it refuses, 502 anything else |
-| GET | `/api/payments/hyp/return` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **success** return. Refuses a query carrying one of our keys or any key twice, then calls VERIFY, and does nothing before it answers; on a verified redirect whose `CCode` is `0` and whose `Order` and `Amount` match, it seizes the paintings and marks the order paid in one transaction, then clears the cart. A verified charge that does not match is voided. A route rather than a page for the cookie reason — only an action or a handler may set one |
+| GET | `/api/payments/hyp/return` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **success** return. Refuses a query carrying one of our keys or any key twice, or whose `Order` is not in the shape of one of our ids, before reading anything; then counts the source against a limit of 30 an hour (migration 014); then calls VERIFY, and changes nothing before it answers; on a verified redirect whose `CCode` is `0` and whose `Order` and `Amount` match, it seizes the paintings and marks the order paid in one transaction, then clears the cart. A verified charge that does not match is voided. A route rather than a page for the cookie reason — only an action or a handler may set one |
 | GET | `/api/payments/hyp/error` | — (Hyp's query string) | 307 to `/[locale]/order/[id]`, always `Cache-Control: no-store` | The terminal's **error** return, and it runs **the same handler**. Which URL the browser lands on is the provider's opinion; the signed redirect's `CCode` is the fact. A signed decline here changes nothing — but a landing here that verifies as a genuine, matching charge is settled, because the alternative is keeping money on the strength of a redirect path |
 
 Health moved onto the envelope on 29-09-2026; **`{ ok }` is the shape every
@@ -180,6 +180,17 @@ What replaces it:
   value of a repeated key, so a return carrying one would change the question
   Hyp is asked. It is a gate, not a rewrite: the query is still never parsed
   and rebuilt on its way to VERIFY.
+- **A return whose `Order` cannot be one of ours is refused before the
+  database is read or VERIFY is asked** (30-09-2026), and so is a source past
+  30 returns in an hour. Both routes are public, and each request used to cost
+  a read and a VERIFY call made with the terminal's credentials, for anybody.
+  **What that gives up, knowingly:** a genuine charge whose `Order` a buyer
+  edited into something that is not one of our ids is no longer voided
+  automatically — it is refused unverified and logged under
+  `REFUSED_UNVERIFIED`, and reconciled by hand against the Hyp console like a
+  closed window. That edit is possible only while payment-page signing is off,
+  which deployment.md's checklist turns on before launch. A buyer whose
+  redirect names one of our orders is always sent to that order's page.
 - **An unverified or failed redirect changes nothing.** No order moves to
   `paid`, no work is marked sold, and the buyer is told something they can act
   on. Silence is the safe direction: an order left `pending` is recoverable, and
@@ -263,7 +274,7 @@ everything, in this order:
   at full volume. A buyer who edits `Amount` on a payment page (possible
   whenever payment-page signing is off on the terminal) gets a genuinely signed
   return for the smaller amount, and this is the branch that stops it
-  settling. A verified charge naming no order we have is voided the same way,
+  settling. A verified charge naming no order we have — in the shape of one of our ids — is voided the same way,
   and with no row to record it against, the log line is the whole record.
 - **The transaction's name is the redirect's `Id`** — `payment_reference`, and
   `TransId` for a void. **A matching success with no `Id` is still settled**:

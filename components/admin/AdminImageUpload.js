@@ -66,6 +66,14 @@ export default function AdminImageUpload({
   maxPixels,
   maxMegabytes,
   maxMegapixels,
+  /**
+   * The formats the host will take, from `ALLOWED_UPLOAD_FORMATS` in
+   * lib/image-host.js, handed in by the page like the limits above. The
+   * signature and the read-back enforce it too; this is only so a GIF is
+   * refused with a sentence before it is sent, rather than by the host in the
+   * middle of an upload.
+   */
+  allowedFormats,
 }) {
   const router = useRouter();
 
@@ -158,6 +166,7 @@ export default function AdminImageUpload({
       maxPixels,
       maxMegabytes,
       maxMegapixels,
+      allowedFormats,
     });
 
     if (rejection) {
@@ -361,8 +370,16 @@ export default function AdminImageUpload({
  *   is fine. A code and its substitutions otherwise — never a sentence, because
  *   the copy lives in the locale files.
  */
-async function checkFile(file, { maxBytes, maxPixels, maxMegabytes, maxMegapixels }) {
+async function checkFile(file, { maxBytes, maxPixels, maxMegabytes, maxMegapixels, allowedFormats }) {
   if (!file.type.startsWith('image/')) return { code: 'notAnImage' };
+
+  /*
+    By the file's extension, which is how a person knows what they picked. The
+    host decides by content in the end, and refuses anything else under the
+    signature; this only saves her an upload that was going to fail.
+  */
+  const extension = file.name.includes('.') ? file.name.split('.').pop().toLowerCase() : '';
+  if (!allowedFormats.includes(extension)) return { code: 'unsupportedFormat' };
 
   if (file.size > maxBytes) {
     return {

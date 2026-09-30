@@ -141,8 +141,9 @@ export default async function AdminWorkSalePage({ params, searchParams }) {
               absent from that constant by design: checkout writes it and the
               admin never does.
 
-              Each form binds its own channel server-side. Next signs bound
-              arguments, so a browser cannot submit a channel it was not given.
+              Each form binds its own channel. A bound value is not
+              tamper-proof, which is why markWorkSold narrows the channel to the
+              manual ones in its own body rather than trusting these buttons.
             */}
             <div className={styles.channels}>
               {MANUAL_SALE_CHANNELS.map((channel) => (

@@ -24,8 +24,8 @@ that impossible rather than merely discouraged.
 
 Development runs against a local Postgres. **Neon is connected and carries the
 same schema**, as of 12-09-2026, so there are two databases and every migration
-from here goes to both. Nothing is deployed against it yet — see
-deployment.md.
+from here goes to both. A production deploy reads it — Private on Netlify,
+see deployment.md.
 
 ## The rule
 

@@ -195,12 +195,11 @@ export async function createWork(previousState, formData) {
   /**
    * The photograph, if she chose one while filling the form in.
    *
-   * **This is the one place an image reference reaches the server as an
-   * ordinary form field, and it is not trusted.** On the edit page the work's
-   * id is a bound argument that Next signs, so a finished upload cannot be
-   * repointed; a work being created has no id to bind, so the reference travels
+   * **The image reference travels as an ordinary form field, and it is not
+   * trusted.** A work being created has no id to bind, so the reference rides
    * in the form — where the browser can edit it to name any asset in the
-   * account, or something that is not an asset at all.
+   * account, or something that is not an asset at all. (The edit page binds
+   * the work's id instead, which is not tamper-proof either: see `updateWork`.)
    *
    * What makes that safe is the same thing that makes the edit path safe: the
    * identifier is all we take. The width, the height and the URL are read back
@@ -278,9 +277,14 @@ export async function createWork(previousState, formData) {
 /**
  * Saves changes to an existing painting.
  *
- * The work's id is a **bound argument**, not a form field. Next signs bound
- * arguments, so the browser cannot swap in a different id — where a hidden
- * input could be edited into "save my changes over that other work".
+ * The work's id is a **bound argument**, not a form field — which keeps it out
+ * of the form, and **does not** make it tamper-proof. Next encrypts the
+ * variables an inline action closes over; `.bind()` values are sent to the
+ * browser as plain data and posted back as the browser sends them. That is
+ * acceptable for every admin action here, and for one reason only: the caller
+ * must be signed in, and a signed-in admin may act on any work or order
+ * anyway, so an edited id gives her nothing she did not have. Nothing public
+ * may rely on a bound value; see security.md.
  *
  * Like `createWork`, **this verifies the session itself**. The guard on the
  * page that renders the form does not run for actions; anyone who knows this
@@ -433,7 +437,7 @@ function salePath(workId, outcome) {
  *     the schema already enforces. No orders exist yet; when they do, this path
  *     is already correct rather than newly expensive. See commerce.md.
  *
- * @param {string} workId - Bound server-side, so the browser cannot swap it.
+ * @param {string} workId - Bound by the page. Not tamper-proof — see `updateWork`.
  */
 export async function deleteWork(workId) {
   // No session: sign in. Nothing is deleted, and the answer says nothing about
@@ -512,9 +516,9 @@ export async function unpublishWork(workId) {
  * Its own session check, because the page guard has no say over an action. See
  * security.md.
  *
- * @param {string} workId - Bound server-side by the page, so the browser cannot
- *   point it at a different painting.
- * @param {string} channel - Bound the same way, one per button.
+ * @param {string} workId - Bound by the page. Not tamper-proof — see `updateWork`.
+ * @param {string} channel - Bound the same way, one per button, and narrowed to
+ *   the manual channels below for exactly that reason.
  */
 export async function markWorkSold(workId, channel) {
   if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
@@ -604,7 +608,7 @@ export async function returnWorkToSale(workId) {
  * the folder is fixed and it is the only parameter signed besides the
  * timestamp — so accepting one would be an argument that reads as though it
  * constrained something and does not. Which work the file belongs to is
- * settled when it is saved, by `saveMainImage`, whose id **is** bound.
+ * settled when it is saved, by `saveMainImage`, which takes the work's id.
  *
  * @returns {Promise<{ok: true, endpoint: string, fields: object} |
  *                   {ok: false, error: string}>}
@@ -618,9 +622,9 @@ export async function signMainImageUpload() {
 /**
  * Records an upload against a work, after asking the host what it actually is.
  *
- * @param {string} workId - Bound server-side by the page that renders the form.
- *   Next signs bound arguments, so the browser cannot repoint a finished upload
- *   at a different painting.
+ * @param {string} workId - Bound by the page that renders the form. Not
+ *   tamper-proof — see `updateWork` — so a signed-in admin could repoint an
+ *   upload at another painting, which is within what she may do anyway.
  * @param {string} publicId - Reported by the browser when the upload finished.
  *   An identifier and nothing more: the width, the height and the URL are read
  *   from the host under our own credentials, because a value from the client is
@@ -772,8 +776,9 @@ export async function savePortrait(publicId) {
  * The four things the artist does to an order after it has been paid for. Every
  * one verifies the session in its own first line, because the page guard has no
  * say over a Server Action — see security.md — and every one takes its order id
- * as a **bound** argument rather than a form field, so a browser cannot point it
- * at somebody else's order.
+ * as a **bound** argument rather than a form field. Bound is not tamper-proof
+ * (see `updateWork`), which is harmless only because the session check comes
+ * first and a signed-in admin may act on any order.
  *
  * None of them parses a form and none of them takes a date. The dates are set by
  * the same statement that moves the status, so what is recorded is when the
@@ -812,8 +817,8 @@ export async function advanceOrderStatus(orderId, to) {
  * artist calling off a sale that had gone through. Both write `cancelled_at` in
  * the same statement.
  *
- * **The paintings come back as drafts**, not straight back onto the site: see
- * `closeOrder`. That is why the public site is revalidated afterwards — a work
+ * **The paintings this order holds come back as drafts**, not straight back onto
+ * the site — and a pending order holds none: see `closeOrder`. That is why the public site is revalidated afterwards — a work
  * that has just become a draft must stop being served, and the gallery, the
  * homepage grid and its own artwork page would otherwise keep their cached
  * render and go on offering a painting that is no longer for sale.
@@ -827,7 +832,9 @@ export async function cancelOrder(orderId) {
 
   if (released > 0) revalidatePublicSite();
 
-  redirect(orderPath(orderId, ok ? 'cancelled' : 'notAllowed'));
+  // Which sentence follows depends on whether anything moved: a pending order,
+  // or one whose painting has since sold again, releases nothing.
+  redirect(orderPath(orderId, !ok ? 'notAllowed' : released > 0 ? 'cancelled' : 'cancelledNoneReleased'));
 }
 
 /**
@@ -847,7 +854,7 @@ export async function refundOrder(orderId) {
 
   if (released > 0) revalidatePublicSite();
 
-  redirect(orderPath(orderId, ok ? 'refunded' : 'notAllowed'));
+  redirect(orderPath(orderId, !ok ? 'notAllowed' : released > 0 ? 'refunded' : 'refundedNoneReleased'));
 }
 
 /**

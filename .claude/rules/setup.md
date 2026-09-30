@@ -23,6 +23,12 @@ npm run seed:local        # fill a LOCAL database with the sixteen works
 npm run admin:create      # create an admin account, or change its password
 ```
 
+**Both database scripts run under `node --conditions=react-server`**, and
+that flag is load-bearing: `lib/db.js` is marked `server-only`, and plain Node
+loads the marker's throwing half without it. Any ad-hoc Node script that
+imports `lib/db.js`, `lib/auth/session.js`, `lib/translate.js`,
+`lib/image-host.js` or `lib/payments/hyp.js` needs the same flag.
+
 `admin:create` prompts for the password with the echo off and refuses to run
 without a terminal. The password is never an argument, never an environment
 variable, and there is no default password in the repository. It takes the email
@@ -277,7 +283,7 @@ deployment. Never commit real credentials.
 
 A **local Postgres**, created by hand in pgAdmin, called `art_studio` — and
 since 12-09-2026 a **Neon project for production** as well: "Orit's gallery",
-US East (Ohio), PostgreSQL 18, carrying 001 through 013 (011 and 012 since 28-09-2026, 013 since 29-09-2026) and both admin
+US East (Ohio), PostgreSQL 18, carrying 001 through 014 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026) and both admin
 accounts.
 
 Development stays on the local one. **The Neon connection string is not in

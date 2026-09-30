@@ -1,5 +1,11 @@
-import { HYP_PAYMENT_ORIGIN } from './lib/payments/hyp.js';
-import { API_HOST as IMAGE_HOST_API_ORIGIN } from './lib/image-host.js';
+/*
+  From the two modules that hold only a host and read no environment — never
+  from lib/payments/hyp.js or lib/image-host.js, which read credentials and are
+  marked server-only. This file is loaded by plain Node, outside React's server
+  environment, where that marker throws.
+*/
+import { HYP_PAYMENT_ORIGIN } from './lib/payments/hyp-endpoint.js';
+import { API_HOST as IMAGE_HOST_API_ORIGIN } from './lib/image-host-endpoint.js';
 
 /* ------------------------------------------------------------------ *
  * Security headers

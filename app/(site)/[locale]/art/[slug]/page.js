@@ -7,6 +7,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { locales, defaultLocale, localeHref, getLocaleTag } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { absoluteUrl } from '@/lib/site-url';
+import { shareImageFor } from '@/lib/image-loader';
 import {
   getWorkBySlug,
   findWorkByAnySlug,
@@ -114,8 +115,9 @@ function shareDescription(work, locale, dictionary) {
  * about 1200x630 — and these paintings run from 0.62 to 1.51, so no single file
  * satisfies both that and the rule that a painting is never cropped.
  *
- * The choice is to hand over **the painting itself, whole**, at its true pixel
- * dimensions, and let each platform frame it however it frames things. The
+ * The choice is to hand over **the painting itself, whole** — scaled to at most
+ * 1200 wide as a JPEG by the host, never cropped — and let each platform frame
+ * it however it frames things. The
  * alternative was to generate a 1200x630 card with the work letterboxed on the
  * wall colour, and it was rejected twice over: most of that image would be
  * empty mat, and the platforms with a squarer preview would crop *it* — so the
@@ -129,17 +131,25 @@ function shareDescription(work, locale, dictionary) {
  * letterboxed card is the thing to build, and this is the note that says so.
  *
  * Width and height are declared so a platform knows the shape before it fetches
- * the file. A work with no photograph yet returns null and the page ships no
+ * the file, and they are the served file's, not the original's. A work with no photograph yet returns null and the page ships no
  * image at all rather than a stand-in nobody chose.
  */
 function shareImage(work, locale, dictionary) {
   const image = work.images.find((candidate) => candidate.type === 'main') ?? work.images[0];
   if (!image) return null;
 
+  /*
+    Through the host, as a JPEG at most 1200 wide, rather than the stored
+    original: an original can be 10MB, which WhatsApp will not preview, or HEIC,
+    which no crawler reads. The dimensions are the served file's. See
+    shareImageFor in lib/image-loader.js.
+  */
+  const served = shareImageFor(image);
+
   return {
-    url: absoluteUrl(image.src),
-    width: image.width,
-    height: image.height,
+    url: absoluteUrl(served.src),
+    width: served.width,
+    height: served.height,
     alt: interpolate(dictionary.artwork.imageAlt, {
       title: work.title[locale],
       artist: dictionary.site.artistName,

@@ -20,7 +20,8 @@ the moment — so the failure is the shop being off, at exactly the time traffic
 is highest, and the fix is an upgrade that takes longer than the outage is
 tolerable. A shop that goes dark on its best day is not a free shop.
 
-While nothing is deployed and nothing is for sale, the free tier costs nothing
+While nothing is for sale — the deploy is Private and has no payment terminal —
+the free tier costs nothing
 and risks nothing. That changes on the first real customer, not on the first
 busy week.
 
@@ -28,8 +29,9 @@ busy week.
 
 **This project was going to deploy to Vercel and the decision changed.** The
 repository now carries the Netlify side of that decision and nothing of the old
-one. Nothing is deployed yet, so what follows is proven against a local
-production build rather than against the host.
+one. What follows was proven against a local production build on that date,
+before anything was deployed; a production deploy has existed since, Private —
+see "Database — Neon" below.
 
 - ~~**Replace the old Vercel configuration file.**~~ **Deleted.** Exactly one thing in it had a
   consequence — the `X-Robots-Tag` headers, below. Nothing else had a successor
@@ -133,13 +135,15 @@ starting with these exclusions.
 
 **Connected, as of 12-09-2026.** The production database is a Neon project
 named **"Orit's gallery"**, region **US East (Ohio)**, **PostgreSQL 18**. It
-carries migrations **001 through 013** (011 and 012 since 28-09-2026, 013 since 29-09-2026), the catalogue, and **both admin
+carries migrations **001 through 014** (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026), the catalogue, and **both admin
 accounts**. Development is unchanged and stays on the local Postgres.
 
-**That is not the same as being deployed.** `DATABASE_URL` is set on no host,
-so nothing has ever pointed at it but a developer's own shell. `lib/db.js`
-throws when the variable is unset, so the blocker on a deploy is now that
-variable rather than the database behind it.
+**A production deploy reads it.** The site is deployed on Netlify and is
+**Private** — behind Netlify's team login, on the host's own address, with no
+custom domain yet. `DATABASE_URL` (the pooled endpoint) and
+`ADMIN_SESSION_SECRET` are set there; no `HYP_*` keys are, so its checkout says
+buying is not open. It has been up since at least 29-09-2026, when the
+client-address headers below were measured on it.
 
 **Two endpoints, and the deployed site does not use the one the migrations
 did.** The application reads the **pooled** endpoint; migrations and scripts
@@ -311,8 +315,14 @@ And these do what they must:
   becomes `cancelled` with the reference and `paid_at` kept, **the painting stays
   available**, and the cart is kept. Refreshed, it writes nothing and does not
   void again. With the void failing, the order is `paid` with `refund_due_at`.
-- A verified charge naming **no order we have** is voided, and nothing is
-  written.
+- A verified charge naming **no order we have** — in the shape of one of our
+  ids — is voided, and nothing is written.
+- **Since 30-09-2026**, a return whose `Order` is missing or not in the shape of
+  one of our ids is refused **before the database is read or VERIFY asked**, and
+  so is a source past 30 returns in an hour; both are logged under
+  `REFUSED_UNVERIFIED`. What that gives up — a genuine charge whose `Order` a
+  buyer edited is no longer voided automatically — is possible only while
+  payment-page signing is off; see api.md.
 - A **second genuine charge** — same order, same total, a different `Id` —
   against an order already paid is voided with that `Id`, and the order and its
   painting are left exactly as they were: no `refund_due_at`, the first
@@ -401,6 +411,16 @@ And these do what they must:
   buyer with script is unaffected. The first real transaction settles it,
   together with the VERIFY entries above — **walk it once with JavaScript
   switched off.**
+- **That Hyp's signing answer does not echo our `KEY` or `PassP`.** The answer
+  is appended to the payment page's address verbatim and the buyer is sent to
+  it, so an echoed credential would land in every buyer's address bar. The
+  documented example carries neither. Since 30-09-2026 `createPaymentPage`
+  **fails closed** on one — by name in any case, or by value under any other
+  name — as `credentialsInAnswer`: the order stays pending, the buyer is told
+  payment is not available, and the log names the keys and never their values.
+  It is never stripped and continued, because the signature may cover it.
+  **Settled by the first test transaction**: if the refusal fires, no payment
+  can proceed and Hyp has to be asked; if it does not, the signed URL is clean.
 
 ### Known residuals: refunds that exist only in the logs
 
@@ -508,6 +528,17 @@ Beyond a green build, these are launch blockers and are easy to forget:
   as the admin's sign-in erroring on a typo, on the live site, with nothing in
   the build to warn. Apply it first. A correct password still signs in without
   it, since success writes nothing.
+- ~~**Migration 014 applied to the local database and to Neon before the
+  payment-return rate limit deploys or runs.**~~ **Done on 30-09-2026, on both**
+  — locally from a session, where the catalog matched the file and the limit
+  was exercised end to end, and on Neon by hand in its console, then reconciled
+  from a session: the columns, the length check, the generated key and the
+  `(ip, created_at)` index match the local database. Kept for its reason: Like 012 and 013 it does not fail the build — nothing
+  prerendered touches `payment_return_attempts`. It fails at runtime, on the
+  first return that passes the gate: the throttle throws, the handler's catch
+  logs `RETURN FAILED UNEXPECTEDLY` and sends the buyer to their order page
+  unverified. So a missing 014 is every paying buyer told their payment is not
+  confirmed. Apply it first.
 - ~~**Migration 013 applied to Neon — and to the local database — before the
   checkout throttle deploys or runs.**~~ **Done on 29-09-2026, on both**, before
   the merge that ships the code: the catalog matches the file on each (Neon, on
@@ -530,17 +561,17 @@ Beyond a green build, these are launch blockers and are easy to forget:
   live. The same holds at runtime only for pages rendered per request; a
   prerendered page whose revalidation fails keeps serving its last good render.
 - **A production database — done.** Neon's "Orit's gallery" carries 001 through
-  010 and the catalogue, since 12-09-2026. **The blocker that replaces it is
-  `DATABASE_URL` set in the Netlify site**, pointing at the **pooled**
-  endpoint: until that variable exists, a deployed build still cannot render a
-  single painting.
+  013 and the catalogue, since 12-09-2026, and **`DATABASE_URL` is set in the
+  Netlify site** on the **pooled** endpoint: the Private production deploy reads
+  it.
 - **The two admin accounts — done.** Both exist in the Neon database, carrying
   the same scrypt hashes as the local rows, so the same passwords work against
   either. A hash is all that moved; no password was known to anything in the
   process. Creating an account locally still does nothing for production, which
   is the reason this was ever on the list.
-- **`ADMIN_SESSION_SECRET` set in the Netlify site**, and a different value
-  from the local one. Without it every admin page throws; with the local one
+- ~~**`ADMIN_SESSION_SECRET` set in the Netlify site**~~ **Done** — the Private
+  production deploy signs admins in. It must be a different value from the
+  local one, and nothing checks that, so confirm it once. Without it every admin page throws; with the local one
   copied over, a session minted on a laptop would work in production.
 - **The paid hosting tier**, from the day the site can take money. See the plan
   at the top of this file: the free tier stops a site rather than billing for
@@ -555,6 +586,16 @@ Beyond a green build, these are launch blockers and are easy to forget:
   is most likely a refresh of a charge already voided. The phrase is the
   constant `UNRECORDED_REFUND` in `lib/payments/handle-return.js`; change one
   and the other goes with it.
+
+  **Search for this one beside it** (since 30-09-2026):
+
+      [payments] RETURN REFUSED BEFORE VERIFICATION
+
+  Each hit is a return that was never verified — the gate refused it, its
+  `Order` was not one of our ids, the source was over the rate limit, or VERIFY
+  refused it. Nearly all are noise, and none is evidence that money moved. One
+  that names an order a buyer says they paid for is checked in the Hyp console.
+  The constant is `REFUSED_UNVERIFIED`, in the same file.
 - **`HYP_ALLOW_TEST_TERMINAL` and `HYP_ENDPOINT_OVERRIDE` absent from the
   Netlify site**, and the override deleted from `lib/payments/hyp.js`. The first
   is set only for the pre-launch walk-through on the real domain; see step 5 of

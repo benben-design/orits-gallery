@@ -19,6 +19,7 @@ import {
   MAX_UPLOAD_PIXELS,
   MAX_UPLOAD_MEGABYTES,
   MAX_UPLOAD_MEGAPIXELS,
+  ALLOWED_UPLOAD_FORMATS,
 } from '@/lib/image-host';
 import styles from './page.module.css';
 
@@ -103,6 +104,7 @@ export default async function AdminSettingsPage({ searchParams }) {
             maxPixels={MAX_UPLOAD_PIXELS}
             maxMegabytes={MAX_UPLOAD_MEGABYTES}
             maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+            allowedFormats={ALLOWED_UPLOAD_FORMATS}
           />
         ) : null}
 
