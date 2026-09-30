@@ -98,9 +98,9 @@ export default async function AdminDeleteWorkPage({ params, searchParams }) {
             <p className={styles.alternativeText}>{labels.unpublishInstead}</p>
 
             {/*
-              Its own form, bound to this work's id server-side. Next signs
-              bound arguments, so the browser cannot point either action at a
-              different painting.
+              Its own form, bound to this work's id. A bound value is not
+              tamper-proof — see updateWork in the actions module — which is
+              harmless here only because the action checks the session first.
             */}
             <form action={unpublishWork.bind(null, work.id)}>
               <button type="submit" className={styles.keep}>

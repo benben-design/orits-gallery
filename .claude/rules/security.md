@@ -103,10 +103,12 @@
   theoretical one: pixel dimensions reserve the box a painting is drawn in, so a
   wrong pair from a hostile or simply buggy client is a broken public page.
 
-  **There are two call sites, and the second is the one to be careful about.**
-  Editing a work binds its id into `saveMainImage` server-side, so a finished
-  upload cannot be repointed. *Creating* one has no id to bind, so the uploaded
-  reference travels as an ordinary form field — which the browser can edit to
+  **There are two call sites, and both hand the server something it must not
+  believe.** Editing a work binds its id into `saveMainImage` — which keeps it
+  out of the form but is not tamper-proof (see the bound-argument rule below),
+  so a signed-in admin could repoint an upload, which she may do anyway.
+  *Creating* one has no id to bind, so the uploaded reference travels as an
+  ordinary form field — which the browser can edit to
   name any asset in the account, or something that is not an asset at all. That
   is fine, and it is fine for exactly the same reason: the identifier is all
   that is taken from it. `createWork` calls `readUploadedImage` on it too, and a
@@ -197,6 +199,18 @@
   volume a row can outlast the hour by days, until the next checkout.** That is
   the honest state of it. If it ever needs to be tighter, a scheduled deletion
   is the fix, not a longer explanation.
+- **The payment return is rate limited per source too, and refuses what cannot
+  be ours before asking anyone** (30-09-2026). Both return routes are public, and
+  every request used to cost a database read and a VERIFY call made with the
+  terminal's credentials. Now the gate runs first, then a return whose `Order`
+  is not in the shape of one of our ids is refused — neither touches the
+  database — and then `lib/payments/return-throttle.js` allows **30 returns per
+  source per hour** (migration 014), keyed on the same `readClientIp`. The limit
+  is set far above a buyer returning and refreshing, **the unknown bucket is
+  never limited** (refusing genuine payments is the worse failure), and a
+  refusal is logged as loudly as any refusal before verification, because money
+  may have moved. Its rows are client addresses and are deleted once past the
+  window, on each return.
 - **Which header is the client's was measured, not assumed** (29-09-2026, see
   deployment.md). In production `lib/auth/client-ip.js` reads Netlify's
   `x-nf-client-connection-ip` and nothing else; `x-forwarded-for` is read only
@@ -311,6 +325,22 @@ they are already inside it.
 - Never trust an identity, a price, a status or a total from a request body. The
   server derives identity from the verified session and computes money from its
   own records.
+- **A bound argument is not a trusted one** (corrected 30-09-2026). Next
+  encrypts the variables an inline Server Action closes over; it does **not**
+  protect `.bind()` values, which are sent to the browser as plain data and
+  posted back as the browser sends them. This file and app-files.md used to say
+  bound ids "cannot be repointed", and that was never true. What makes them
+  acceptable is different in each place: every admin action checks the session
+  first, and a signed-in admin may act on any work or order anyway; checkout's
+  locale is checked against the supported locales before anything else, and its
+  quick-buy work id is re-verified in the transaction like any other.
+  **Nothing that is not signed in may rely on a bound value.**
+- **Our payment credentials never reach the browser, and Hyp's answers never
+  reach the log.** A signing answer that names `KEY` or `PassP`, or carries
+  either value, is refused outright — fail closed, never stripped, since the
+  answer becomes the buyer's URL verbatim — and Hyp's answers are logged by
+  shape only (status, `CCode`, key names), never by body, because they echo
+  the buyer's name, email and phone.
 - Validate against the exported constants — `WORK_STATUSES`, `WORK_CATEGORIES`,
   `IMAGE_TYPES` — rather than writing whatever value arrived.
 - Uploads are constrained by type and size, and a file's own claimed name or

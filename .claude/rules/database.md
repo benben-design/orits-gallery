@@ -3,7 +3,7 @@
 PostgreSQL, and **there are two databases now.** Development runs against a
 **local Postgres**, created by hand in pgAdmin and called `art_studio`.
 Production is a **Neon project named "Orit's gallery"** — region US East
-(Ohio), PostgreSQL 18 — carrying migrations 001 through 013 (011 and 012 since 28-09-2026, 013 since 29-09-2026) and both admin
+(Ohio), PostgreSQL 18 — carrying migrations 001 through 014 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026) and both admin
 accounts as of 12-09-2026.
 
 The schema is plain SQL in `database/migrations/`, and **the application reads
@@ -11,9 +11,10 @@ it**: every page goes through `lib/data/works-repository.js`, which queries
 Postgres through `lib/db.js`. `lib/data/artworks.js` is now the seed fixture
 rather than storage. See data-layer.md.
 
-**A database being ready is not the same as the site being live.** Nothing is
-deployed, so `DATABASE_URL` is set on no host and nothing points at Neon but a
-developer's own shell. See deployment.md.
+**A deployed site is not the same as a live shop.** A production deploy exists
+on Netlify and reads Neon through `DATABASE_URL`, on the pooled endpoint — but
+the site is Private behind the team login, with no custom domain and no payment
+terminal. See deployment.md.
 
 **Two endpoints, and which one is used is not a preference.** The deployed
 application reads the **pooled** endpoint; migrations and scripts use the
@@ -366,6 +367,28 @@ slot was reserved and released through `lib/checkout/checkout-throttle.js`.
   window on each checkout. With no scheduler, a row can outlast the window
   until the next checkout — see security.md.
 
+### `payment_return_attempts`
+
+The counter behind the payment return's rate limit. Added by migration 014,
+**applied to both databases on 30-09-2026**: locally from a session, where the
+catalog matched the file and the limit was exercised end to end, and on Neon by
+hand in its console and then reconciled from a session — `id`, `ip` and
+`created_at` all not null, the length check, the generated primary key and the
+`(ip, created_at)` index, matching the local database. A database without
+it sends every payment return to its order page unverified.
+
+`id`, `ip` (text, 1 to 64 characters), `created_at`, with an index on
+`(ip, created_at)` — `checkout_attempts`' shape exactly.
+
+- **A row is one return a source made**, counted before the order is read or
+  VERIFY is asked. Nothing gives one back: a return that verified still cost a
+  VERIFY call, so the limit is set far above a buyer's own refreshes.
+- **Its own table**, for 013's reason.
+- **References nothing, and holds no limit or window** — those are constants in
+  `lib/payments/return-throttle.js`.
+- **`ip` is personal data**, deleted by the application once past the window,
+  on each return.
+
 ### `site_settings` — one row, the studio's own facts
 
 Added by migration 011. The About text (`about_he`, `about_en`), `email`,
@@ -419,10 +442,9 @@ Added by migration 011. The About text (`about_he`, `about_en`), `email`,
 ## Not built
 
 - ~~**Neon.**~~ **Connected**, since 12-09-2026. "Orit's gallery" carries 001
-  through 010, the catalogue and both admin accounts. What is missing is
-  everything around it: **nothing is deployed**, `DATABASE_URL` is set on no
-  host, and the production `ADMIN_SESSION_SECRET` does not exist yet. See
-  deployment.md.
+  through 013, the catalogue and both admin accounts, and a production deploy
+  reads it — Private on Netlify, with `DATABASE_URL` and `ADMIN_SESSION_SECRET`
+  set there. See deployment.md.
 - ~~**The admin route guard.**~~ **Built.** Every page under
   `app/(admin)/admin/(guarded)/` calls `requireAdminSession()` as its first
   statement, and `scripts/check-admin-guard.mjs` fails if one does not. See

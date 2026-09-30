@@ -38,8 +38,9 @@ import styles from './page.module.css';
  *
  * The form is the same component the new-work page uses. It receives the action
  * as a prop, so one form serves both pages and neither can drift from the
- * other. The action is bound to this work's id server-side — Next signs bound
- * arguments, so the browser cannot point the save at a different work.
+ * other. The action is bound to this work's id, which keeps the id out of the
+ * form; a bound value is not tamper-proof, and that is harmless only because
+ * the action checks the session first (see updateWork in the actions module).
  *
  * **Metadata carries no record data**, deliberately. `generateMetadata` runs
  * even when the guard redirects, so a title built from the work would tell
@@ -80,9 +81,9 @@ export default async function AdminEditWorkPage({ params }) {
    * credentials should look like the admin did before this existed, not like a
    * broken one.
    *
-   * The save action is **bound to this work's id server-side**. Next signs
-   * bound arguments, so a finished upload cannot be repointed at a different
-   * painting from the browser. Signing takes no id at all — nothing about the
+   * The save action is **bound to this work's id**. A bound value is not
+   * tamper-proof, so a signed-in admin could repoint an upload — within what
+   * she may do anyway. Signing takes no id at all — nothing about the
    * signature names a work. See the actions module.
    */
   const mainImage = work.images.find((image) => image.type === 'main') ?? null;
