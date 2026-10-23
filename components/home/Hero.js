@@ -57,19 +57,33 @@ import styles from './Hero.module.css';
  * ------------------------------------------------------------------ */
 
 /**
- * 1080x810 — a 4:3 crop of the vertical original, slowed.
+ * 1080x810, a 4:3 crop of the vertical original, slowed, silent, 5.167s.
  *
  * Taller than the 16:9 export it replaced, which is what makes it the better
  * source: width is capped at 1080 either way, so the extra height is free
  * latitude for the frame to crop to any ratio it likes without running out of
  * pixels. It also lets the phone breakpoint show the footage nearly whole.
+ *
+ * **Plain BT.709 SDR, made from the browser's own decode.** The artist's phone
+ * shoots HDR, and the export this replaced is genuine BT.2020/HLG. A browser
+ * converts HLG one way when it draws a paused frame (which is how the poster
+ * was made) and another when the video plays, so the loop looked washed out
+ * beside its own still. Re-tagging would not fix it — the data really is HLG —
+ * and no ffmpeg tone map reproduced the browser's conversion. So every frame
+ * was captured as the browser decodes it and re-encoded as BT.709: the 2.93s
+ * frame differs from the poster by under 3 levels in 255, at JPEG noise.
  */
-const HERO_VIDEO = '/video/wide-4x3-slow50.mp4';
+const HERO_VIDEO = '/video/hero-cherries-loop.mp4';
 
 /**
  * The still, and **a frame of the loop itself** rather than a second
- * photograph — extracted from `wide-4x3-slow50.mp4` at 2.93s, at the source's
- * own 1080x810.
+ * photograph. It was extracted at 2.93s from the earlier export of this same
+ * cut, at the source's own 1080x810.
+ *
+ * **It is the colour reference the loop above is measured against.** The two
+ * now match, so a frame pulled from the loop would be the same picture — but
+ * keep this file as the reference rather than deriving it, and regenerate it
+ * only if the footage itself is replaced.
  *
  * That it is the same footage is the point rather than a convenience. It is
  * what the visitor sees before the loop arrives, whenever they stop the loop,
