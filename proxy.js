@@ -18,6 +18,20 @@ import { defaultLocale, isLocale } from '@/lib/i18n/config';
  */
 export function proxy(request) {
   const { pathname } = request.nextUrl;
+
+  /*
+    A path that is not valid percent-encoding — `/he/art/%E0%A4%A`, a lone `%` —
+    is no page of ours. Next fails to decode a dynamic segment like `[slug]`
+    before the page runs and answered those with a 500 (found 23-10-2026), so
+    anybody could make the artwork route error on demand. Refused here, before
+    any rendering, as the malformed request it is.
+  */
+  try {
+    decodeURIComponent(pathname);
+  } catch {
+    return new NextResponse(null, { status: 400 });
+  }
+
   const firstSegment = pathname.split('/')[1];
 
   if (isLocale(firstSegment)) return NextResponse.next();
