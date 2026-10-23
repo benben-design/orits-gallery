@@ -136,6 +136,20 @@
   password at all** — a limit that runs scrypt and then declines to look at the
   answer costs the server as much as no limit.
 
+  **An attempt is counted before its password is checked** (23-10-2026).
+  It used to be checked, verified and only then counted, and that window is a
+  fifth of a second of scrypt wide: on a production build, **39 of 40
+  simultaneous guesses were verified** where the policy allows five, and a
+  burst every time a block expired multiplied the guess rate by the burst size.
+  `beginLoginAttempt` now counts all three counters first, in one transaction;
+  the upsert's row lock queues simultaneous attempts, so the sixth sees the
+  block the fifth set — re-measured at exactly 5 of 60. A blocked attempt is
+  rolled back, so it is still not counted. **The address is cut to 254
+  characters before it is a key**: a 4,000-character one made the pair's btree
+  refuse the row, so every such attempt ran scrypt, errored, and was never
+  counted at all. **Do not move the count back after the check** — that is the
+  ordering that looks cheaper and is the whole hole.
+
   Three details are load-bearing rather than incidental:
 
   - **The counter is keyed on the submitted address *and* the client address,
@@ -273,6 +287,21 @@
   verified until the first real transaction is the payment host itself; see
   deployment.md.
 - **There is still no password-reset mechanism.**
+- **The framework is a security dependency, and it was the hole that was
+  left.** On 23-10-2026 the application code audited clean while next 16.3.3
+  carried a critical advisory set published after the 30-09 pass — image
+  optimiser SSRF and RCE, a Server Actions DoS, SSG/ISR cache poisoning —
+  with sharp and source-map-js high beneath it. Upgraded to **16.4.2**:
+  `npm audit --omit=dev` is zero, the route table is identical to the one
+  before, and a production build was probed for the advisories' surface (the
+  optimiser refuses remote, protocol-relative, loopback and SVG sources; an
+  unknown action id is a 409). **One dev-only advisory is left on purpose**:
+  `braces`, a DoS through deeply nested glob patterns, under
+  `eslint-config-next` → `fast-glob` → `micromatch`. It runs only in
+  `npm run lint`, on patterns we write, and npm's only "fix" is a downgrade to
+  eslint-config-next 14 — do not take it. **Run `npm audit --omit=dev` before
+  every deploy that matters**; a clean code review says nothing about a
+  framework advisory published the week after.
 
 ## The session
 

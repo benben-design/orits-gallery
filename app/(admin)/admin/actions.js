@@ -56,9 +56,9 @@ import { signImageUpload, readUploadedImage, UPLOAD_FOLDERS } from '@/lib/image-
 import { safeReturnTo, ADMIN_LOGIN_PATH } from '@/lib/auth/admin-guard';
 import { readClientIp } from '@/lib/auth/client-ip';
 import {
-  isLoginBlocked,
-  recordFailedLogin,
+  beginLoginAttempt,
   clearFailedLogins,
+  MAX_EMAIL_LENGTH,
 } from '@/lib/auth/login-throttle';
 
 /**
@@ -92,11 +92,18 @@ export async function signIn(previousState, formData) {
 
   const ip = await readClientIp();
 
-  // Checked BEFORE the password is verified, and that ordering is the whole
-  // point: a limit that runs scrypt and then declines to look at the answer
-  // costs the server exactly as much as having no limit at all. A blocked
-  // attempt does no hashing and touches no account.
-  if (await isLoginBlocked(email, ip)) return BLOCKED;
+  // Counted BEFORE the password is verified, and that ordering is the whole
+  // point: a limit that runs scrypt and only counts afterwards lets a burst of
+  // simultaneous guesses all through before the first is recorded (measured:
+  // 39 of 40). A blocked attempt does no hashing and touches no account. The
+  // attempt is counted against the address as submitted, whether or not it
+  // belongs to an account — counting only real accounts would make the site
+  // behave differently for an address that exists.
+  if (!(await beginLoginAttempt(email, ip))) return BLOCKED;
+
+  // Longer than any address can be, so it belongs to no account. Refused
+  // without running scrypt; it has already been counted above.
+  if (email.trim().length > MAX_EMAIL_LENGTH) return FAILED;
 
   const account = await authenticateAdmin(email, password);
 
@@ -105,15 +112,7 @@ export async function signIn(previousState, formData) {
   // the decoy hash in lib/auth/admin-users.js. Nothing about the attempt is
   // written to the log either: a log line saying which email was tried is a
   // list of admin addresses sitting in a log.
-  //
-  // The failure is counted against the address as submitted, whether or not it
-  // belongs to an account. Counting only real accounts would make the site
-  // behave differently for an address that exists, which is the one thing all
-  // of this is arranged to avoid saying.
-  if (!account) {
-    await recordFailedLogin(email, ip);
-    return FAILED;
-  }
+  if (!account) return FAILED;
 
   // Proving the password clears all three counters — this address from this
   // source, this source, and this address from everywhere — so a person who
