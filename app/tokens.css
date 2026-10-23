@@ -176,13 +176,40 @@
   --font-display: var(--font-display-loaded), var(--font-fallback-serif);
   --font-body: var(--font-body-loaded), var(--font-fallback-sans);
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
-  --text-md: 1.0625rem;
-  --text-lg: clamp(1.125rem, 0.95rem + 0.7vw, 1.5rem);
+  /**
+   * The reading scale, raised on 23-10-2026. Most buyers are women past
+   * thirty on a phone, and the site read at 15px with its card meta at 12–13.
+   * Running text is 17px on a phone and 18px from 48rem (the override below
+   * this block); **nothing a visitor reads is smaller than 14px**, so --text-xs
+   * is the floor and not a size for fine print.
+   *
+   * Every step moved together on purpose: raising --text-base alone would
+   * have left card titles and cart lines (--text-md) smaller than the
+   * paragraphs beneath them. --text-xl did not move, because it is the page
+   * titles and the hero line; section headings have their own step,
+   * --text-section, which is the one that reaches 40px.
+   *
+   * Line length is unaffected in the way that matters: --measure is in rem,
+   * so a bigger face sets fewer characters per line — about 65 at 18px,
+   * where 15px ran to about 80.
+   */
+  --text-xs: 0.875rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-md: 1.1875rem;
+  --text-lg: clamp(1.25rem, 1.05rem + 0.75vw, 1.625rem);
+  --text-section: clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
   --text-xl: clamp(1.5rem, 1.1rem + 1.7vw, 2.25rem);
   --text-2xl: clamp(2rem, 1.2rem + 3.4vw, 3.75rem);
+
+  /**
+   * The header's own sizes, held where they were before the scale rose: the
+   * bar was tuned word by word against the brush name (see SiteHeader), and
+   * a reading-size change is not a reason to re-open it. Its words and its
+   * count use these and nothing else.
+   */
+  --text-nav: 1.0625rem;
+  --text-nav-count: 0.75rem;
 
   --weight-light: 300;
   --weight-normal: 400;
@@ -252,7 +279,20 @@
   --measure: 34rem;      /* comfortable reading width */
   --measure-list: 52rem; /* a list of items with a picture: the cart */
   --page-gutter: var(--space-5);
-  --section-gap: var(--space-11);
+
+  /**
+   * Vertical rhythm: three steps, so a page reads as a sequence of subjects
+   * rather than one evenly spaced stream (23-10-2026). Each is the padding a
+   * <Section> carries, smaller on a phone and widened from 48rem below.
+   *
+   *   tight     — things that belong together
+   *   standard  — the ordinary gap between sections
+   *   generous  — before a change of subject
+   */
+  --rhythm-tight: var(--space-8);       /* 48 → 64 */
+  --rhythm-standard: var(--space-9);    /* 64 → 104 */
+  --rhythm-generous: 5.5rem;            /* 88 → 144 */
+  --section-gap: var(--rhythm-standard);
 
   /**
    * The floating contact button: how big it is, how big it is to a thumb, and
@@ -324,6 +364,10 @@
   --shadow-drawer: 0 0 3rem rgb(44 39 35 / 16%);
   --duration-slow: 420ms;
   --duration: 200ms;
+  /* The scroll reveal: slower than a hover, because it is the page arriving
+     rather than a control answering. */
+  --duration-reveal: 600ms;
+  --reveal-rise: 1rem;
   --ease: cubic-bezier(0.2, 0, 0.1, 1);
 
   /**
@@ -334,6 +378,22 @@
    * per direction.
    */
   --origin-inline-start: left;
+}
+
+/* From tablet width the three reading steps take one more pixel or two:
+   18px running text, with the steps either side of it moving with it so the
+   hierarchy holds. --text-xs stays at the 14px floor. The rhythm opens up at
+   the same width. */
+@media (min-width: 48rem) {
+  :root {
+    --text-sm: 1rem;
+    --text-base: 1.125rem;
+    --text-md: 1.25rem;
+
+    --rhythm-tight: var(--space-9);       /*  64 */
+    --rhythm-standard: var(--space-11);   /* 104 */
+    --rhythm-generous: 9rem;              /* 144 */
+  }
 }
 
 /**

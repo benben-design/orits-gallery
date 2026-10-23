@@ -81,7 +81,7 @@ export default async function GalleryPage({ params, searchParams }) {
     <Section>
       <Container>
         {/* The page's <h1>, so each card's title is an <h2> beneath it. */}
-        <SectionHeading as="h1" intro={dictionary.gallery.intro}>
+        <SectionHeading as="h1" label={dictionary.gallery.label} intro={dictionary.gallery.intro}>
           {dictionary.gallery.title}
         </SectionHeading>
 

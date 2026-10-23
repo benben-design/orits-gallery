@@ -31,7 +31,7 @@ const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
 export default function WorksGrid({ works, locale, dictionary }) {
   if (!works?.length) {
     return (
-      <Section>
+      <Section before="generous">
         <Container>
           <p>{dictionary.gallery.empty}</p>
         </Container>
@@ -39,10 +39,12 @@ export default function WorksGrid({ works, locale, dictionary }) {
     );
   }
 
+  // A generous gap above: the hero is about her making the work, and this
+  // is where the subject changes to the work itself.
   return (
-    <Section>
+    <Section before="generous">
       <Container>
-        <SectionHeading intro={dictionary.home.works.intro}>
+        <SectionHeading label={dictionary.home.works.label} intro={dictionary.home.works.intro}>
           {dictionary.home.works.heading}
         </SectionHeading>
 

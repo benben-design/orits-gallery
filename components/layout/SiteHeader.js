@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import HomeMarkLink from './HomeMarkLink';
 import Container from '@/components/ui/Container';
 import Wordmark from './Wordmark';
 import PrimaryNav from './PrimaryNav';
@@ -50,9 +50,9 @@ export default function SiteHeader({ locale, dictionary }) {
   return (
     <header className={styles.header}>
       <Container className={styles.inner}>
-        <Link href={localeHref(locale, '/')} className={styles.mark}>
+        <HomeMarkLink href={localeHref(locale, '/')} className={styles.mark}>
           <Wordmark alt={dictionary.site.wordmark} className={styles.markImage} />
-        </Link>
+        </HomeMarkLink>
 
         <PrimaryNav
           links={links}

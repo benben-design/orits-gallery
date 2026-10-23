@@ -22,20 +22,64 @@
  */
 .footer {
   margin-block-start: var(--section-gap);
-  padding-block: var(--space-9)
+  padding-block: var(--rhythm-standard)
     calc(
       var(--contact-button-inset)
         + max(var(--contact-button-size), var(--contact-button-hit))
         + var(--space-4) + env(safe-area-inset-bottom)
     );
-  border-block-start: var(--border-hairline) solid var(--line);
-  background-color: var(--surface-wall);
+  /*
+    The sunk ground rather than the wall: the footer is the ending of every
+    page, and a change of ground is what says so. One shade back, the same
+    banding the promises row uses — still a warm neutral, still no accent.
+  */
+  background-color: var(--surface-sunk);
 }
 
+/* The studio's name on one side, the columns on the other from 64rem. */
+.top {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.mark {
+  display: block;
+}
+
+/* Larger than the header's 2rem: here it closes the page rather than
+   sharing a bar with navigation. */
+.markImage {
+  display: block;
+  inline-size: auto;
+  block-size: 2.75rem;
+}
+
+/*
+  The one line under the name, in the display face: it is the studio speaking,
+  not a caption, and the serif is what tells the two apart.
+*/
+.tagline {
+  max-inline-size: 24rem;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-snug);
+  color: var(--text-primary);
+}
+
+/* Two to a row on a phone: four short lists stacked one under another were
+   a long scroll of headings to reach the copyright line. */
 .columns {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-7);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-7) var(--space-5);
 }
 
 .column {
@@ -101,5 +145,23 @@
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
     gap: var(--space-8);
+  }
+}
+
+/*
+  Beside the name, the columns are a fixed width packed to the far edge
+  rather than stretched across the track: with the settings still empty there
+  are two of them, and stretched they stood half a page apart with nothing
+  between. Packed, two and four columns are the same block, one wider.
+*/
+@media (min-width: 64rem) {
+  .top {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: var(--space-10);
+  }
+
+  .columns {
+    grid-auto-columns: minmax(0, 12rem);
+    justify-content: end;
   }
 }

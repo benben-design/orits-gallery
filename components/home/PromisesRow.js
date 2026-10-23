@@ -13,7 +13,7 @@ export default function PromisesRow({ dictionary }) {
   if (!items.length) return null;
 
   return (
-    <Section tone="sunk" size="tight" aria-label={dictionary.home.promises.label}>
+    <Section tone="sunk" aria-label={dictionary.home.promises.label}>
       <Container>
         <ul className={styles.row}>
           {items.map((item) => (

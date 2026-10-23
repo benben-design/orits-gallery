@@ -76,6 +76,34 @@ one file.
 Never write a raw colour or a magic pixel value in a component stylesheet. If a
 value is missing, add a token.
 
+**The reading scale (raised 23-10-2026).** Running text is 17px on a phone
+and 18px from 48rem; **nothing a visitor reads is below 14px**, which is what
+`--text-xs` now is — the floor, not a size for fine print. The steps moved
+together (`--text-sm` 15/16, `--text-md` 19/20, `--text-lg` up a step) because
+raising body text alone left card titles smaller than the paragraphs under
+them. `--text-xl` did not move: it is page titles and the hero line. Section
+headings take **`--text-section`**, which reaches 40px. **The header holds its
+own sizes**, `--text-nav` and `--text-nav-count`, at what they were — it was
+tuned word by word against the brush name and verified pixel-identical after
+the change; never point a header word back at a reading step.
+
+**Vertical rhythm has three steps (23-10-2026)**, so a page reads as a
+sequence of subjects rather than one even stream: `--rhythm-tight` (48 → 64px)
+for things that belong together, `--rhythm-standard` (64 → 104px) for the
+ordinary gap, and `--rhythm-generous` (88 → 144px) before a change of subject.
+`Section` is the only thing that spends them. On the homepage the hero is one
+unit, the works grid opens after a generous gap, and the promises and story
+take standard. **Above a title, a label** — `SectionLabel`, see app-files.md.
+
+**Motion is quiet, and never a condition of being seen (23-10-2026).** Three
+things move: a section below the first screen rises 16px into place once, as it
+scrolls in (`--duration-reveal`, 600ms); a painting below the first screen fades
+in as it loads; and on a device that hovers a card's painting lifts 3px with its
+shadow deepening to the bare one. All three live behind
+`prefers-reduced-motion: no-preference`, and the first two are switched on by
+`QuietMotion` after hydration only — **never hide content in CSS that a script
+has to reveal**, because a page whose script fails would then be blank.
+
 There are three content widths, and picking the wrong one is the usual mistake:
 `--page-max` is the page frame, `--measure` is running prose, and
 `--measure-list` is a list of items with a picture in it — the cart. The last

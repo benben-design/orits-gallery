@@ -5,6 +5,7 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import CartProvider from '@/components/cart/CartProvider';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
+import QuietMotion from '@/components/layout/QuietMotion';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
 import { whatsappHref } from '@/lib/contact';
@@ -128,6 +129,7 @@ export default async function SiteLayout({ children, params }) {
               phone: settings.phone,
               instagramUrl: settings.instagramUrl,
               facebookUrl: settings.facebookUrl,
+              whatsappNumber: settings.whatsappNumber,
             }}
           />
           {/*
@@ -145,6 +147,9 @@ export default async function SiteLayout({ children, params }) {
             label={dictionary.nav.whatsapp}
             locale={locale}
           />
+          {/* Scroll reveal and painting fades. Renders nothing, and the page is
+              whole without it. See QuietMotion. */}
+          <QuietMotion />
         </CartProvider>
       </body>
     </html>

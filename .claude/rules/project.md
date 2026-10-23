@@ -148,7 +148,8 @@ redirect to one.
 4. A row of four short promises — original one-off work, signed by the artist,
    insured shipping in Israel, 14-day cancellation
 5. Story section — a photo of the artist, a short paragraph, link to About
-6. Footer — social, contact, legal links
+6. Footer — the wordmark and one line, the site's own pages, then social,
+   contact and legal links; the first two always render
 
 The visual reference is the artist's own store site, gitahomedesign.co.il:
 minimal navigation, generous white space, photography dominant, a promises row,
@@ -203,7 +204,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | **Built, not live.** Checkout, the signed payment page, VERIFY on the return and the settlement are built and proven against a local stand-in; there is no Hyp account and the deploy has no `HYP_*` keys. deployment.md lists what only a real terminal can prove |
 
-**Thirteen client components exist, and four of them are the cart.** The tenth is the
+**Fifteen client components exist, and four of them are the cart.** The tenth is the
 checkout form, which is one for the reason the admin's two forms are: a rejected
 submission has to come back with its errors *and* the typed values intact,
 without either travelling through a URL — an address lost to one bad postal
@@ -213,6 +214,10 @@ rendered by the public layout, and a layout cannot know which page it wraps —
 so being absent from checkout has to be decided where the path is known.
 **The thirteenth is the admin's settings form**, a client component for the
 same reason as the other two admin forms.
+**The fourteenth is `HomeMarkLink`**, the wordmark's link: on the homepage
+it glides back to the hero, and only the browser knows which page it is on.
+**The fifteenth is `QuietMotion`**, which renders nothing: it reveals sections
+below the first screen and fades paintings in, and the page is whole without it.
 
 The other six are the header's primary navigation — client only to mark the
 current page — the language switcher, the hero's studio loop, the admin's login

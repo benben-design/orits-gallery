@@ -1,3 +1,8 @@
+/*
+  The three rhythm steps live in app/tokens.css. A section's size sets both
+  ends; `before` overrides only the top, which is how a section says "a new
+  subject starts here" without also pushing away whatever follows it.
+*/
 .section {
   padding-block: var(--section-gap);
 }
@@ -12,11 +17,15 @@
 }
 
 .default {
-  padding-block: var(--section-gap);
+  padding-block: var(--rhythm-standard);
 }
 
 .tight {
-  padding-block: var(--space-9);
+  padding-block: var(--rhythm-tight);
+}
+
+.generous {
+  padding-block: var(--rhythm-generous);
 }
 
 /*
@@ -31,4 +40,42 @@
 
 .flush {
   padding-block: 0;
+}
+
+/*
+  The scroll reveal. QuietMotion sets `pending` only on a section that is
+  below the first screen once the page has hydrated, so the first screen never
+  waits and a page with no script never hides anything. Print shows it all.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .section[data-reveal='pending'] {
+    opacity: 0;
+    transform: translateY(var(--reveal-rise));
+  }
+
+  .section[data-reveal='shown'] {
+    transition:
+      opacity var(--duration-reveal) var(--ease),
+      transform var(--duration-reveal) var(--ease);
+  }
+}
+
+@media print {
+  .section[data-reveal='pending'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Declared after the sizes so it wins over their shorthand. */
+.beforeTight {
+  padding-block-start: var(--rhythm-tight);
+}
+
+.beforeStandard {
+  padding-block-start: var(--rhythm-standard);
+}
+
+.beforeGenerous {
+  padding-block-start: var(--rhythm-generous);
 }

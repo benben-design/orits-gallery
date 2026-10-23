@@ -1,5 +1,6 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
+import SectionLabel from '@/components/ui/SectionLabel';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { getSiteSettings } from '@/lib/data/settings-repository';
 import { contactMethods, displayUrl } from '@/lib/contact';
@@ -58,6 +59,7 @@ export default async function ContactPage({ params }) {
   return (
     <Section as="div">
       <Container width="measure">
+        <SectionLabel>{dictionary.contact.label}</SectionLabel>
         <h1 className={styles.title}>{dictionary.contact.title}</h1>
 
         {methods.length > 0 ? (

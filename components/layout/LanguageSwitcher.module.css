@@ -13,7 +13,7 @@
   display: inline-flex;
   align-items: center;
   min-block-size: 2.75rem;
-  font-size: var(--text-md);
+  font-size: var(--text-nav);
   font-weight: var(--weight-light);
   letter-spacing: var(--tracking-slight);
   color: var(--text-primary);

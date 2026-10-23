@@ -1,5 +1,6 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
+import SectionLabel from '@/components/ui/SectionLabel';
 import ButtonLink from '@/components/ui/ButtonLink';
 import PortraitFrame from '@/components/ui/PortraitFrame';
 import { localeHref } from '@/lib/i18n/config';
@@ -36,7 +37,10 @@ export default function StorySection({ locale, dictionary, portrait }) {
           ) : null}
 
           <div className={styles.text}>
-            <h2 className={styles.heading}>{dictionary.home.story.heading}</h2>
+            <div className={styles.titleBlock}>
+              <SectionLabel>{dictionary.home.story.label}</SectionLabel>
+              <h2 className={styles.heading}>{dictionary.home.story.heading}</h2>
+            </div>
             <p className={styles.body}>{dictionary.home.story.body}</p>
             <ButtonLink href={localeHref(locale, '/about')} variant="quiet">
               {dictionary.home.story.link}

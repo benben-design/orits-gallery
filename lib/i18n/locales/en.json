@@ -28,6 +28,7 @@
       "cta": "View the paintings"
     },
     "works": {
+      "label": "From the studio",
       "heading": "[PLACEHOLDER HEADING] Selected works",
       "intro": "[PLACEHOLDER] A short introduction to the works grid goes here.",
       "viewAll": "View the full gallery"
@@ -54,12 +55,14 @@
       ]
     },
     "story": {
+      "label": "The artist",
       "heading": "[PLACEHOLDER HEADING] About the artist",
       "body": "[PLACEHOLDER] A short paragraph about Orit and her work goes here. This text is a stand-in and has not been written yet.",
       "link": "More about the artist"
     }
   },
   "gallery": {
+    "label": "The collection",
     "title": "Gallery",
     "empty": "There are no works to show yet.",
     "intro": "Every work",
@@ -88,6 +91,7 @@
     "contactLink": "Get in touch with Orit"
   },
   "contact": {
+    "label": "Get in touch",
     "title": "Contact",
     "lead": "You can reach Orit in any of these ways.",
     "methods": {
@@ -214,6 +218,8 @@
     }
   },
   "footer": {
+    "tagline": "Oil and pastel paintings from Orit Bar Shai’s studio",
+    "siteLabel": "Explore",
     "followLabel": "Follow",
     "contactLabel": "Contact",
     "legalLabel": "Legal",
@@ -221,7 +227,7 @@
       "instagram": "Instagram",
       "facebook": "Facebook"
     },
-    "rights": "© {year} {artist}. [PLACEHOLDER] All rights reserved."
+    "rights": "© {year} {artist}. All rights reserved."
   },
   "status": {
     "available": "Available",
