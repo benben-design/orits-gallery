@@ -114,6 +114,28 @@
   --line-on-band: #C7AF9F;
 
   /* ================================================================ *
+   * THE FULL-SCREEN VIEW
+   *
+   * The one dark surface on the site, and it belongs to the paintings rather
+   * than to the chrome: the artwork page's viewer hangs one work on it, alone.
+   *
+   * **Neutral, deliberately not warm.** Everywhere else the warm neutrals are
+   * the point — the site is a wall. Here the job is the opposite: to read a
+   * painting's colour true, and a ground carrying a hue pushes the eye's
+   * white balance against it, so a brown-black would cool every ochre on it.
+   * Near-black rather than #000, which against a lit painting reads as a hole
+   * cut in the screen.
+   *
+   * The two inks are its only text. **The accent does not appear here at all**:
+   * terracotta on this ground is 2.73:1, which fails even the 3:1 a focus
+   * ring needs, so the viewer redefines the focus ring in --text-on-viewer.
+   * check:contrast holds both halves.
+   * ================================================================ */
+  --surface-viewer: #151515;
+  --text-on-viewer: #ECEAE6;        /* the work's title and the controls: 15.20:1 */
+  --text-muted-on-viewer: #A3A09B;  /* its size and position in the set: 7.01:1 */
+
+  /* ================================================================ *
    * TEXT
    *
    * NEVER USE PURE BLACK. The ink on this site is a warm dark brown by
@@ -320,6 +342,14 @@
   --contact-button-size: 2.875rem;
   --contact-button-hit: 3rem;
   --contact-button-inset: var(--space-4);
+  /**
+   * The phone's buy bar on an artwork page (components/artwork/BuyBar), not
+   * counting the home-indicator inset beneath it. A token because two other
+   * things must move by exactly this much while it shows: the floating
+   * WhatsApp button rises by it, and the page keeps this much room at its foot
+   * so the bar never covers the last lines.
+   */
+  --buy-bar-height: 4.25rem;
 
   /* ================================================================ *
    * THE FRAME

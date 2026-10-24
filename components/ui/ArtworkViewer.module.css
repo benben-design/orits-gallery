@@ -1,0 +1,250 @@
+/**
+ * The full-screen view: one painting on a dark ground, a label beneath it, and
+ * as few controls as the job allows.
+ *
+ * Nothing in here may fill its box. The painting is drawn inside a box built
+ * at its own ratio and fitted to the screen, never the other way round —
+ * `scripts/check-image-crop.mjs` fails if `object-fit: cover` ever appears in
+ * this file, as it does for ArtworkFrame.
+ */
+
+/**
+ * The whole screen, covered.
+ *
+ * A dialog arrives with a border, padding, a centred margin and a maximum size
+ * from the browser; all four are cleared, so the ground runs to every edge. It
+ * is opaque, so the page is not seen through it, and the backdrop beneath it
+ * is never visible.
+ */
+.viewer {
+  position: fixed;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background-color: var(--surface-viewer);
+  color: var(--text-on-viewer);
+}
+
+.viewer[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer::backdrop {
+  background-color: transparent;
+}
+
+/*
+  The site's focus ring is the accent, which on this ground is 2.73:1 — short
+  of the 3:1 a focus indicator needs. Inside the view it is drawn in the light
+  ink instead. check:contrast holds the accent out of here.
+*/
+.viewer :focus-visible {
+  outline-color: var(--text-on-viewer);
+}
+
+/**
+ * The two bars, above and below the painting. Each is ground — a tap on its
+ * empty part closes the view, like a tap anywhere else around the work.
+ *
+ * The safe-area insets keep the close control clear of a phone's notch and
+ * the label clear of its home indicator. Sideways the larger of the two is
+ * used on both sides: the insets are physical and the gutters logical, and a
+ * phone turned on its side has the notch on one edge in either language.
+ */
+.top,
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+  padding-inline: max(var(--space-2), env(safe-area-inset-left), env(safe-area-inset-right));
+}
+
+.top {
+  padding-block-start: max(var(--space-2), env(safe-area-inset-top));
+}
+
+.bottom {
+  padding-block: var(--space-3) max(var(--space-4), env(safe-area-inset-bottom));
+}
+
+/**
+ * Where it is in a set of several, top at the inline start — present only when
+ * there is a set. A position rather than a decoration: it is the one way to
+ * know how many more views there are without paging through them.
+ */
+.position {
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted-on-viewer);
+}
+
+/**
+ * Close, previous and next: the glyph alone, in a 2.75rem square, which is the
+ * site's touch-target floor. Quiet until pointed at — a faint disc under the
+ * glyph, in the same light ink, so the control answers without the view
+ * acquiring a second colour.
+ */
+.control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-round);
+  padding: 0;
+  background-color: transparent;
+  color: var(--text-on-viewer);
+  cursor: pointer;
+}
+
+/*
+  Only where there is a pointer to hover with: on a touch screen :hover sticks
+  to the last control tapped, and "previous" sat greyed after every press.
+*/
+@media (hover: hover) {
+  .control:hover {
+    background-color: color-mix(in srgb, var(--text-on-viewer) 12%, transparent);
+  }
+}
+
+/* Always at the inline end, whether or not a position sits at the start. */
+.close {
+  margin-inline-start: auto;
+}
+
+/**
+ * The room the painting is given, and the box it measures itself against.
+ *
+ * A size container, so the box inside can be sized in `cqi` and `cqb` —
+ * fractions of exactly this space, between the bars and inside the gutters —
+ * rather than of the viewport, which would have to subtract the bars by hand
+ * and would be wrong the moment either changed.
+ */
+.stage {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  display: grid;
+  place-items: center;
+  padding-inline: max(var(--space-3), env(safe-area-inset-left), env(safe-area-inset-right));
+  container-type: size;
+}
+
+/**
+ * The painting's own box, and the never-crop rule in this view.
+ *
+ * It takes the work's ratio, and its width is the smallest of three: the
+ * original file's own width, the room across, and the room down times the
+ * ratio. So a portrait is bounded by the height and a landscape by the width,
+ * neither is ever cut, and **no painting is drawn larger than the photograph
+ * is** — a small original sits small with ground around it, rather than
+ * stretched soft to fill the screen.
+ *
+ * Sized before anything has loaded, so the large file arriving moves nothing.
+ */
+.canvas {
+  position: relative;
+  inline-size: min(var(--view-width), 100cqi, calc(100cqb * var(--view-ratio)));
+  aspect-ratio: var(--view-ratio);
+}
+
+/**
+ * Both images fill the box exactly, which is the same shape they are, so
+ * `contain` changes nothing — it is the backstop that keeps a mismatch from
+ * ever becoming a crop.
+ */
+.preview,
+.painting {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+/* The large file stays out of sight until it has arrived, over the small one. */
+.painting {
+  opacity: 0;
+}
+
+.painting[data-loaded] {
+  opacity: 1;
+}
+
+/**
+ * The wall label: the work's title in the display face, its size beneath in the
+ * secondary ink. Centred under the painting, because in this view the painting
+ * is centred and the label belongs to it rather than to an edge of the screen.
+ */
+.caption {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-snug);
+  color: var(--text-on-viewer);
+  overflow-wrap: anywhere;
+}
+
+.dimensions {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted-on-viewer);
+}
+
+/**
+ * Motion, only where it is wanted.
+ *
+ * The view fades in and out as a whole, and the large file fades in over the
+ * small one; a painting let go after a short swipe settles back rather than
+ * jumping. The fade uses `@starting-style` and the discrete `display` and
+ * `overlay` transitions a dialog needs to animate its own closing; a browser
+ * without them simply shows and hides it.
+ *
+ * Under reduced motion none of it: the view appears and goes, the large file
+ * replaces the small one, and only the painting following the finger moves —
+ * which the finger asked for.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .viewer {
+    transition:
+      opacity var(--duration) var(--ease),
+      display var(--duration) allow-discrete,
+      overlay var(--duration) allow-discrete;
+  }
+
+  .viewer:not([open]) {
+    opacity: 0;
+  }
+
+  @starting-style {
+    .viewer[open] {
+      opacity: 0;
+    }
+  }
+
+  .painting {
+    transition: opacity var(--duration-slow) var(--ease);
+  }
+
+  .canvas:not([data-dragging]) {
+    transition: transform var(--duration) var(--ease);
+  }
+}

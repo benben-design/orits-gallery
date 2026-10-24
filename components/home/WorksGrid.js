@@ -24,9 +24,10 @@ import styles from './WorksGrid.module.css';
 /**
  * Widths the grid actually renders at, so the browser can pick a sensible
  * source. Sized for the sharp replacement scans, not for the low-resolution
- * files currently in public/paintings.
+ * files currently in public/paintings. Exported for the artwork page's "more
+ * works", whose cards are no larger than these.
  */
-const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
+export const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
 
 export default function WorksGrid({ works, locale, dictionary }) {
   if (!works?.length) {

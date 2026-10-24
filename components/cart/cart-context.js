@@ -47,3 +47,16 @@ export function useCart() {
 
   return cart;
 }
+
+/**
+ * The cart, or null when there is none — for the one component that is
+ * rendered both inside the public layout and outside it.
+ *
+ * `AddToCart` sits in `ArtworkDetail`, which the admin's preview renders too,
+ * and the admin has no cart. Calling `useCart` there threw before any of its
+ * own checks ran, which took the preview down for every work, drafts included
+ * (found 24-10-2026). Everything else keeps `useCart`, and its throw.
+ */
+export function useOptionalCart() {
+  return useContext(CartContext);
+}

@@ -328,6 +328,31 @@ page, because a sold work is not buyable and draws no buy controls at all — bu
 one colour is doing two jobs, and a surface that ever shows a badge beside a
 button will have to answer for it.
 
+**That surface now exists, and this is its answer** (24-10-2026). A sold,
+reserved or not-for-sale work shows the badge under its title and, where the buy
+controls would be, a WhatsApp button to the artist in the secondary button's
+clay. They are told apart by form, never by colour alone: the badge is a small
+word in the price row with no edge; the button is a full-width control with a
+hairline, a glyph and a sentence above it saying what it is for. If a future
+change makes the two the same size or shape, give the button a different fill.
+
+## Around the buy controls
+
+On a work that can be bought, directly above the buttons, four short lines answer the last hesitation —
+original and signed, insured delivery, 14 days to cancel, secure payment — and a
+quiet link asks the artist about this painting on WhatsApp. **The delivery line
+is the site settings**, the same rate and pickup switch checkout charges by, so
+the promise beside the button cannot disagree with the total at checkout.
+
+On a work that cannot be bought, the question to the artist **is** the page's
+action, with a sentence true of its status: sold is gone, reserved may come free,
+not-for-sale never was. A page about a painting nobody can buy still ends in
+something to do. See `components/ui/AskAboutWork.js`.
+
+The homepage's four promises are still placeholders, and this list is real copy
+for the same four. When they are filled, use these words, so a buyer meets one
+promise once.
+
 The inert version was reversed on purpose so the purchase flow could be shown end
 to end before a provider was chosen, and it was held honest three ways while it
 lasted: a `<button>` with no handler rather than a link to a stub page, an

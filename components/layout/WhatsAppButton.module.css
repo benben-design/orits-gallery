@@ -77,10 +77,10 @@
   color: var(--text-primary);
 
   /*
-    Colour only. There is deliberately no entrance animation and nothing that
-    moves: it is present from the first paint, in the same place, on every
-    page — which is the whole of why a visitor stops noticing it and starts
-    relying on it.
+    Colour only. There is deliberately no entrance animation: it is present
+    from the first paint, in the same place, on every page — which is the whole
+    of why a visitor stops noticing it and starts relying on it. The one
+    exception is making room for the artwork page's buy bar on a phone, below.
   */
   transition: color var(--duration) var(--ease);
 }
@@ -198,6 +198,37 @@
  * Not on paper. A fixed element prints on the first page, over whatever is
  * beneath it, and a link to a chat is worth nothing there anyway.
  */
+/**
+ * On an artwork page on a phone, the buy bar takes the foot of the screen while
+ * the real buy controls are scrolled away — and this rises to sit just above it,
+ * by exactly the bar's height, and comes back down when it goes. It is never
+ * hidden for the bar: reaching her is the other thing a buyer might want there.
+ *
+ * Read off the bar's own attribute (`BUY_BAR_ATTRIBUTE` in
+ * components/artwork/buyControls.js, written out because CSS cannot import it),
+ * so the bar moves nothing in script. The width matches the bar's: it does not
+ * exist from 60rem.
+ *
+ * The rise is the one motion this button has, and only because something
+ * arrived beneath it; under reduced motion it moves without travelling.
+ */
+@media (max-width: 59.999rem) {
+  :global(html:has([data-buy-bar='shown'])) .button {
+    inset-block-end: calc(
+      var(--contact-button-inset) + var(--buy-bar-height) + env(safe-area-inset-bottom)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button {
+    /* Both, because a later transition replaces the colour one rather than adding to it. */
+    transition:
+      color var(--duration) var(--ease),
+      inset-block-end var(--duration-slow) var(--ease);
+  }
+}
+
 @media print {
   .button {
     display: none;
