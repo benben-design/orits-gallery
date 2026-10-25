@@ -1,9 +1,10 @@
 # Netlify build configuration.
 #
-# The build command, a pinned Node, and two settings that narrow the secrets
-# scan — and deliberately nothing else: the framework, the publish directory
-# and the function bundling are all detected by the Next runtime, and a value
-# restated here is one that can disagree with the manifest later.
+# The build command, a pinned Node, two settings that narrow the secrets scan,
+# and one header for the static files — and deliberately nothing else: the
+# framework, the publish directory and the function bundling are all detected
+# by the Next runtime, and a value restated here is one that can disagree with
+# the manifest later.
 
 [build]
   # Exactly what package.json defines. `prebuild` runs with it, so the image
@@ -56,3 +57,25 @@
   # The Cloudinary API key and API secret are real secrets and must never be
   # added here.
   SECRETS_SCAN_OMIT_KEYS = "CLOUDINARY_CLOUD_NAME"
+
+# The one header the site's static files need, and the only header rule here.
+#
+# Every page, route and redirect gets its headers from next.config.mjs, because
+# Netlify's own header rules never reach a response a function produced. The
+# reverse is just as true, and was measured on the live site on 25-10-2026:
+# the files Netlify serves from its own store — /_next/static (scripts, styles,
+# fonts) and everything in public/ (the paintings, the hero video and poster,
+# the wordmark) — carried none of next.config.mjs's headers. Rules here apply to
+# exactly those files and nothing else, so this cannot double a header on a page.
+#
+# nosniff is the one that means anything on them: it stops a browser treating a
+# file as a type other than the one it was served as. The rest of the security
+# set is deliberately left off. The CSP and the framing headers govern
+# documents, and no document is served from the store — every HTML, JSON and
+# XML response was checked and comes from the function. X-Robots-Tag is left
+# off too: robots.txt already forbids crawling these files before launch, and
+# after launch a painting is meant to be found. See deployment.md.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"

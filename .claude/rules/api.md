@@ -287,6 +287,11 @@ everything, in this order:
 - **Every response on both routes carries `Cache-Control: no-store`**,
   whatever the outcome, including an exception nobody anticipated. Nothing on
   the money path depends on a platform's default.
+- **Every redirect on both routes carries a query of its own** — `?from=payment`,
+  which nothing reads (25-10-2026). Netlify appends the incoming query to a
+  redirect whose `Location` has none, and here the incoming query is Hyp's,
+  which can carry the buyer's name, email and phone; without the marker they
+  land in the order page's address. Measured, and why, in deployment.md.
 
 ### What a verified success actually does
 

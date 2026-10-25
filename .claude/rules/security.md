@@ -247,6 +247,13 @@
   No `X-Powered-By` (`poweredByHeader: false`), and **no HSTS: Netlify sends it**
   for every site, and a second copy could only disagree with it.
 
+  **"Every response" means every response the Next runtime produces.** The
+  files Netlify serves from its own store — `/_next/static` and `public/` —
+  never see `next.config.mjs`, measured on the public deploy on 25-10-2026, so
+  `netlify.toml` gives them `X-Content-Type-Options: nosniff` and nothing else:
+  no document is served from the store, and the CSP and framing headers govern
+  documents. See deployment.md.
+
   **Every origin in the policy is one the code uses**, mapped from the repository
   with the file responsible: `res.cloudinary.com` is where every uploaded
   painting and the portrait are delivered from (`lib/image-loader.js`);
