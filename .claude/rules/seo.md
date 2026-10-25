@@ -102,7 +102,9 @@ worse than none.
 response carries `X-Robots-Tag: noindex, nofollow, noarchive`, every public
 page a robots meta, and `robots.txt` disallows everything without naming the
 sitemap. One switch, `ALLOW_SEARCH_INDEXING`, blocked unless exactly `true` —
-see `lib/search-indexing.js` and deployment.md. Everything below describes the
+see `lib/search-indexing.js` and deployment.md, which also records the one limit
+kept knowingly: a crawler that obeys the disallow never reads the `noindex`.
+Everything below describes the
 site after launch.
 
 The sitemap covers every **built** public page in every locale, including one

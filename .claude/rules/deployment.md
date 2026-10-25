@@ -52,10 +52,13 @@ see "Database — Neon" below.
   **after** the proxy rather than before, and it cannot matter for the admin,
   because `proxy.js`'s matcher deliberately excludes `/admin` — the design
   system included, at `/admin/dev` since 29-09-2026.
-- **`netlify.toml` carries four settings and deliberately nothing else**: the
+- **`netlify.toml` carries five settings and deliberately nothing else**: the
   build command exactly as `package.json` defines it, `NODE_VERSION = "22"`,
-  and two that narrow the secrets scan — see "The secrets scan is narrowed,
-  never disabled" under Build below. The framework, the publish directory and function bundling are all detected,
+  two that narrow the secrets scan — see "The secrets scan is narrowed,
+  never disabled" under Build below — and, since 25-10-2026, **one header rule
+  for the static files**: `X-Content-Type-Options: nosniff`, and nothing else,
+  on what Netlify serves from its own store. That is the reverse of the rule
+  below and not a contradiction of it — see "The response headers, measured". The framework, the publish directory and function bundling are all detected,
   and a value restated there is one that can quietly disagree with the manifest
   later. **Node is pinned because the host's default moves with its build
   image**, and a major version changing underneath a build is a failure that
@@ -422,6 +425,27 @@ And these do what they must:
   **Settled by the first test transaction**: if the refusal fires, no payment
   can proceed and Hyp has to be asked; if it does not, the signed URL is clean.
 
+### Netlify copies the query onto a redirect (measured 25-10-2026)
+
+**On Netlify, a redirect whose `Location` has no query of its own is sent with
+the incoming request's query appended.** A return to
+`…/api/payments/hyp/return?Order=x&Fild1=a` answered
+`Location: …/he/checkout?Order=x&Fild1=a`, where the same build run locally
+answers `…/he/checkout`. Netlify's staff call it expected, with no switch to
+turn it off; a `Location` that already carries a query is left alone, which
+the admin guard's `?next=` showed on the same day.
+
+On the payment return that would have copied Hyp's whole redirect — which can
+carry the buyer's name, email and phone — into the order page's address: the
+browser's history, the screen, and any link the buyer copies to share. So every
+redirect from `lib/payments/handle-return.js` now carries a query of its own,
+`?from=payment`, which nothing reads. **It cannot be shown on a laptop**, so it
+is checked on the deploy: a return with a made-up query must come back as
+`…/he/checkout?from=payment` and nothing else.
+
+Every other redirect on the site carries only the visitor's own query onward —
+`/he/art/lemons?x=1` keeps its `x=1` — which is harmless and left alone.
+
 ### Known residuals: refunds that exist only in the logs
 
 Two paths end with money owed and **no row anywhere that says so**. Both were
@@ -509,6 +533,20 @@ While blocked, three layers say so:
   `noindex` either way.
 - **`robots.txt` disallows everything and names no sitemap.** The sitemap still
   exists; it is only not advertised while crawlers are told to stay out.
+
+**One limit, kept knowingly (25-10-2026).** Google says it plainly: when
+robots.txt blocks a page, "the crawler will never see the `noindex` rule, and
+the page can still appear in search results" — as a bare address with no
+content, if Google finds a link to it somewhere it does crawl. So while the
+disallow stands, the header and the meta are never read by a crawler that
+obeys robots.txt; they protect only against one that ignores it. The
+alternative — let search engines crawl so they read the `noindex`, while still
+refusing everyone else — was weighed and not taken: the link is shared
+privately (WhatsApp, a private profile), which no crawler reads, and the full
+disallow also keeps AI crawlers from copying her paintings and words, which a
+`noindex` would not. **If the address is ever posted somewhere public before
+launch**, that is the moment to revisit it: allow `Googlebot` and `Bingbot`,
+disallow `*`, and add `noimageindex` to the pre-launch header and meta.
 
 The admin's own noindex rules, the security headers and the CSP are untouched,
 and the admin stays blocked after launch exactly as before.
@@ -675,24 +713,36 @@ Beyond a green build, these are launch blockers and are easy to forget:
   That branch leaves an order pending with money taken, and the orders list is
   the only place it can be caught — so it has to be seen working before a
   stranger meets it.
-- **The response headers confirmed on the deployed site**, not only in a
-  local production build: the six security headers on every response, the
-  `X-Robots-Tag` directives on the admin, and no `X-Powered-By`. All are
-  declared in `next.config.mjs` and so carried by Netlify's Next adapter rather
-  than by the host's own header rules — and the adapter honouring them is the
-  one part of this a laptop cannot prove. **It is unmeasured for the responses
-  Netlify serves from its own cache**, the reverse of the case security.md
-  describes, so check three kinds of response:
-  a **prerendered page** (`/he`), a **static asset** (any `/_next/static/…`
-  file, or `/video/hero-cherries-poster.jpg`), and an **SSR admin page**
-  (`/admin/login`).
-  **How depends on whether the site is Private.** While it is, Netlify's team
-  login answers an unauthenticated request first, with its own headers, and
-  those look real — so a plain `curl -I` proves nothing. Check from a browser
-  already signed in to the Netlify team, in the developer tools' network panel,
-  reading the response headers of each of the three. **Only once the site is
-  public** does `curl -I` against each become the check. Also confirm the
-  console shows no Content Security Policy violation on the pages walked.
+- ~~**The response headers confirmed on the deployed site.**~~ **Measured on the
+  public deploy on 25-10-2026** — see "The response headers, measured" below.
+  Re-run it on the real domain at launch, and confirm the console shows no
+  Content Security Policy violation on the pages walked.
+
+### The response headers, measured on the public deploy (25-10-2026)
+
+Once the site went Public, `curl` against it became the check, and it was run
+on every kind of response:
+
+- **Everything the Next runtime answers carries the full set** — the six
+  security headers, Netlify's HSTS, the pre-launch `X-Robots-Tag`, and no
+  `X-Powered-By`. Checked on twenty: both homes, both galleries, an artwork
+  page in each language, About in both, contact, two legal pages, the cart,
+  checkout, an unknown order, a 404, the sitemap, `robots.txt`,
+  `/api/health`, `/admin/login` and the favicon. **Every HTML, JSON and XML
+  response comes from the function**, so nothing a browser treats as a
+  document is served without the policy.
+- **The files Netlify serves from its own store carried none of them** —
+  `/_next/static/*` and everything in `public/`: the paintings, the hero
+  video and poster, the wordmark. That is the reverse of the rule at the top
+  of this file, and it is just as absolute: `next.config.mjs` never reaches
+  them. `netlify.toml` now gives them `X-Content-Type-Options: nosniff`, the
+  one header that means anything on a non-document; the CSP and the framing
+  headers govern documents, and `X-Robots-Tag` is not needed while robots.txt
+  forbids crawling them (and not wanted after launch, when a painting is meant
+  to be found).
+- **`/_next/image` is neither.** Netlify's image CDN answers it, with its own
+  `Content-Security-Policy: script-src 'none'` and none of ours.
+
 - **A check that the guard survived the deploy.** It is built, but it is
   ordinary application code rather than infrastructure: browse to an admin page
   signed out on the deployed site and confirm it lands on the login form.
