@@ -15,8 +15,19 @@
  * these live outside it.
  */
 import { absoluteUrl } from '@/lib/site-url';
+import { isSearchIndexingAllowed } from '@/lib/search-indexing';
 
 export default function robots() {
+  /*
+    Before launch: nothing may be crawled, and the sitemap is not advertised —
+    naming it would hand a crawler the list of every page it has just been
+    told to leave alone. The sitemap itself still exists. Blocked unless
+    ALLOW_SEARCH_INDEXING is exactly `true`; see lib/search-indexing.js.
+  */
+  if (!isSearchIndexingAllowed()) {
+    return { rules: [{ userAgent: '*', disallow: '/' }] };
+  }
+
   return {
     rules: [
       {

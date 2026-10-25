@@ -488,9 +488,64 @@ below ever finds something that is not a refresh.
    edited on the payment page**, with the signature still off, and confirm it is
    voided rather than settled — it is the attack the matching exists to stop.
 
+## Search engines are blocked until launch (since 25-10-2026)
+
+**The whole site is hidden from search, and that is the default.** It went
+Public on Netlify so the artist's family could see it long before it is a shop,
+and a page indexed early is expensive to take back out of search. One switch
+decides it: **`ALLOW_SEARCH_INDEXING`**, read by `lib/search-indexing.js`.
+Indexing is allowed **only when it is exactly `true`**; unset, misspelt, `TRUE`
+or `1` all leave the site blocked, so forgetting the switch can only ever hide
+the site, never expose it.
+
+While blocked, three layers say so:
+
+- **`X-Robots-Tag: noindex, nofollow, noarchive` on every response** — the one
+  that matters. Declared in `next.config.mjs`, beside the admin's own rule,
+  for the reason everything here is: Netlify's header rules never reach a
+  function's response.
+- **A robots meta on every public page**, from the public root layout. Pages
+  that already set their own (cart, checkout, an empty About or contact) say
+  `noindex` either way.
+- **`robots.txt` disallows everything and names no sitemap.** The sitemap still
+  exists; it is only not advertised while crawlers are told to stay out.
+
+The admin's own noindex rules, the security headers and the CSP are untouched,
+and the admin stays blocked after launch exactly as before.
+
+**It is read at build time.** The headers and the prerendered pages are fixed
+when the site is built, so changing the variable on Netlify does nothing until
+the next deploy.
+
+**Measured on a local production build, 25-10-2026**: `robots.txt` is
+`Disallow: /` with no sitemap line, and every response checked — both homes,
+both galleries and a filtered one, an artwork page in each language, two legal
+pages, About, contact, the cart, the admin login, the sitemap, `/api/health`
+and a 404 — carries the header once, and every HTML page the meta.
+
+**Before switching the Netlify project from Private to Public**, check the same
+on the live deploy from a browser signed in to the Netlify team (a plain
+`curl` only sees the team login while the site is Private): `/robots.txt`
+says `Disallow: /`, and `/he`, `/en/gallery`, an artwork page and a legal
+page each carry the `X-Robots-Tag` response header and the robots meta.
+
+**At launch — the day the site should be found:**
+
+1. Set `ALLOW_SEARCH_INDEXING=true` in the Netlify site's environment
+   variables, for production only — never for deploy previews, which must stay
+   hidden.
+2. Trigger a new production deploy; the old one keeps the block.
+3. Check the live site: `/robots.txt` allows `/`, disallows `/admin` and
+   `/api/` and names the sitemap; a public page carries no `X-Robots-Tag` and
+   no robots meta; `/admin/login` still carries both.
+
 ## Before going live
 
 Beyond a green build, these are launch blockers and are easy to forget:
+
+- **Search indexing switched on** — `ALLOW_SEARCH_INDEXING=true` and a
+  redeploy, as above. Until then the site cannot be found, which is right
+  before launch and a silent failure after it.
 
 - **Real photography — mostly done, not finished.** Fifteen of the sixteen now
   serve the artist's own originals from the image host rather than the
