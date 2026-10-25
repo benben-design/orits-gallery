@@ -5,10 +5,22 @@
 
 /*
   The one moment of motion on the site: a card below the first screen rises
-  into place as it comes into view, a beat after the card before it in the
-  row. QuietMotion sets `pending` only after hydration and only below the
-  first screen, so a page with no script never hides anything. Print and
-  reduced motion show everything at once.
+  into place as it comes into view, a beat after the card before it in its
+  row — the mat and the painting on it as one piece, the way a framed work
+  is carried to the wall. QuietMotion sets `pending` only after hydration and
+  only below the first screen, so a page with no script never hides anything.
+  Print and reduced motion show everything at once.
+
+  **One piece, decided 25-10-2026.** The painting used to fade in 150ms after
+  its mat, and the white mat arriving first read as an empty box waiting to
+  be filled rather than as a work being hung.
+
+  **The card and the painting never move the same property.** The rise is a
+  transform on the card; the hover lift is a transform on the painting
+  (ArtworkFrame). The one fade the painting has of its own — waiting for a
+  file that has not arrived — goes through the variables ArtworkFrame's own
+  transition reads rather than a transition declared here, which would
+  replace the hover's and leave it snapping.
 
   **It never starts from nothing.** A pending card is already at
   --rise-from-opacity, so a fast fling or a jump a screen at a time — which
@@ -27,10 +39,22 @@
       opacity var(--duration-rise) var(--ease) var(--rise-delay, 0ms),
       transform var(--duration-rise) var(--ease) var(--rise-delay, 0ms);
   }
+
+  /* A painting whose file is still on the way when its card arrives
+     (QuietMotion's data-awaiting) stays hidden and fades in once it loads,
+     rather than popping in over a mat that has already settled. */
+  .card[data-rise='shown'] img[data-awaiting] {
+    opacity: 0;
+  }
+
+  .card[data-rise='shown'] img {
+    --painting-fade: var(--duration-rise);
+  }
 }
 
 @media print {
-  .card[data-rise='pending'] {
+  .card[data-rise='pending'],
+  .card[data-rise] img {
     opacity: 1;
     transform: none;
   }

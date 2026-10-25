@@ -108,9 +108,10 @@ headings were removed on 25-10-2026 as template chrome; only About keeps one,
 above the artist's name.
 
 **Motion is one moment, and never a condition of being seen (25-10-2026).** Two
-things move: painting cards below the first screen rise into place once, as
-they come into view, a beat apart in reading order (`--duration-rise`, starting
-from `--rise-from-opacity` so nothing is ever blank); and on a device that
+things move: painting cards hang themselves every time
+they come into view, scrolling either way — the mat and the painting on it rise into place as one
+piece, a beat apart along each row in reading order (`--duration-rise`,
+starting from `--rise-from-opacity` so nothing is ever blank); and on a device that
 hovers a card's painting lifts 3px with its shadow deepening to the bare one.
 Sections used to rise in and paintings to fade in as they loaded; both were
 removed because, with the spacing, they made the scroll feel empty. Both moves

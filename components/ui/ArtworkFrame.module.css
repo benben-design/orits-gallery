@@ -62,11 +62,18 @@
   to scale by 1.2%, which on a painting reads as a zoom into the picture
   rather than the object moving.
 */
+/*
+  The opacity entry is the painting's fade as its card is hung
+  (ArtworkCard.module.css sets the two variables). Anywhere else — the
+  artwork page, the cart, the gallery tiles — they are unset, the fade takes
+  no time, and nothing changes.
+*/
 @media (prefers-reduced-motion: no-preference) {
   .painting {
     transition:
       transform var(--duration) var(--ease),
-      box-shadow var(--duration) var(--ease);
+      box-shadow var(--duration) var(--ease),
+      opacity var(--painting-fade, 0s) var(--ease) var(--painting-fade-delay, 0s);
   }
 }
 
