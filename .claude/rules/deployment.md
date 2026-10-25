@@ -441,7 +441,12 @@ browser's history, the screen, and any link the buyer copies to share. So every
 redirect from `lib/payments/handle-return.js` now carries a query of its own,
 `?from=payment`, which nothing reads. **It cannot be shown on a laptop**, so it
 is checked on the deploy: a return with a made-up query must come back as
-`…/he/checkout?from=payment` and nothing else.
+`…/he/checkout?from=payment` and nothing else. **Verified on the deploy the same
+day**: five returns — none, one carrying a made-up name, email and phone, an
+order-shaped id, a gate refusal, and the error route — each answered `307`,
+`no-store`, and exactly `?from=payment` on the checkout or the order page, with
+nothing of the request in it. The admin guard's and the artwork slug's
+redirects were unchanged.
 
 Every other redirect on the site carries only the visitor's own query onward —
 `/he/art/lemons?x=1` keeps its `x=1` — which is harmless and left alone.
@@ -739,9 +744,15 @@ on every kind of response:
   one header that means anything on a non-document; the CSP and the framing
   headers govern documents, and `X-Robots-Tag` is not needed while robots.txt
   forbids crawling them (and not wanted after launch, when a painting is meant
-  to be found).
-- **`/_next/image` is neither.** Netlify's image CDN answers it, with its own
-  `Content-Security-Policy: script-src 'none'` and none of ours.
+  to be found). **Verified after the deploy**: `nosniff`, once, on a script, a
+  stylesheet, the hero poster and loop, a painting and the wordmark — and every
+  page still carries each of its headers exactly once, so the rule does not
+  reach a function's response.
+- **`/_next/image` is neither, and is left as it is.** Netlify's image CDN
+  answers it, with its own `Content-Security-Policy: script-src 'none'` and
+  none of ours — not even the `netlify.toml` rule. It serves only resized
+  copies of the site's own files, never anything uploaded through it, with the
+  right image type, so a missing `nosniff` there protects against nothing.
 
 - **A check that the guard survived the deploy.** It is built, but it is
   ordinary application code rather than infrastructure: browse to an admin page
