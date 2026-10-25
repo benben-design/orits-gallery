@@ -74,10 +74,17 @@
  * The row holds two destinations — the work, and the question about deleting
  * it — so it is the list item, and each destination is its own link inside.
  */
+/*
+ * It wraps: on a phone the two actions drop to a line of their own beneath
+ * the painting. Kept on one line there, the work had a third of the row and
+ * its title broke a word to a line, with the status badge running under
+ * "mark sold" — which the larger reading scale of 23-10-2026 only made worse.
+ */
 .row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: 0 var(--space-4);
   border-block-end: var(--border-hairline) solid var(--line);
   transition: background-color var(--duration) var(--ease);
 }
@@ -87,7 +94,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-5);
-  flex: 1 1 auto;
+  /* The basis is what decides the wrap: below about sixteen rem of room
+     for the painting, the actions give way rather than the title. */
+  flex: 1 1 16rem;
   min-inline-size: 0;
   padding-block: var(--space-4);
 }
@@ -105,6 +114,9 @@
   align-self: stretch;
   display: flex;
   align-items: center;
+  /* Holds the touch target once the row has wrapped and stretch has no
+     painting beside it to stretch to. */
+  min-block-size: 2.75rem;
   padding-inline: var(--space-4);
   font-size: var(--text-sm);
   text-decoration: underline;

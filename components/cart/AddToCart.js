@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { ShoppingBag, CreditCard } from 'lucide-react';
 import { isBuyable } from '@/components/ui/statusPresentation';
 import { localeHref } from '@/lib/i18n/config';
-import { useCart } from './cart-context';
+import { useOptionalCart } from './cart-context';
+import { BUY_CONTROLS_ATTRIBUTE } from '@/components/artwork/buyControls';
 import styles from './AddToCart.module.css';
 
 /**
@@ -19,6 +20,11 @@ import styles from './AddToCart.module.css';
  *     through here — and a draft is not for sale at any status. Without this the
  *     preview would offer a button that the action then refuses, which is a
  *     worse answer than no button.
+ *   - **No cart, no controls.** The admin's preview has no `CartProvider` —
+ *     there is nobody to add a painting for — so a published, buyable work
+ *     previewed there renders no buy controls rather than throwing. The
+ *     preview's own band says it is a preview; the controls are the one part
+ *     of the public page it does not show.
  *   - `isBuyable` reads the four-state table rather than comparing to
  *     'available', so the control that offers a purchase and the action that
  *     permits one cannot disagree about a state. See statusPresentation.js.
@@ -39,14 +45,19 @@ import styles from './AddToCart.module.css';
  * legible without a sentence.
  */
 export default function AddToCart({ work, dictionary, locale }) {
-  const { addWork } = useCart();
+  const cart = useOptionalCart();
   const buttonRef = useRef(null);
 
+  if (!cart) return null;
   if (!work.publishedAt) return null;
   if (!isBuyable(work.status)) return null;
 
   return (
-    <div className={styles.form}>
+    /*
+      Marked so the phone's buy bar (components/artwork/BuyBar) can tell when
+      these have scrolled out of view and stand in for them.
+    */
+    <div className={styles.form} {...{ [BUY_CONTROLS_ATTRIBUTE]: '' }}>
       <button
         ref={buttonRef}
         type="button"
@@ -55,7 +66,7 @@ export default function AddToCart({ work, dictionary, locale }) {
           The button is handed to the cart so that closing the drawer puts the
           keyboard back here, rather than at the top of the document.
         */
-        onClick={() => addWork(work.id, buttonRef.current)}
+        onClick={() => cart.addWork(work.id, buttonRef.current)}
         /*
           Deliberately not disabled while the add is in flight, for two reasons.
           A disabled control that had focus is blurred to <body> by the browser,

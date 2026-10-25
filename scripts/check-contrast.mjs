@@ -92,6 +92,9 @@ const PERMITTED = [
   ['text-on-accent', 'accent-hover', 'Label on a pressed button'],
 
   ['status-sold-text', 'status-sold-bg', 'The sold badge'],
+
+  ['text-on-viewer', 'surface-viewer', 'The full-screen view: title and controls'],
+  ['text-muted-on-viewer', 'surface-viewer', 'The full-screen view: size and position'],
 ];
 
 const FORBIDDEN = [
@@ -126,6 +129,14 @@ const FORBIDDEN = [
     'Header links are --text-primary. The accent marks the current page there '
       + 'as a hairline underline, a non-text indicator that needs only 3:1; as '
       + 'text it falls short of AA on the band.',
+  ],
+  [
+    'accent',
+    'surface-viewer',
+    'Terracotta on the full-screen view',
+    'The viewer carries no accent at all, and redefines the focus ring in '
+      + '--text-on-viewer: on this ground terracotta fails even the 3:1 a focus '
+      + 'ring needs. Do not lighten the accent to bring it in here.',
   ],
   [
     'line-strong',

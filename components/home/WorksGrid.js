@@ -24,14 +24,15 @@ import styles from './WorksGrid.module.css';
 /**
  * Widths the grid actually renders at, so the browser can pick a sensible
  * source. Sized for the sharp replacement scans, not for the low-resolution
- * files currently in public/paintings.
+ * files currently in public/paintings. Exported for the artwork page's "more
+ * works", whose cards are no larger than these.
  */
-const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
+export const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
 
 export default function WorksGrid({ works, locale, dictionary }) {
   if (!works?.length) {
     return (
-      <Section>
+      <Section before="generous">
         <Container>
           <p>{dictionary.gallery.empty}</p>
         </Container>
@@ -39,8 +40,10 @@ export default function WorksGrid({ works, locale, dictionary }) {
     );
   }
 
+  // A generous gap above: the hero is about her making the work, and this
+  // is where the subject changes to the work itself.
   return (
-    <Section>
+    <Section before="generous">
       <Container>
         <SectionHeading intro={dictionary.home.works.intro}>
           {dictionary.home.works.heading}

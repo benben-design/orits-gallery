@@ -53,12 +53,14 @@ One glyph means one action, everywhere it appears:
 | Add to cart | `ShoppingBag` | the artwork page, and the header's cart |
 | Buy now / checkout | `CreditCard` | the artwork page, the drawer, `/cart` |
 | Remove a work | `Trash2` | the drawer, the cart line, the missing-works control |
-| Close a panel | `X` | the drawer, icon-only |
+| Close a panel | `X` | the drawer and the full-screen view, icon-only |
+| View a painting full screen | `Maximize2` | the artwork page, beneath the frame on hover and focus |
+| Previous / next image | `ChevronLeft` / `ChevronRight` | the full-screen view, icon-only — swapped in Hebrew, because they point the way the reading goes |
 | Sign in / out | `LogIn` / `LogOut` | the admin |
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |
 | Stop / play the hero loop | `Pause` / `Play` | the homepage hero, over the footage |
-| Message on WhatsApp | `WhatsAppIcon` (not lucide — see below) | the floating button in the corner of every public page, icon-only |
+| Message on WhatsApp | `WhatsAppIcon` (not lucide — see below) | the floating button in the corner of every public page, icon-only; and the question about one painting on its page, with words |
 
 **Brand logos are the one exception to "one icon system".** lucide dropped
 every brand mark in its 1.0 release, so there is no WhatsApp to import.

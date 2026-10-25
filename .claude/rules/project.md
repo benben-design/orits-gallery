@@ -148,7 +148,8 @@ redirect to one.
 4. A row of four short promises — original one-off work, signed by the artist,
    insured shipping in Israel, 14-day cancellation
 5. Story section — a photo of the artist, a short paragraph, link to About
-6. Footer — social, contact, legal links
+6. Footer — the wordmark and one line, the site's own pages, then social,
+   contact and legal links; the first two always render
 
 The visual reference is the artist's own store site, gitahomedesign.co.il:
 minimal navigation, generous white space, photography dominant, a promises row,
@@ -172,7 +173,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Both root layouts, public shell, admin shell | Done |
 | Every route in the locked map above | Done. The four legal pages are still stubs; About and contact are built from the site settings |
 | The four homepage sections + UI primitives | Done |
-| Gallery | Built — the full catalogue, filtered by category through the URL. **Pagination deliberately not built** at sixteen works |
+| Gallery | Built — the full catalogue, filtered by category through the URL, the two categories shown as picture tiles with their counts. **Pagination deliberately not built** at sixteen works |
 | Deleting a painting | Built — from the works list, behind a confirmation that asks a **different question** of a draft and of a published work, and offers taking it off the site instead of breaking a permanent address. One click never deletes. A work on an order cannot be deleted at all |
 | Finding a painting in the admin | Built — `/admin` **is** the works list: every work with its publication state, sale status and sale channel, drafts sorted first, each row opening its edit page. It reads `getWorksForAdmin`, the admin-scoped list added for it |
 | Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **Its photograph can be attached here too**, in the same save: the upload waits in a hidden field and the work and its image are written in one transaction, so a painting can arrive complete and published in one step |
@@ -181,6 +182,10 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Seeing a work before it is public | Built — `/admin/works/[id]/preview` renders the public artwork body from the admin-scoped read, in either language, behind the guard. A dashed band says whether the work is published; the public route stays published-only |
 | English written for her | Built — leaving a Hebrew title or description translates it and fills the English twin, marked unapproved, and **the form does not save while anything is unapproved**. Her own English is never overwritten, and a failure leaves her typing it herself and saving as usual |
 | Artwork page body | **Built** — one painting large beside its details, reusing the grid's frame, price, badge and status table. The frame's `bare` mount finally has its caller. No buy button while the cart does not exist |
+| Buy bar on a phone | **Built** (24-10-2026) — below 60rem, on a work that can be bought, a slim bar with the title, the price and "add to cart" slides up once the real buy controls have scrolled away, and leaves when they return; the WhatsApp button rises above it, the drawer and the full-screen view sit over it, the home indicator is respected and the page keeps room for it. Verified at 375 and 414 in both languages; none on unavailable works, from 1024, or in the admin preview |
+| More works under a painting | **Built** (24-10-2026) — up to four other published works at the foot of the public artwork page: buyable first, the same category before the other, never the work itself; a link on to the rest of its category. From the gallery's cached catalogue, so no query of its own per page. Not in the admin preview |
+| Reassurance and a question to the artist | **Built** (24-10-2026) — below the buy controls on a work that can be bought (moved there 25-10-2026), four lines (original and signed, insured delivery from the settings, 14 days to cancel, secure payment) and a WhatsApp link that names the painting; on a sold, reserved or not-for-sale work that link becomes the page's action, with a sentence true of its status. Nothing renders without a WhatsApp number |
+| Full-screen view of a painting | **Built** (24-10-2026) — clicking or tapping the painting opens it whole on a neutral near-black, with its title and physical size beneath; Escape, the close control, a tap on the ground or a downward swipe close it; several images page by arrows, keys and swipe, mirrored in Hebrew. Never requested or drawn larger than the original. Verified in both languages at 375 and 1440, keyboard only and with real two-finger pinch |
 | Cart | Built, **as a panel that slides in from the edge of the screen**. Adding a painting opens it in place and never navigates. A cookie of work ids and nothing else, so **every fact is re-read from the database**: a painting sold elsewhere while it sat there is caught when the cart is drawn and again when anything is added, and is excluded from the total with a sentence saying why. No quantity anywhere. `/cart` is still the whole page, server-rendered, reachable from the foot of the panel, and the one that will grow a real checkout |
 | Checkout controls | **Real.** All three — the drawer's, `/cart`'s, and "buy now" on the artwork page — are ordinary links into `/[locale]/checkout`. The `aria-disabled` attributes and the shared "not open yet" sentence went with them, and that locale key is deleted rather than left unused. "Buy now" carries `?work=<id>`: one painting, cart untouched |
 | Checkout | **Built.** Guest checkout, no accounts. Delivery is chosen first because it changes the form — insured shipping at a flat 40 ILS with a full Israeli address, or free self-pickup with **no address field at all**. Validation keeps the typed values; a painting that has gone stops the checkout and is **named**. The order is written `pending` with its lines, buyer, method and fee **before** the buyer reaches payment, and its uuid is the public reference that travels in Hyp's `Order`. Every amount is computed in agorot in the orders repository, for both methods, so nothing in the browser adds up money |
@@ -188,7 +193,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Order logic after payment | **Built, and proven against simulated returns rather than against Hyp — there is no account yet.** Both return routes refuse a query carrying one of our own keys or any key twice, then call VERIFY, and do nothing before it answers; a forged, declined, unreadable or unverifiable return changes nothing anywhere, and missing credentials can never read as success. **VERIFY answers `CCode` alone**, so only then is the signed redirect read, and it settles only a charge for this order at exactly its total — anything else that was charged is voided, never settled (hardened 28-09-2026). A verified success seizes every painting by one conditional write (`status = 'available'`, the row count deciding), all-or-nothing, then marks the order paid, then clears the cart — idempotently, so a refresh writes nothing twice. If the painting went to somebody else in between, the charge is voided if it can be and flagged `refund_due_at` if it cannot, and the buyer is told plainly. `/[locale]/order/[id]` is the confirmation. See deployment.md for exactly what remains unproven |
 | Sitemap, OG images, hreflang tags | **Built for the artwork page**, which carries its title, description, canonical, both alternates and the painting as its share image. `app/sitemap.js` covers every **built** public page in both languages plus one entry per painting per language, published only — the stubs are kept out by `scripts/check-sitemap.mjs` rather than by memory. **Still missing:** hreflang on the other public pages, and structured data anywhere |
 | Database schema | Written — **fourteen** migrations in `database/migrations/`, run by hand in numeric order against both databases. 014 is the most recent: the payment return's rate limit, **applied to both on 30-09-2026** — on Neon by hand, then reconciled from a session against the local database; a database without it sends every payment return to its order page unverified. **Both databases carried 001 through 013 from 29-09-2026**, 013 proven on each through the throttle module; 012 was proven identical on `admin_login_attempts` the day before. A database without 012 makes a failed sign-in throw; a database without 013 makes every checkout past validation throw |
-| `/admin/settings` | **Built, and the public site reads it.** One form over migration 011's single row: the About text in both languages (she writes the Hebrew, the English arrives through the work form's own translate-and-approve flow and blocks saving until approved), email, phone, WhatsApp number, Instagram and Facebook links, the flat shipping rate in shekels, a self-pickup switch, and her portrait, uploaded into its own `orit-site` folder. Every database rule is checked first and explained in Hebrew; a cleared field saves as empty, and **an empty field renders nothing anywhere on the site**. The footer, the WhatsApp button, the story section, the About and contact pages and checkout all read it; nothing about them is hardcoded any more |
+| `/admin/settings` | **Built, and the public site reads it.** One form over migration 011's single row: the About text in both languages (she writes the Hebrew, the English arrives through the work form's own translate-and-approve flow and blocks saving until approved), email, phone, WhatsApp number, Instagram and Facebook links, the flat shipping rate in shekels, a self-pickup switch, and her portrait, uploaded into its own `orit-site` folder. Every database rule is checked first and explained in Hebrew; a cleared field saves as empty, and **an empty field renders nothing anywhere on the site**. The footer, the WhatsApp button, the story section, the About and contact pages, the artwork page and checkout all read it; nothing about them is hardcoded any more |
 | Local seed data | `npm run seed:local` fills a local database from `lib/data/artworks.js` |
 | Database connection module | `lib/db.js`, imported by the repository and by nothing else |
 | Reading painting data from Postgres | **Done.** Every page reads the database through the repository; `lib/data/artworks.js` is the seed fixture |
@@ -203,7 +208,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | **Built, not live.** Checkout, the signed payment page, VERIFY on the return and the settlement are built and proven against a local stand-in; there is no Hyp account and the deploy has no `HYP_*` keys. deployment.md lists what only a real terminal can prove |
 
-**Thirteen client components exist, and four of them are the cart.** The tenth is the
+**Seventeen client components exist, and four of them are the cart.** The tenth is the
 checkout form, which is one for the reason the admin's two forms are: a rejected
 submission has to come back with its errors *and* the typed values intact,
 without either travelling through a URL — an address lost to one bad postal
@@ -213,6 +218,15 @@ rendered by the public layout, and a layout cannot know which page it wraps —
 so being absent from checkout has to be decided where the path is known.
 **The thirteenth is the admin's settings form**, a client component for the
 same reason as the other two admin forms.
+**The fourteenth is `HomeMarkLink`**, the wordmark's link: on the homepage
+it glides back to the hero, and only the browser knows which page it is on.
+**The fifteenth is `QuietMotion`**, which renders nothing: painting cards below
+the first screen rise in, staggered, and the page is whole without it.
+**The sixteenth is `ArtworkViewer`**, the artwork page's full-screen view. It
+wraps the server-rendered body and holds only the dialog; the buttons that open
+it are server markup, so the frame and the label stay on the server.
+**The seventeenth is `BuyBar`**, the artwork page's buy bar on a phone — client
+because it watches the real buy controls scroll away.
 
 The other six are the header's primary navigation — client only to mark the
 current page — the language switcher, the hero's studio loop, the admin's login
@@ -276,16 +290,19 @@ values or ship by accident: `999 × 999 cm`, `₪99,999`, year `1000`, and copy
 prefixed `[PLACEHOLDER]` / `[טקסט זמני]`. Prices additionally render with a
 visible "sample price" marker, driven by `hasPlaceholderData` on each work.
 
-Do not tidy these into plausible-looking values, and do not write real marketing
-copy — **including the four homepage promises**, whose real wording is settled
-(see the section order above and commerce.md) but is deliberately not in the
-locale files yet. When the real values arrive they replace the constants at the
-top of `lib/data/artworks.js`.
+Do not tidy these into plausible-looking values. When the real values arrive
+they replace the constants at the top of `lib/data/artworks.js`.
+
+**The homepage's copy is real since 25-10-2026**: the site description, the
+works heading and intro, the four promises and the story paragraph, in both
+languages. The only bracketed strings left in the locale files are the four
+legal page bodies and the artwork page's dummy-data notice, which are handled
+separately.
 
 **One exception landed on 26-09-2026, by the owner's decision: the hero's
 positioning line.** `home.hero.positioning` now reads "Paintings that bring
 light into a home",
-where every other line on the homepage is still bracketed. Two things about it
+while every other line on the homepage was still bracketed. Two things about it
 are worth knowing rather than rediscovering. **It is in English on the Hebrew
 site too** — the same string in both locale files, the `<h1>` marked
 `lang="en"`, treated as part of the mark rather than as copy; i18n.md carries

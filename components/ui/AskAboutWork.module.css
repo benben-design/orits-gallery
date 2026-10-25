@@ -1,0 +1,65 @@
+/**
+ * The question to the artist, in its two shapes.
+ */
+
+/**
+ * Beside a work that can be bought: a link, in the accent because it is one,
+ * and quiet in every other way — the body size, no box. The underline sits on
+ * the words only, never under the glyph (code-style.md).
+ */
+.ask {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  margin-block-start: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.words {
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-hairline);
+  text-underline-offset: 0.25em;
+}
+
+@media (hover: hover) {
+  .ask:hover {
+    color: var(--accent-hover);
+  }
+}
+
+.icon {
+  flex: none;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+}
+
+/**
+ * In place of the buy controls, on a work that cannot be bought: the reason,
+ * then the way forward. The same distance from the facts above as the buy
+ * controls keep, so the page holds its shape whichever of the two it shows.
+ */
+.unavailable {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
+}
+
+.reason {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/*
+  The secondary button, borrowed whole rather than copied: the clay fill, the
+  hairline, the hover step and the shape are the "buy now" control's, so the
+  two cannot drift apart. Never the filled accent — that is the button that buys.
+*/
+.message {
+  composes: buyNow from '../cart/AddToCart.module.css';
+  text-decoration: none;
+}

@@ -2,8 +2,8 @@
   "site": {
     "artistName": "Orit Bar Shai",
     "wordmark": "Orit Bar Shai",
-    "title": "Orit Bar Shai — Paintings",
-    "description": "[PLACEHOLDER] Site description not written yet.",
+    "title": "Orit Bar Shai - Paintings",
+    "description": "Original oil and pastel paintings by Orit Bar Shai - landscapes and still life, available directly from the studio.",
     "skipToContent": "Skip to main content"
   },
   "nav": {
@@ -22,40 +22,40 @@
   "home": {
     "hero": {
       "positioning": "Paintings that bring light into a home",
-      "posterAlt": "Orit Bar Shai painting in her studio — a loaded brush meeting wet oil paint on canvas",
+      "posterAlt": "Orit Bar Shai painting in her studio - a loaded brush meeting wet oil paint on canvas",
       "pauseMotion": "Stop the video",
       "playMotion": "Play the video",
       "cta": "View the paintings"
     },
     "works": {
-      "heading": "[PLACEHOLDER HEADING] Selected works",
-      "intro": "[PLACEHOLDER] A short introduction to the works grid goes here.",
+      "heading": "Selected works",
+      "intro": "Landscapes, flowers and fruit - every painting is a single original, made by hand in the studio.",
       "viewAll": "View the full gallery"
     },
     "promises": {
-      "label": "[PLACEHOLDER HEADING] Our promises",
+      "label": "From the studio to you",
       "items": [
         {
-          "title": "[PLACEHOLDER] First promise",
-          "body": "[PLACEHOLDER] One short supporting line."
+          "title": "An original work",
+          "body": "Each painting exists only once, signed by the artist."
         },
         {
-          "title": "[PLACEHOLDER] Second promise",
-          "body": "[PLACEHOLDER] One short supporting line."
+          "title": "Insured delivery",
+          "body": "Carefully packed and sent insured anywhere in Israel."
         },
         {
-          "title": "[PLACEHOLDER] Third promise",
-          "body": "[PLACEHOLDER] One short supporting line."
+          "title": "14 days to cancel",
+          "body": "Not right for the wall? Cancel within 14 days of delivery."
         },
         {
-          "title": "[PLACEHOLDER] Fourth promise",
-          "body": "[PLACEHOLDER] One short supporting line."
+          "title": "Directly from the artist",
+          "body": "A question about a painting? Orit answers personally."
         }
       ]
     },
     "story": {
-      "heading": "[PLACEHOLDER HEADING] About the artist",
-      "body": "[PLACEHOLDER] A short paragraph about Orit and her work goes here. This text is a stand-in and has not been written yet.",
+      "heading": "About the artist",
+      "body": "Orit Bar Shai came to painting from the world of interior styling. For her, painting is a personal language - a way to look closely, pause a moment, and give new meaning to the simple things around us. In oil on canvas and pastel on paper she paints landscapes, flowers and fruit, in warm light and rich colour.",
       "link": "More about the artist"
     }
   },
@@ -65,6 +65,8 @@
     "intro": "Every work",
     "filterLabel": "Filter by category",
     "filterAll": "All",
+    "workCount": "{count} works",
+    "workCountOne": "1 work",
     "emptyInCategory": "No works in this category."
   },
   "artwork": {
@@ -72,15 +74,42 @@
     "medium": "Medium",
     "dimensions": "Dimensions",
     "year": "Year",
-    "imageAlt": "{title} — painting by {artist}",
+    "imageAlt": "{title} - painting by {artist}",
     "noImage": "No image yet",
-    "imageAltDetail": "{title} — a close-up of the brushwork, a painting by {artist}",
-    "imageAltInSitu": "{title} — the painting hanging on a wall, by {artist}",
+    "imageAltDetail": "{title} - a close-up of the brushwork, a painting by {artist}",
+    "imageAltInSitu": "{title} - the painting hanging on a wall, by {artist}",
     "moreImages": "More views of this work",
-    "shareDescription": "{title} — an original painting by {artist}.",
+    "shareDescription": "{title} - an original painting by {artist}.",
     "addToCart": "Add to cart",
     "breadcrumb": "Breadcrumb",
-    "buyNow": "Buy now"
+    "buyNow": "Buy now",
+    "viewOpen": "View {title} full screen",
+    "viewClose": "Close",
+    "viewPrevious": "Previous image",
+    "viewNext": "Next image",
+    "viewPosition": "{current} of {total}",
+    "assurancesLabel": "What comes with this painting",
+    "assuranceOriginal": "One original work, signed by the artist",
+    "assuranceShipping": "Insured delivery anywhere in Israel - {fee}",
+    "assuranceShippingFree": "Free insured delivery anywhere in Israel",
+    "assuranceWithPickup": "{delivery}, or self pickup",
+    "assuranceCancel": "14 days to cancel",
+    "assurancePayment": "Secure payment",
+    "askQuestion": "A question about this painting?",
+    "askMessage": "Hi Orit, I have a question about the painting “{title}”\n{url}",
+    "unavailableSold": "This painting is no longer available. Looking for something similar?",
+    "unavailableReserved": "This painting is reserved for now. Want to hear if it frees up, or see something similar?",
+    "unavailableNotForSale": "This painting isn't for sale. Looking for something similar?",
+    "unavailableAction": "Message Orit",
+    "unavailableMessage": "Hi Orit, I saw the painting “{title}” on your site and would love to hear if there is something similar\n{url}",
+    "moreWorksHeading": "More works",
+    "moreLandscapes": "All landscapes",
+    "moreStillLifes": "All still lifes",
+    "backToPainting": "{title}, back to the painting",
+    "aboutWork": "About the work",
+    "units": {
+      "cm": "cm"
+    }
   },
   "about": {
     "title": "About",
@@ -145,16 +174,16 @@
     "submitting": "One moment…",
     "securityNote": "Payment is taken on Hyp’s secure page. Card details are never stored on this site.",
     "paymentInfo": "Paintings from Orit Bar Shai: {count}",
-    "testModeNote": "Test mode — no real charge is made.",
+    "testModeNote": "Test mode - no real charge is made.",
     "notConfigured": "Paying on the site is not available right now. Get in touch and we will complete the purchase together.",
     "unavailableTitle": "One of the paintings is no longer available",
     "unavailableLead": "These paintings have sold or been removed, so nothing was charged:",
     "unavailableUnknown": "Paintings removed from the site: {count}",
     "unavailableAction": "Back to the cart",
     "errorEmpty": "There is nothing to pay for.",
-    "errorPayment": "We could not open the payment page. Nothing was charged — please try again.",
-    "errorRateLimited": "Too many orders came from this connection in the last hour — please try again later.",
-    "errorRateLimitedWithWhatsapp": "Too many orders came from this connection in the last hour — please try again later, or",
+    "errorPayment": "We could not open the payment page. Nothing was charged - please try again.",
+    "errorRateLimited": "Too many orders came from this connection in the last hour - please try again later.",
+    "errorRateLimitedWithWhatsapp": "Too many orders came from this connection in the last hour - please try again later, or",
     "errorRateLimitedWhatsappLink": "message us on WhatsApp",
     "amountChanged": "The amount to pay has changed since this page was opened, and is now {total}. Nothing has been charged. Check the updated total below and confirm again with the payment button.",
     "errorRequired": "Some fields still need filling in.",
@@ -189,7 +218,7 @@
     "notConfirmedNext": "You can try again. If your card was charged after all, please get in touch and we will look into it straight away.",
     "notConfirmedAction": "Back to checkout",
     "unavailableTitle": "The painting sold moments ago",
-    "unavailableLead": "Your payment went through, but the painting was sold to someone else in those same moments. Every painting is a one-off — there is no second copy.",
+    "unavailableLead": "Your payment went through, but the painting was sold to someone else in those same moments. Every painting is a one-off - there is no second copy.",
     "unavailableVoided": "The charge has been cancelled. You will not be charged.",
     "unavailableRefundDue": "You will be refunded in full. Orit will be in touch shortly.",
     "unavailableRefunded": "You have been refunded in full.",
@@ -214,6 +243,8 @@
     }
   },
   "footer": {
+    "tagline": "Oil and pastel paintings from Orit Bar Shai’s studio",
+    "siteLabel": "Explore",
     "followLabel": "Follow",
     "contactLabel": "Contact",
     "legalLabel": "Legal",
@@ -221,7 +252,7 @@
       "instagram": "Instagram",
       "facebook": "Facebook"
     },
-    "rights": "© {year} {artist}. [PLACEHOLDER] All rights reserved."
+    "rights": "© {year} {artist}. All rights reserved."
   },
   "status": {
     "available": "Available",

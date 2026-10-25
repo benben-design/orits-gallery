@@ -104,6 +104,9 @@ whether it reads `searchParams`, not by preference**.
 Three rules around it:
 
 - **Never cache a read that is shared with something that must not be cached.**
+  The artwork page's "more works" (`getMoreWorks`) is built on the same cached
+  read rather than a query of its own, so the prerendered artwork pages share
+  one read of the catalogue instead of making one each.
   The gallery's cached read is `getGalleryWorks`, not a cache on
   `getAllWorks`, which `app/sitemap.js` also calls; wrapping the shared
   function would cache every caller at once, silently, including the next one

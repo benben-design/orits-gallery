@@ -92,7 +92,7 @@ export default function CartLine({ work, locale, dictionary }) {
             </>
           ) : null}
           {/* A Latin-and-digits run inside Hebrew prose, isolated as elsewhere. */}
-          <bdi>{formatDimensions(work.dimensions)}</bdi>
+          <bdi>{formatDimensions(work.dimensions, dictionary)}</bdi>
         </p>
 
         {available ? null : (

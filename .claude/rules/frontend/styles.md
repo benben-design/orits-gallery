@@ -50,6 +50,16 @@ Defined in `app/tokens.css`. One light theme; no dark mode, no `data-theme`.
 | `--accent` | `#8C4A33` | Deep terracotta. Links, buttons, active state |
 | `--accent-hover` | `#743C29` | Hover and pressed |
 | `--status-sold-bg` / `--status-sold-text` | `#EBD9CE` / `#6B3A28` | The sold badge |
+| `--surface-viewer` | `#151515` | The full-screen view's ground. **The one dark surface, and neutral on purpose** |
+| `--text-on-viewer` / `--text-muted-on-viewer` | `#ECEAE6` / `#A3A09B` | Its two inks: 15.20:1 and 7.01:1 |
+
+**The full-screen view is the one place the wall is not the ground.** It hangs a
+single painting to be looked at closely, and the job there is to read the colour
+true, which a warm ground works against — a brown-black pushes the eye's white
+balance and cools every ochre on it. So it is a neutral near-black, never `#000`.
+**The accent does not appear on it**: terracotta there is 2.73:1, short even of
+the 3:1 a focus ring needs, so the view redraws its focus ring in
+`--text-on-viewer`, and `check:contrast` asserts the accent stays out.
 
 ### The three rules that get broken
 
@@ -75,6 +85,39 @@ one file.
 
 Never write a raw colour or a magic pixel value in a component stylesheet. If a
 value is missing, add a token.
+
+**The reading scale (raised 23-10-2026).** Running text is 17px on a phone
+and 18px from 48rem; **nothing a visitor reads is below 14px**, which is what
+`--text-xs` now is — the floor, not a size for fine print. The steps moved
+together (`--text-sm` 15/16, `--text-md` 19/20, `--text-lg` up a step) because
+raising body text alone left card titles smaller than the paragraphs under
+them. `--text-xl` did not move: it is page titles and the hero line. Section
+headings take **`--text-section`**, which reaches 40px. **The header holds its
+own sizes**, `--text-nav` and `--text-nav-count`, at what they were — it was
+tuned word by word against the brush name and verified pixel-identical after
+the change; never point a header word back at a reading step.
+
+**Vertical rhythm has three steps (23-10-2026)**, so a page reads as a
+sequence of subjects rather than one even stream: `--rhythm-tight` (48 → 64px)
+for things that belong together, `--rhythm-standard` (64 → 104px) for the
+ordinary gap, and `--rhythm-generous` (88 → 144px) before a change of subject.
+`Section` is the only thing that spends them. On the homepage the hero is one
+unit, the works grid opens after a generous gap, and the promises and story
+take standard. **A heading stands on its own** — the small labels above section
+headings were removed on 25-10-2026 as template chrome; only About keeps one,
+above the artist's name.
+
+**Motion is one moment, and never a condition of being seen (25-10-2026).** Two
+things move: painting cards hang themselves every time
+they come into view, scrolling either way — the mat and the painting on it rise into place as one
+piece, a beat apart along each row in reading order (`--duration-rise`,
+starting from `--rise-from-opacity` so nothing is ever blank); and on a device that
+hovers a card's painting lifts 3px with its shadow deepening to the bare one.
+Sections used to rise in and paintings to fade in as they loaded; both were
+removed because, with the spacing, they made the scroll feel empty. Both moves
+live behind `prefers-reduced-motion: no-preference`, and the rise is switched on by
+`QuietMotion` after hydration only — **never hide content in CSS that a script
+has to reveal**, because a page whose script fails would then be blank.
 
 There are three content widths, and picking the wrong one is the usual mistake:
 `--page-max` is the page frame, `--measure` is running prose, and
@@ -125,6 +168,11 @@ and it is a token for the same reason: `--origin-inline-start` in
 grows from it, so the line draws in the direction the words are read. It is set
 for `[dir='ltr']` as well as `[dir='rtl']`, so an English fragment inside a
 Hebrew document does not inherit the right-hand edge.
+
+**The stacking order is four numbers, each naming its neighbours**: the sticky
+header 20, the phone's buy bar on an artwork page 25, the floating WhatsApp button
+30, and the cart drawer and skip link 100. The full-screen view needs none — it is
+in the top layer. There is no scale; a fifth layer says where it sits among these.
 
 **Two placements are physical rather than logical, and they are the only
 ones.** The floating WhatsApp button takes the bottom left in both languages

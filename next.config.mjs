@@ -6,6 +6,8 @@
 */
 import { HYP_PAYMENT_ORIGIN } from './lib/payments/hyp-endpoint.js';
 import { API_HOST as IMAGE_HOST_API_ORIGIN } from './lib/image-host-endpoint.js';
+/* Also environment-free, for the same reason. */
+import { IMAGE_SIZES, DEVICE_SIZES } from './lib/image-widths.js';
 
 /* ------------------------------------------------------------------ *
  * Security headers
@@ -203,9 +205,11 @@ const nextConfig = {
   // See .claude/rules/images.md.
   images: {
     // The current files are low-resolution stand-ins. These widths are sized
-    // for the sharp replacements, not for what is in the repo today.
-    imageSizes: [160, 240, 320, 420, 540, 680],
-    deviceSizes: [640, 828, 1080, 1280, 1600, 1920, 2560],
+    // for the sharp replacements, not for what is in the repo today. Declared
+    // in lib/image-widths.js, because the full-screen viewer and the crop
+    // guard need the same list.
+    imageSizes: IMAGE_SIZES,
+    deviceSizes: DEVICE_SIZES,
 
     /**
      * Who resizes an image, decided per image. See lib/image-loader.js.

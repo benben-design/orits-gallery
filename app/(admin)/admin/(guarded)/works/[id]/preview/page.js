@@ -15,6 +15,7 @@ import {
 } from '@/lib/i18n/config';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
 import { getWorkById } from '@/lib/data/works-repository';
+import { getSiteSettings } from '@/lib/data/settings-repository';
 import styles from './page.module.css';
 
 /**
@@ -169,6 +170,7 @@ export default async function AdminWorkPreviewPage({ params, searchParams }) {
             work={work}
             locale={previewLocale}
             dictionary={publicDictionary}
+            settings={await getSiteSettings()}
           />
         </div>
       </Container>

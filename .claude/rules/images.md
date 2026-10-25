@@ -372,6 +372,32 @@ against any hosted painting so the host records it, allow each one
 transformations*), switch strict back on, then deploy. Update the table above
 in the same change. A width removed from the list needs nothing.
 
+## The full-screen view asks for no more than the original
+
+The artwork page opens a painting full screen (`components/ui/ArtworkViewer.js`),
+and it needs a larger file than the page — which is where the trap is. `next/image`
+builds every srcset up to 2560 whatever the file is, so a 1582px original would be
+requested at `w_2560`.
+
+**Neither resizer would invent pixels** — `c_limit` never enlarges, and Next's
+optimiser resizes `withoutEnlargement` — but the viewer caps the request anyway:
+`fullViewLoader` in `lib/image-loader.js` limits every width to the **smallest
+delivery width at or above the original's**. The original's own width cannot be
+named, because only the listed widths are allowed under strict transformations;
+the next one up returns the original at its own size. Capping below it instead
+would have thrown away up to a fifth of the photograph. So the viewer adds **no
+new transformation** to the table above: same transformation, same widths.
+
+**And it never draws a painting larger than its file.** The box is sized from the
+original's pixels, so a small original sits small with ground around it rather
+than stretched soft across the screen. The box takes the work's own ratio and both
+images fill it with `object-fit: contain`; `check:crop` fails if its stylesheet
+ever says `cover`.
+
+Verified on 24-10-2026 against an 842px portrait, a 1920px hosted landscape and the
+1582px local square, at 375 and 1440: every fetched file at or under its original
+(the 842px work asked for `w_1080` and received 842).
+
 ## How a photograph gets here
 
 The artist attaches one on **either** admin page — creating a work or editing

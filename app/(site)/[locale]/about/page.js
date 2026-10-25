@@ -1,6 +1,7 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
+import SectionLabel from '@/components/ui/SectionLabel';
 import PortraitFrame from '@/components/ui/PortraitFrame';
 import ArtworkCard from '@/components/ui/ArtworkCard';
 import ButtonLink from '@/components/ui/ButtonLink';
@@ -99,7 +100,7 @@ export default async function AboutPage({ params }) {
                 The page's name, demoted to a label. Her name is the heading:
                 "about" is what the page is, and she is what it is about.
               */}
-              <p className={styles.label}>{dictionary.about.title}</p>
+              <SectionLabel>{dictionary.about.title}</SectionLabel>
               <h1 className={styles.name}>{dictionary.site.artistName}</h1>
               {lead ? <p className={styles.lead}>{lead}</p> : null}
               {rest.map((paragraph, index) => (

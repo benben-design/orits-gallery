@@ -1,3 +1,8 @@
+/*
+  The three rhythm steps live in app/tokens.css. A section's size sets both
+  ends; `before` overrides only the top, which is how a section says "a new
+  subject starts here" without also pushing away whatever follows it.
+*/
 .section {
   padding-block: var(--section-gap);
 }
@@ -12,11 +17,15 @@
 }
 
 .default {
-  padding-block: var(--section-gap);
+  padding-block: var(--rhythm-standard);
 }
 
 .tight {
-  padding-block: var(--space-9);
+  padding-block: var(--rhythm-tight);
+}
+
+.generous {
+  padding-block: var(--rhythm-generous);
 }
 
 /*
@@ -31,4 +40,17 @@
 
 .flush {
   padding-block: 0;
+}
+
+/* Declared after the sizes so it wins over their shorthand. */
+.beforeTight {
+  padding-block-start: var(--rhythm-tight);
+}
+
+.beforeStandard {
+  padding-block-start: var(--rhythm-standard);
+}
+
+.beforeGenerous {
+  padding-block-start: var(--rhythm-generous);
 }

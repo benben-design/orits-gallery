@@ -61,6 +61,7 @@
  * column governs a landscape.
  */
 .plate {
+  position: relative;
   inline-size: min(100%, calc(var(--plate-block) * var(--work-ratio)));
   /* Centred while the two are stacked; released into the row below. */
   margin-inline: auto;
@@ -121,12 +122,67 @@
  * visitor came to find out, and on a painting the price is part of the label
  * rather than a control. The badge beside it answers the other.
  */
+/*
+  The price, then the facts right after it, on one centre line and joined by the
+  same hairline tick that runs between the facts themselves — one line read in
+  one go. They used to sit at the row's far end, and the gap left between them
+  read as two things that happened to share a row. Wraps on a narrow column,
+  the facts dropping under the price.
+*/
+.priceRow {
+  display: flex;
+  flex-wrap: wrap;
+  /*
+    Centred, not on the baseline. A baseline lines up the bottoms of the
+    letters, and with an 18px price beside 15px facts that sat the facts and
+    their ticks visibly low against the price — the row read as two heights.
+    Centred, the ticks meet the middle of the price, as the badge already does.
+  */
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-block-start: var(--space-3);
+}
+
+.priceRow > .specs::before {
+  content: '';
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--line-strong);
+}
+
+/*
+  With a status badge — reserved, sold — the row is long enough to wrap on a
+  desktop column too (measured: both reserved works, in English, at every
+  width), so there the facts take their own line under the price, no tick.
+
+  On a phone the facts take a line of their own, always, and lose the tick that
+  joined them to the price. Left to wrap, a sold work's row — price, badge,
+  facts — broke mid-way and opened its second line on a dangling tick, while an
+  available one stayed on one line; the same page looked different per work.
+*/
+.withBadge > .specs {
+  flex-basis: 100%;
+}
+
+.withBadge > .specs::before {
+  display: none;
+}
+
+@media (max-width: 39.999rem) {
+  .priceRow > .specs {
+    flex-basis: 100%;
+  }
+
+  .priceRow > .specs::before {
+    display: none;
+  }
+}
+
 .availability {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-block-start: var(--space-3);
   font-size: var(--text-lg);
   color: var(--text-muted);
 }
@@ -139,50 +195,82 @@
   flex: none;
 }
 
+/*
+  "About the work": her description as a band of its own under the painting and
+  its buy box, behind the page's one rule. Anchored at the inline start, where
+  the label and the breadcrumb are, and held to the reading measure rather than
+  the label column's narrower width — this is prose, the one long read here.
+*/
+.about {
+  max-inline-size: var(--measure);
+  margin-block-start: var(--space-8);
+  padding-block-start: var(--space-6);
+  border-block-start: var(--border-hairline) solid var(--line);
+}
+
+/* A label, in the eyebrow's voice, though it is the band's heading. */
+.aboutLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .description {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-block-start: var(--space-6);
+  margin-block-start: var(--space-4);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--text-primary);
 }
 
 /**
- * The physical facts, behind the one rule on the page.
- *
- * The hairline separates what the work *is* from what it *measures* — the same
- * division a gallery label makes, and the reason the specs can be quiet without
- * looking like an afterthought.
+ * The physical facts, one quiet line under the price: medium, size, year, with
+ * the same hairline tick between them that separates price from status. The
+ * labels are there for a screen reader and hidden from sight — on a line this
+ * short, "pastel on paper" and "40 × 30 cm" say what they are.
  */
 .specs {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-block-start: var(--space-6);
-  padding-block-start: var(--space-5);
-  border-block-start: var(--border-hairline) solid var(--line);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 .spec {
   display: flex;
-  gap: var(--space-4);
-  font-size: var(--text-sm);
+  align-items: center;
+  gap: var(--space-3);
 }
 
-/**
- * A fixed label width lines the values up without a table, and without the
- * labels and values ever colliding on a narrow screen: the row wraps instead.
- */
+/* The tick between two facts, drawn by the second rather than as an element. */
+.spec + .spec::before {
+  content: '';
+  inline-size: var(--space-3);
+  block-size: var(--border-hairline);
+  background-color: var(--line-strong);
+}
+
+/* Read aloud, never drawn: the value beside it says what it is. */
 .specLabel {
-  flex: none;
-  min-inline-size: 5rem;
-  color: var(--text-muted);
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
+/* `margin: 0` because a browser indents every <dd> by 40px of its own. */
 .specValue {
-  color: var(--text-primary);
+  margin: 0;
+  color: var(--text-muted);
 }
 
 /**
@@ -201,6 +289,55 @@
 }
 
 /**
+ * The way into the full-screen view: a button laid over the whole frame.
+ *
+ * Transparent, and the size of the frame it covers, so the painting itself is
+ * what is clicked and the focus ring traces the work. `zoom-in` is the cursor
+ * that says what a click on a picture will do, before the click.
+ */
+.viewTrigger {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+/**
+ * The glyph, under the frame's inline-end corner and never on the painting.
+ *
+ * Shown only on a device that hovers, and only while the work is pointed at
+ * or focused: it is a hint for a pointer, and a touch screen needs none.
+ */
+.viewGlyph {
+  display: none;
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-2));
+  inset-inline-end: 0;
+  color: var(--text-muted);
+  line-height: 0;
+}
+
+@media (hover: hover) {
+  .viewGlyph {
+    display: block;
+    opacity: 0;
+  }
+
+  .viewTrigger:hover .viewGlyph,
+  .viewTrigger:focus-visible .viewGlyph {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .viewGlyph {
+    transition: opacity var(--duration) var(--ease);
+  }
+}
+
+/**
  * The brushwork close-up and the view in a room, when they exist.
  *
  * `auto-fill` rather than `auto-fit` on purpose: with two images, auto-fit
@@ -213,6 +350,11 @@
   grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   gap: var(--space-5);
   margin-block-start: var(--space-9);
+}
+
+/* Each one opens full screen too, so each carries its own covering button. */
+.supportingItem {
+  position: relative;
 }
 
 /**
@@ -268,6 +410,17 @@
       page is legible without scrolling. On a laptop this second bound bites.
     */
     --plate-block: min(40rem, calc(100svh - 14rem));
+    /*
+      The painting and its buy box are the whole first screen, like one work
+      hung on a wall, and "about the work" always begins below it. Without
+      this a short painting — a landscape is bounded by the column's width, not
+      the screen's height — let the description start inside the first screen,
+      and its first line was cut by the screen's edge (measured at 1920×780).
+      11rem is what sits above the pair: the header, the section's top gap and
+      the breadcrumb, 167px together, rounded up so the band's own gap clears
+      the edge. On a short screen the pair is taller than this and simply grows.
+    */
+    min-block-size: calc(100svh - 11rem);
   }
 
   .plate {

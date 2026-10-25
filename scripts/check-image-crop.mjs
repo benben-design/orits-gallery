@@ -50,8 +50,11 @@ import {
   shareImageFor,
   SHARE_IMAGE_WIDTH,
   SHARE_IMAGE_EXTENSION,
+  fullViewWidthCap,
+  fullViewLoader,
 } from '../lib/image-loader.js';
 import imageLoader from '../lib/image-loader.js';
+import { DELIVERY_WIDTHS } from '../lib/image-widths.js';
 
 /**
  * Every Cloudinary crop mode that discards pixels, plus `c_pad`, which keeps
@@ -86,7 +89,7 @@ const HOSTED =
 const LOCAL = '/paintings/lemons.jpg';
 
 /** The widths next.config.mjs declares, which is what the srcset asks for. */
-const WIDTHS = [160, 240, 320, 420, 540, 680, 640, 828, 1080, 1280, 1600, 1920, 2560];
+const WIDTHS = DELIVERY_WIDTHS;
 
 if (typeof imageLoader !== 'function' || typeof transformationFor !== 'function') {
   console.error(
@@ -223,6 +226,36 @@ console.log(
 console.log('  ' + 'the artist\'s portrait'.padEnd(28) + 'cropped by CSS in PortraitFrame, delivered whole');
 if (frameFills) failures.push({ frame: true, url: 'components/ui/ArtworkFrame.module.css' });
 
+/*
+  The full-screen viewer. Its loader must name only widths the host allows,
+  never a width past the first one that covers the original — and its
+  stylesheet, which draws every painting at the largest it is ever shown, must
+  never fill its box either.
+*/
+const VIEW_CASES = [
+  [1582, 1600],
+  [1600, 1600],
+  [1601, 1920],
+  [700, 828],
+  [100, 160],
+  [4000, 2560],
+];
+const capsOk = VIEW_CASES.every(([original, cap]) => fullViewWidthCap(original) === cap);
+const viewLoaderOk = WIDTHS.every((width) => {
+  const url = fullViewLoader(1582)({ src: HOSTED, width });
+  return url === imageLoader({ src: HOSTED, width: Math.min(width, 1600) });
+});
+const VIEWER_STYLES = new URL('../components/ui/ArtworkViewer.module.css', import.meta.url);
+const viewerCss = readFileSync(VIEWER_STYLES, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const viewerFills = /object-fit\s*:\s*cover/.test(viewerCss);
+const viewOk = capsOk && viewLoaderOk && !viewerFills;
+
+console.log(
+  '  ' + 'the full-screen viewer'.padEnd(28) +
+    (viewOk ? 'capped at the original, fits, never fills' : 'REFUSED — ' + (viewerFills ? 'object-fit: cover' : 'asks past the original'))
+);
+if (!viewOk) failures.push({ viewer: true, url: 'lib/image-loader.js, components/ui/ArtworkViewer.module.css' });
+
 if (failures.length > 0) {
   console.error('\n  ' + failures.length + ' variant(s) break the never-crop rule:\n');
 
@@ -231,6 +264,8 @@ if (failures.length > 0) {
       ? 'the share image crops, binds height, is not a .jpg address with no format parameter, or declares a size it is not served at'
       : failure.frame
       ? 'the painting frame fills its box — that belongs to PortraitFrame and nothing else'
+      : failure.viewer
+      ? 'the full-screen view asks for more than the original holds, or fills its box'
       : failure.local
       ? 'a local file is no longer going to the built-in optimiser'
       : failure.foreign
@@ -243,7 +278,7 @@ if (failures.length > 0) {
               ? 'does not use ' + REQUIRED_MODE
               : 'does not bind the requested width';
 
-    console.error('    ' + (failure.share ? 'share' : failure.frame ? 'frame' : 'w_' + failure.width) + ' — ' + reason);
+    console.error('    ' + (failure.share ? 'share' : failure.frame ? 'frame' : failure.viewer ? 'viewer' : 'w_' + failure.width) + ' — ' + reason);
     console.error('      ' + failure.url);
   }
 

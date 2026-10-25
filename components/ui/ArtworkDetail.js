@@ -1,8 +1,13 @@
 import ArtworkFrame from './ArtworkFrame';
 import StatusBadge from './StatusBadge';
 import Price from './Price';
+import { Maximize2 } from 'lucide-react';
 import AddToCart from '@/components/cart/AddToCart';
-import { getStatusPresentation } from './statusPresentation';
+import ArtworkViewer from './ArtworkViewer';
+import { VIEW_INDEX_ATTRIBUTE } from './viewTrigger';
+import ArtworkAssurances from './ArtworkAssurances';
+import AskAboutWork from './AskAboutWork';
+import { getStatusPresentation, isBuyable } from './statusPresentation';
 import { mediumLabel } from './mediumLabel';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { formatDimensions } from '@/lib/format';
@@ -48,16 +53,34 @@ import styles from './ArtworkDetail.module.css';
  * label as ground nobody chose. `--work-ratio` is read off the real pixel
  * dimensions of the file, so the box cannot disagree with the painting in it.
  *
- * ## The reading order, and the two placements inside it that are decisions
+ * ## The reading order, and the placements inside it that are decisions
  *
- * Category, title, price, her description, the physical facts, then the buy
- * control — the order a gallery label is read in, and the order Gita's product
- * page uses.
+ * Category, title, the price with the physical facts at the far end of its
+ * row, **the buy controls directly after them**, and then what reassures and
+ * the question to the artist (reordered on 25-10-2026; until then the buttons
+ * came last, below the list). The decision rests on the price and the facts,
+ * so the thing to do follows them at once and sits high on every screen; the
+ * reassurance is read after the decision has formed, and must never stand
+ * between a buyer and the button. On a work that cannot be bought the question
+ * is the action, and it takes the buttons' place. **Her description
+ * is not in this column at all** — it is a band of its own below, "about the
+ * work", so the column beside the painting is a buy box that ends where the
+ * painting does.
+ *
+ * It used to be the gallery-label order, the description before the facts and
+ * the button, and that was reversed deliberately on 24-10-2026. The description
+ * is the one thing here whose length nobody controls: with three paragraphs of
+ * it the button fell below the first screen of a laptop, and whether it did
+ * changed from painting to painting. Everything above the button now is short
+ * and fixed, so it is on the first screen whatever she writes — the order
+ * product pages generally keep (title, price, the facts that decide, the
+ * button, then the long text), and the description is still there, whole,
+ * never cut behind a "read more".
  *
  *   - **The placeholder notice sits directly above the buy control**, under the
  *     numbers it disclaims. A call to action reading past a disclaimer it has
  *     not met yet is how a stand-in figure gets treated as real.
- *   - **`AddToCart` is last and draws itself only when the work is published
+ *   - **`AddToCart` draws itself only when the work is published
  *     and buyable**, which is what keeps this component honest across its two
  *     callers: the preview renders a *draft*, and a draft is not for sale at
  *     any status, so the control removes itself rather than the page having to
@@ -82,6 +105,9 @@ import styles from './ArtworkDetail.module.css';
  * @param {object} props.work - A work as the repository returns it, from either scope.
  * @param {string} props.locale - Which language to render, independent of the route.
  * @param {object} props.dictionary - The **public** dictionary for that locale.
+ * @param {object|null} [props.settings] - The site settings, for the delivery
+ *   line above the buy controls and the WhatsApp question. Both callers read
+ *   them; without them those two are left out rather than guessed.
  */
 
 /**
@@ -140,7 +166,37 @@ const ALT_TEMPLATE_BY_TYPE = {
   'in-situ': 'imageAltInSitu',
 };
 
-export default function ArtworkDetail({ work, locale, dictionary }) {
+/**
+ * The button laid over a frame that opens it full screen.
+ *
+ * Server markup, and deliberately not a wrapper around the frame: the frame is
+ * a run of divs, which a button may not contain, and the frame owns the
+ * never-crop rule and should not learn about a dialog. So this is a sibling
+ * covering it, named for the work, and `ArtworkViewer` finds it by the
+ * attribute it carries.
+ *
+ * The glyph is the one hint a pointer gets that the painting opens, and it is
+ * drawn **beneath** the frame's corner rather than on the painting: images.md
+ * keeps every mark off the work itself. It shows only on hover and focus, and
+ * not at all on a touch screen, where a photograph of a thing for sale is
+ * tapped by instinct.
+ */
+function ViewTrigger({ index, label }) {
+  return (
+    <button
+      type="button"
+      className={styles.viewTrigger}
+      aria-label={label}
+      {...{ [VIEW_INDEX_ATTRIBUTE]: index }}
+    >
+      <span className={styles.viewGlyph}>
+        <Maximize2 size={16} strokeWidth={1.5} aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
+
+export default function ArtworkDetail({ work, locale, dictionary, settings = null }) {
   const title = work.title[locale];
   const description = work.description[locale];
   const medium = mediumLabel(work, locale, dictionary);
@@ -175,6 +231,21 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
   const supporting = work.images.filter((image) => image !== mainImage);
 
   /*
+    What the full-screen view pages through: the main image, then the
+    supporting ones in the order they are shown here. Its position in this
+    list is the index each button carries.
+  */
+  const viewerImages = (mainImage ? [mainImage, ...supporting] : []).map((image) => ({
+    src: image.src,
+    width: image.width,
+    height: image.height,
+    alt: altFor(image),
+  }));
+  const viewLabel = interpolate(dictionary.artwork.viewOpen, { title });
+  /* The description's heading id, unique per work so two bodies could share a page. */
+  const aboutId = 'about-' + work.id;
+
+  /*
     Only the facts this work actually has. Medium is optional and null on every
     current row; year is nullable too. An empty row saying nothing is worse than
     an absent one, and inventing a dash for it is a value nobody entered.
@@ -184,7 +255,7 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
     {
       key: 'dimensions',
       label: dictionary.artwork.dimensions,
-      value: formatDimensions(work.dimensions),
+      value: formatDimensions(work.dimensions, dictionary),
       /* Latin digits and a unit inside Hebrew prose — isolated, as the card does. */
       isolate: true,
     },
@@ -192,7 +263,18 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
   ].filter(Boolean);
 
   return (
-    <>
+    <ArtworkViewer
+      images={viewerImages}
+      title={title}
+      dimensions={formatDimensions(work.dimensions, dictionary)}
+      locale={locale}
+      copy={{
+        viewClose: dictionary.artwork.viewClose,
+        viewPrevious: dictionary.artwork.viewPrevious,
+        viewNext: dictionary.artwork.viewNext,
+        viewPosition: dictionary.artwork.viewPosition,
+      }}
+    >
       {/*
         The ratio travels as a custom property rather than as a width, so the
         stylesheet keeps deciding how it is bounded — by height beside the
@@ -211,6 +293,7 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
             tone="bare"
             className={styles.mainFrame}
           />
+          {mainImage ? <ViewTrigger index={0} label={viewLabel} /> : null}
         </div>
 
         <div className={styles.label}>
@@ -239,53 +322,54 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
             identity of the thing, and a visitor who has to hunt for the figure
             reads the absence as evasiveness.
           */}
-          <p className={styles.availability}>
-            <Price
-              price={work.price}
-              locale={locale}
-              dictionary={dictionary}
-              isPlaceholder={work.hasPlaceholderData}
-              status={work.status}
-            />
-            {getStatusPresentation(work.status).badge ? (
-              <>
-                <span aria-hidden="true" className={styles.separator} />
-                <StatusBadge status={work.status} dictionary={dictionary} />
-              </>
-            ) : null}
-          </p>
-
-          {description ? (
-            <div className={styles.description}>
-              {/*
-                Her own words, as she approved them in the admin. Split on blank
-                lines so a description written as two paragraphs stays two
-                paragraphs instead of collapsing into one run.
-              */}
-              {description.split(/\n{2,}/).map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </div>
-          ) : null}
-
           {/*
-            The physical facts, below the rule that separates what the work is
-            from what it measures. A definition list because that is what they
-            are — a label and its value — and because it reads correctly to a
-            screen reader, where a two-column layout of loose spans does not.
+            A price that carries a status badge is a longer row, and the facts
+            after it would wrap onto a line that opened on a dangling tick — so
+            with a badge they take their own line. See .withBadge.
           */}
-          {specs.length > 0 ? (
-            <dl className={styles.specs}>
-              {specs.map((spec) => (
-                <div key={spec.key} className={styles.spec}>
-                  <dt className={styles.specLabel}>{spec.label}</dt>
-                  <dd className={styles.specValue}>
-                    {spec.isolate ? <bdi>{spec.value}</bdi> : spec.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : null}
+          <div
+            className={[styles.priceRow, getStatusPresentation(work.status).badge ? styles.withBadge : '']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <p className={styles.availability}>
+              <Price
+                price={work.price}
+                locale={locale}
+                dictionary={dictionary}
+                isPlaceholder={work.hasPlaceholderData}
+                status={work.status}
+              />
+              {getStatusPresentation(work.status).badge ? (
+                <>
+                  <span aria-hidden="true" className={styles.separator} />
+                  <StatusBadge status={work.status} dictionary={dictionary} />
+                </>
+              ) : null}
+            </p>
+
+            {/*
+              The physical facts, on the price's own row at its far end — the size
+              is part of the decision to buy, so it sits with the price rather
+              than after anything of unknown length, and sharing the row is what
+              keeps the buy box the height of the painting beside it. Still a
+              definition list, with the labels hidden from sight rather than
+              dropped, so a screen reader hears "medium: pastel on paper" where an
+              eye reads the value alone.
+            */}
+            {specs.length > 0 ? (
+              <dl className={styles.specs}>
+                {specs.map((spec) => (
+                  <div key={spec.key} className={styles.spec}>
+                    <dt className={styles.specLabel}>{spec.label}</dt>
+                    <dd className={styles.specValue}>
+                      {spec.isolate ? <bdi>{spec.value}</bdi> : spec.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+          </div>
 
           {/*
             The size, the year and the description are stand-ins on every seeded
@@ -300,18 +384,88 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
           ) : null}
 
           {/*
-            Draws itself only for a published, buyable work — so a draft in the
-            admin preview, a sold painting and a work that is not for sale all
-            simply have no button, rather than one that leads to a refusal.
+            The buy controls come straight after the price and the facts that
+            decide it. Draws itself only for a published, buyable work — so a
+            draft in the admin preview, a sold painting and a work that is not
+            for sale all simply have no button, rather than one that leads to a
+            refusal.
           */}
           <AddToCart work={work} dictionary={dictionary} locale={locale} />
+
+          {/*
+            After the buttons, what settles the last hesitation and a way to ask
+            about this one work: read once the decision has formed, never in the
+            way of acting on it. Decided by status alone, like the badge, so the
+            admin preview shows a draft the way it will look live.
+
+            On a work that cannot be bought there are no buy controls, and the
+            question to the artist takes their place as the page's action.
+          */}
+          {isBuyable(work.status) ? (
+            <>
+              <ArtworkAssurances
+                copy={dictionary.artwork}
+                locale={locale}
+                delivery={
+                  settings
+                    ? { shippingFee: settings.shippingFee, selfPickupOffered: settings.selfPickupOffered }
+                    : null
+                }
+              />
+              <AskAboutWork
+                work={work}
+                locale={locale}
+                copy={dictionary.artwork}
+                whatsappNumber={settings?.whatsappNumber ?? null}
+                available
+              />
+            </>
+          ) : (
+            <AskAboutWork
+              work={work}
+              locale={locale}
+              copy={dictionary.artwork}
+              whatsappNumber={settings?.whatsappNumber ?? null}
+              available={false}
+            />
+          )}
         </div>
       </article>
 
+      {/*
+        Her description, in a band of its own under the painting and its buy
+        box — not in the column beside them.
+
+        Above the buy controls it pushed them off a laptop's first screen on
+        some paintings and not others; directly below them, in the same column,
+        it started at the very edge of the screen and was cut there, as the
+        reassurance list had been before it. Out of the column, the first screen
+        is one finished composition — the painting, and a box that ends with
+        it — and the description is the next thing, after a clear gap, read at
+        a measure meant for reading. Whole, never behind a "read more".
+      */}
+      {description ? (
+        <section className={styles.about} aria-labelledby={aboutId}>
+          <h2 id={aboutId} className={styles.aboutLabel}>
+            {dictionary.artwork.aboutWork}
+          </h2>
+          <div className={styles.description}>
+            {/*
+              Her own words, as she approved them in the admin. Split on blank
+              lines so a description written as two paragraphs stays two
+              paragraphs instead of collapsing into one run.
+            */}
+            {description.split(/\n{2,}/).map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {supporting.length > 0 ? (
         <ul className={styles.supporting} aria-label={dictionary.artwork.moreImages}>
-          {supporting.map((image) => (
-            <li key={image.id}>
+          {supporting.map((image, position) => (
+            <li key={image.id} className={styles.supportingItem}>
               {/*
                 Mounted, not bare. These are small and several, which is the case
                 the mount exists for — warm on warm, each needing its own edge.
@@ -322,10 +476,11 @@ export default function ArtworkDetail({ work, locale, dictionary }) {
                 alt={altFor(image)}
                 sizes={SUPPORTING_IMAGE_SIZES}
               />
+              <ViewTrigger index={position + 1} label={viewLabel} />
             </li>
           ))}
         </ul>
       ) : null}
-    </>
+    </ArtworkViewer>
   );
 }

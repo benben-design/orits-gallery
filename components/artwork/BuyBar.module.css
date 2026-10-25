@@ -1,0 +1,137 @@
+/**
+ * The phone's buy bar. Nothing at all from 60rem — the width at which the
+ * artwork page sets the painting beside its label — and below it a slim strip
+ * on the mat, fixed to the foot of the screen, above the home indicator.
+ *
+ * `data-buy-bar` is written out here because a stylesheet cannot import
+ * `BUY_BAR_ATTRIBUTE` from components/artwork/buyControls.js; the two must match.
+ */
+.bar {
+  display: none;
+}
+
+@media (max-width: 59.999rem) {
+  .bar {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 25;
+
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    block-size: calc(var(--buy-bar-height) + env(safe-area-inset-bottom));
+    padding-block: var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+    padding-inline: max(var(--page-gutter), env(safe-area-inset-left), env(safe-area-inset-right));
+
+    background-color: var(--surface-mat);
+    border-block-start: var(--border-hairline) solid var(--line);
+    box-shadow: var(--shadow-drawer);
+
+    transform: translateY(100%);
+    visibility: hidden;
+  }
+
+  .bar[data-buy-bar='shown'] {
+    transform: none;
+    visibility: visible;
+  }
+
+  /*
+    Room at the foot of the page for as long as the bar exists, so it never
+    covers the last lines. Constant rather than tied to whether it is showing:
+    at the end of the page it always is, and room that opened with it would
+    jolt the page as it arrived.
+  */
+  :global(html:has([data-buy-bar])) :global(body) {
+    padding-block-end: calc(var(--buy-bar-height) + env(safe-area-inset-bottom));
+  }
+
+  /* The full-screen view is the painting alone; the bar has no business there. */
+  :global(html:has(dialog[open])) .bar {
+    display: none;
+  }
+}
+
+/**
+ * The title and the price, which together are the way back to the painting.
+ * The title takes whatever room is left and is cut with an ellipsis rather
+ * than wrapping, so the bar keeps its height whatever the work is called.
+ */
+.label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--text-primary);
+  text-align: start;
+  cursor: pointer;
+}
+
+.title {
+  max-inline-size: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.price {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/**
+ * The same filled accent as the add button it stands in for — the one filled
+ * accent in view, since that button is off screen whenever this one is shown.
+ * Compact: a 2.75rem touch target, the label kept to the words.
+ */
+.add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex: none;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: var(--radius);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .add:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+.add:active {
+  background-color: var(--accent-hover);
+}
+
+/*
+  It slides; under reduced motion it simply appears and goes. Visibility waits
+  for the slide to finish on the way out, and flips at once on the way in.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .bar {
+    transition:
+      transform var(--duration-slow) var(--ease),
+      visibility 0s linear var(--duration-slow);
+  }
+
+  .bar[data-buy-bar='shown'] {
+    transition:
+      transform var(--duration-slow) var(--ease),
+      visibility 0s;
+  }
+}

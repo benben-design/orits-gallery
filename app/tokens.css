@@ -114,6 +114,28 @@
   --line-on-band: #C7AF9F;
 
   /* ================================================================ *
+   * THE FULL-SCREEN VIEW
+   *
+   * The one dark surface on the site, and it belongs to the paintings rather
+   * than to the chrome: the artwork page's viewer hangs one work on it, alone.
+   *
+   * **Neutral, deliberately not warm.** Everywhere else the warm neutrals are
+   * the point — the site is a wall. Here the job is the opposite: to read a
+   * painting's colour true, and a ground carrying a hue pushes the eye's
+   * white balance against it, so a brown-black would cool every ochre on it.
+   * Near-black rather than #000, which against a lit painting reads as a hole
+   * cut in the screen.
+   *
+   * The two inks are its only text. **The accent does not appear here at all**:
+   * terracotta on this ground is 2.73:1, which fails even the 3:1 a focus
+   * ring needs, so the viewer redefines the focus ring in --text-on-viewer.
+   * check:contrast holds both halves.
+   * ================================================================ */
+  --surface-viewer: #151515;
+  --text-on-viewer: #ECEAE6;        /* the work's title and the controls: 15.20:1 */
+  --text-muted-on-viewer: #A3A09B;  /* its size and position in the set: 7.01:1 */
+
+  /* ================================================================ *
    * TEXT
    *
    * NEVER USE PURE BLACK. The ink on this site is a warm dark brown by
@@ -176,13 +198,40 @@
   --font-display: var(--font-display-loaded), var(--font-fallback-serif);
   --font-body: var(--font-body-loaded), var(--font-fallback-sans);
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
-  --text-md: 1.0625rem;
-  --text-lg: clamp(1.125rem, 0.95rem + 0.7vw, 1.5rem);
+  /**
+   * The reading scale, raised on 23-10-2026. Most buyers are women past
+   * thirty on a phone, and the site read at 15px with its card meta at 12–13.
+   * Running text is 17px on a phone and 18px from 48rem (the override below
+   * this block); **nothing a visitor reads is smaller than 14px**, so --text-xs
+   * is the floor and not a size for fine print.
+   *
+   * Every step moved together on purpose: raising --text-base alone would
+   * have left card titles and cart lines (--text-md) smaller than the
+   * paragraphs beneath them. --text-xl did not move, because it is the page
+   * titles and the hero line; section headings have their own step,
+   * --text-section, which is the one that reaches 40px.
+   *
+   * Line length is unaffected in the way that matters: --measure is in rem,
+   * so a bigger face sets fewer characters per line — about 65 at 18px,
+   * where 15px ran to about 80.
+   */
+  --text-xs: 0.875rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-md: 1.1875rem;
+  --text-lg: clamp(1.25rem, 1.05rem + 0.75vw, 1.625rem);
+  --text-section: clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
   --text-xl: clamp(1.5rem, 1.1rem + 1.7vw, 2.25rem);
   --text-2xl: clamp(2rem, 1.2rem + 3.4vw, 3.75rem);
+
+  /**
+   * The header's own sizes, held where they were before the scale rose: the
+   * bar was tuned word by word against the brush name (see SiteHeader), and
+   * a reading-size change is not a reason to re-open it. Its words and its
+   * count use these and nothing else.
+   */
+  --text-nav: 1.0625rem;
+  --text-nav-count: 0.75rem;
 
   --weight-light: 300;
   --weight-normal: 400;
@@ -252,7 +301,20 @@
   --measure: 34rem;      /* comfortable reading width */
   --measure-list: 52rem; /* a list of items with a picture: the cart */
   --page-gutter: var(--space-5);
-  --section-gap: var(--space-11);
+
+  /**
+   * Vertical rhythm: three steps, so a page reads as a sequence of subjects
+   * rather than one evenly spaced stream (23-10-2026). Each is the padding a
+   * <Section> carries, smaller on a phone and widened from 48rem below.
+   *
+   *   tight     — things that belong together
+   *   standard  — the ordinary gap between sections
+   *   generous  — before a change of subject
+   */
+  --rhythm-tight: var(--space-8);       /* 48 → 64 */
+  --rhythm-standard: var(--space-9);    /* 64 → 104 */
+  --rhythm-generous: 5.5rem;            /* 88 → 144 */
+  --section-gap: var(--rhythm-standard);
 
   /**
    * The floating contact button: how big it is, how big it is to a thumb, and
@@ -280,6 +342,14 @@
   --contact-button-size: 2.875rem;
   --contact-button-hit: 3rem;
   --contact-button-inset: var(--space-4);
+  /**
+   * The phone's buy bar on an artwork page (components/artwork/BuyBar), not
+   * counting the home-indicator inset beneath it. A token because two other
+   * things must move by exactly this much while it shows: the floating
+   * WhatsApp button rises by it, and the page keeps this much room at its foot
+   * so the bar never covers the last lines.
+   */
+  --buy-bar-height: 4.25rem;
 
   /* ================================================================ *
    * THE FRAME
@@ -324,6 +394,13 @@
   --shadow-drawer: 0 0 3rem rgb(44 39 35 / 16%);
   --duration-slow: 420ms;
   --duration: 200ms;
+  /* The cards' rise as they come into view (components/layout/QuietMotion):
+     slower than a hover, because it is the work arriving rather than a
+     control answering, and short enough that nothing sits empty. */
+  --duration-rise: 900ms;
+  --rise-distance: 1.5rem;
+  /* Where a rising card starts: dimmed, never invisible. */
+  --rise-from-opacity: 0.4;
   --ease: cubic-bezier(0.2, 0, 0.1, 1);
 
   /**
@@ -334,6 +411,22 @@
    * per direction.
    */
   --origin-inline-start: left;
+}
+
+/* From tablet width the three reading steps take one more pixel or two:
+   18px running text, with the steps either side of it moving with it so the
+   hierarchy holds. --text-xs stays at the 14px floor. The rhythm opens up at
+   the same width. */
+@media (min-width: 48rem) {
+  :root {
+    --text-sm: 1rem;
+    --text-base: 1.125rem;
+    --text-md: 1.25rem;
+
+    --rhythm-tight: var(--space-9);       /*  64 */
+    --rhythm-standard: var(--space-11);   /* 104 */
+    --rhythm-generous: 9rem;              /* 144 */
+  }
 }
 
 /**

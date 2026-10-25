@@ -12,17 +12,6 @@
 }
 
 /*
-  The page's own name, demoted. The same treatment as SectionHeading's
-  overline, so a label reads as a label wherever it appears.
-*/
-.label {
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/*
   Her name at the display step — the largest type on the site, and the only
   place it is spent. `letter-spacing: inherit` because the global heading rule
   tracks English headings, and a name set in light display weight at this size
