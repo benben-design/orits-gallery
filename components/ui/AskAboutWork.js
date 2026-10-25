@@ -15,9 +15,9 @@ import styles from './AskAboutWork.module.css';
  *
  * ## Two shapes, chosen by whether the work can be bought
  *
- *   - **It can:** a quiet link after the reassurance list, above the buy
- *     controls — "a question about this painting?". The buy button stays the
- *     one thing to do.
+ *   - **It can:** a quiet link after the buy controls and the reassurance
+ *     list — "a question about this painting?". The buy button stays the one
+ *     thing to do.
  *   - **It cannot** — sold, reserved, not for sale: there is no buy button, so
  *     this becomes the page's action, in the secondary button's dress. A
  *     sentence says why, in words true of *this* status (a reserved work may

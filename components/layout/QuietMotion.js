@@ -3,75 +3,90 @@
 import { useEffect } from 'react';
 
 /**
- * The site's small amount of motion: sections below the first screen rise
- * into place as they scroll into view, once, and paintings fade in as they
- * load rather than popping. Renders nothing.
+ * The site's one moment of motion: painting cards below the first screen rise
+ * into place as they come into view, once, a beat apart along a row. Renders
+ * nothing.
  *
- * **Nothing depends on this to become visible.** The server renders every
- * section and every painting in its final, visible state. This runs only
- * after hydration, and only then hides what is still *below* the first screen
- * — so with no JavaScript, or a script that fails, the page is simply all
- * there, and nothing on the first screen ever waits (the hero is the largest
- * paint). Because the markup is identical on the server and at hydration,
- * there is nothing for React to report as a mismatch.
+ * **One moment, deliberately** (25-10-2026). Whole sections used to rise as
+ * they scrolled in and every painting faded in as it loaded; together with the
+ * page's generous spacing that read as template chrome, and on a fast scroll
+ * it left the screen empty for a moment. Sections are simply there now. What
+ * is left is the cards — the paintings arriving, which is the thing the page
+ * is for — and nothing else moves on its own.
+ *
+ * **Nothing depends on this to become visible.** The server renders every card
+ * in its final, visible state. This runs only after hydration, and only then
+ * hides what is still *below* the first screen — so with no JavaScript, or a
+ * script that fails, the page is simply all there, and nothing on the first
+ * screen ever waits. Because the markup is identical on the server and at
+ * hydration, there is nothing for React to report as a mismatch.
+ *
+ * **A card starts rising before it is on screen.** The observer looks a
+ * quarter of a screen ahead, so by the time a card scrolls into view it is
+ * already arriving rather than an empty slot waiting to begin.
  *
  * Under `prefers-reduced-motion: reduce` it does nothing at all.
  *
- * The states are data attributes, styled where the elements are:
- *   - `[data-reveal]` on every <Section> → `pending`, then `shown`
- *     (components/ui/Section.module.css)
- *   - `[data-painting]` on every painting → `data-loading` until it loads
- *     (components/ui/ArtworkFrame.module.css)
- *
- * A MutationObserver picks up what arrives later — a client navigation, or a
- * gallery filter, which changes the page without changing its path.
+ * The state is `[data-rise]` on each card (components/ui/ArtworkCard), styled
+ * in ArtworkCard.module.css: empty from the server, `pending` once hidden,
+ * `shown` once it has come into view. A MutationObserver picks up what arrives
+ * later — a client navigation, or a gallery filter, which changes the page
+ * without changing its path.
  */
+
+/** The beat between cards that come into view together, and its ceiling. */
+const STAGGER_MS = 60;
+const MAX_STAGGER_STEPS = 3;
+
 export default function QuietMotion() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     if (!('IntersectionObserver' in window)) return undefined;
 
-    const reveal = new IntersectionObserver(
+    const rise = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          entry.target.dataset.reveal = 'shown';
-          reveal.unobserve(entry.target);
-        }
+        /*
+          The cards that arrive in one callback are a row (or two) coming into
+          view together. Ordered as they are read — top to bottom, then along
+          the row in the page's direction — each waits a beat after the one
+          before, so the row rises in reading order in both languages.
+        */
+        const rtl = document.documentElement.dir === 'rtl';
+        const arriving = entries
+          .filter((entry) => entry.isIntersecting)
+          .map((entry) => ({ el: entry.target, box: entry.boundingClientRect }))
+          .sort(
+            (a, b) =>
+              Math.round(a.box.top - b.box.top) ||
+              (rtl ? b.box.left - a.box.left : a.box.left - b.box.left)
+          );
+
+        arriving.forEach(({ el }, index) => {
+          el.style.setProperty('--rise-delay', `${Math.min(index, MAX_STAGGER_STEPS) * STAGGER_MS}ms`);
+          el.dataset.rise = 'shown';
+          rise.unobserve(el);
+        });
       },
-      // A little before the section's top reaches the bottom edge, so the
-      // rise is under way as it comes into view rather than after.
-      { rootMargin: '0px 0px -8% 0px' }
+      { rootMargin: '0px 0px 25% 0px' }
     );
 
-    // Below the first screen means below it at the moment we look: a page
-    // restored mid-scroll keeps whatever is already in view exactly as it is.
-    const belowFold = (el) => el.getBoundingClientRect().top > window.innerHeight;
+    // Below the first screen means below it at the moment we look, plus the
+    // margin the observer looks ahead by: anything nearer than that is left
+    // exactly as the server drew it.
+    const belowFold = (el) => el.getBoundingClientRect().top > window.innerHeight * 1.25;
 
     function prepare(root) {
       if (!(root instanceof Element)) return;
 
-      const sections = root.matches('[data-reveal=""]') ? [root] : [];
-      sections.push(...root.querySelectorAll('[data-reveal=""]'));
-      for (const section of sections) {
-        if (belowFold(section)) {
-          section.dataset.reveal = 'pending';
-          reveal.observe(section);
+      const cards = root.matches('[data-rise=""]') ? [root] : [];
+      cards.push(...root.querySelectorAll('[data-rise=""]'));
+      for (const card of cards) {
+        if (belowFold(card)) {
+          card.dataset.rise = 'pending';
+          rise.observe(card);
         } else {
-          section.dataset.reveal = 'static';
+          card.dataset.rise = 'static';
         }
-      }
-
-      const paintings = root.matches('img[data-painting]') ? [root] : [];
-      paintings.push(...root.querySelectorAll('img[data-painting]:not([data-seen])'));
-      for (const img of paintings) {
-        img.dataset.seen = '';
-        if (img.complete || !belowFold(img)) continue;
-        img.dataset.loading = '';
-        const done = () => delete img.dataset.loading;
-        img.addEventListener('load', done, { once: true });
-        // A broken image is shown broken rather than left invisible.
-        img.addEventListener('error', done, { once: true });
       }
     }
 
@@ -83,14 +98,13 @@ export default function QuietMotion() {
     added.observe(document.body, { childList: true, subtree: true });
 
     // Undo everything on the way out. Development runs this effect twice, and
-    // a section left `pending` with its observer gone would never show.
+    // a card left `pending` with its observer gone would never show.
     return () => {
       added.disconnect();
-      reveal.disconnect();
-      document.querySelectorAll('[data-reveal]').forEach((el) => { el.dataset.reveal = ''; });
-      document.querySelectorAll('img[data-seen]').forEach((img) => {
-        delete img.dataset.seen;
-        delete img.dataset.loading;
+      rise.disconnect();
+      document.querySelectorAll('[data-rise]').forEach((el) => {
+        el.dataset.rise = '';
+        el.style.removeProperty('--rise-delay');
       });
     };
   }, []);

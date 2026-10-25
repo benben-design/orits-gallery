@@ -32,9 +32,7 @@ export default function Section({
     .join(' ');
 
   return (
-    // `data-reveal` is the hook for the scroll reveal (components/layout/
-    // QuietMotion). Empty on the server, so a page with no script is whole.
-    <Tag className={classes} data-reveal="" {...rest}>
+    <Tag className={classes} {...rest}>
       {children}
     </Tag>
   );

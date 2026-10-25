@@ -1,10 +1,10 @@
 /**
- * The reassurance list above the buy controls.
+ * The reassurance list below the buy controls.
  *
  * Quiet on purpose: the secondary ink, a step below the body text, and the
  * icons the colour of the words beside them. It is read after the decision to
  * buy has formed, as the answer to the last hesitation — it must not pull the
- * eye off the buttons below it.
+ * eye off the buttons above it.
  */
 .list {
   display: flex;

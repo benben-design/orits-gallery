@@ -338,7 +338,7 @@ change makes the two the same size or shape, give the button a different fill.
 
 ## Around the buy controls
 
-On a work that can be bought, directly above the buttons, four short lines answer the last hesitation —
+On a work that can be bought, directly below the buttons (moved there on 25-10-2026, so they never stand between a buyer and the button), four short lines answer the last hesitation —
 original and signed, insured delivery, 14 days to cancel, secure payment — and a
 quiet link asks the artist about this painting on WhatsApp. **The delivery line
 is the site settings**, the same rate and pickup switch checkout charges by, so
@@ -349,9 +349,12 @@ action, with a sentence true of its status: sold is gone, reserved may come free
 not-for-sale never was. A page about a painting nobody can buy still ends in
 something to do. See `components/ui/AskAboutWork.js`.
 
-The homepage's four promises are still placeholders, and this list is real copy
-for the same four. When they are filled, use these words, so a buyer meets one
-promise once.
+**The homepage's four promises are real copy now** (25-10-2026), drawn with the
+same glyphs as this list so a buyer meets one promise once: original and signed,
+insured delivery, **14 days to cancel** — the brief said "to return" and was
+kept to "cancel" on purpose, for the reason above — and, in place of secure
+payment, **directly from the artist**: she answers questions personally. Secure
+payment stays here beside the button, where it is asked.
 
 The inert version was reversed on purpose so the purchase flow could be shown end
 to end before a provider was chosen, and it was held honest three ways while it

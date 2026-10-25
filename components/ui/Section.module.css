@@ -42,31 +42,6 @@
   padding-block: 0;
 }
 
-/*
-  The scroll reveal. QuietMotion sets `pending` only on a section that is
-  below the first screen once the page has hydrated, so the first screen never
-  waits and a page with no script never hides anything. Print shows it all.
-*/
-@media (prefers-reduced-motion: no-preference) {
-  .section[data-reveal='pending'] {
-    opacity: 0;
-    transform: translateY(var(--reveal-rise));
-  }
-
-  .section[data-reveal='shown'] {
-    transition:
-      opacity var(--duration-reveal) var(--ease),
-      transform var(--duration-reveal) var(--ease);
-  }
-}
-
-@media print {
-  .section[data-reveal='pending'] {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 /* Declared after the sizes so it wins over their shorthand. */
 .beforeTight {
   padding-block-start: var(--rhythm-tight);

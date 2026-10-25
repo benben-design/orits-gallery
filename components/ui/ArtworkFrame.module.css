@@ -61,21 +61,12 @@
   the same canvas brought a little nearer, never a card floating up. It used
   to scale by 1.2%, which on a painting reads as a zoom into the picture
   rather than the object moving.
-
-  And a painting that loads below the first screen fades in instead of
-  popping: QuietMotion marks it `data-loading` until it has arrived. Nothing
-  is ever hidden without that script, and nothing at all under reduced motion.
 */
 @media (prefers-reduced-motion: no-preference) {
   .painting {
     transition:
       transform var(--duration) var(--ease),
-      box-shadow var(--duration) var(--ease),
-      opacity var(--duration-slow) var(--ease);
-  }
-
-  .painting[data-loading] {
-    opacity: 0;
+      box-shadow var(--duration) var(--ease);
   }
 }
 

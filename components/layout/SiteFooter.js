@@ -4,7 +4,7 @@ import Wordmark from './Wordmark';
 import HomeMarkLink from './HomeMarkLink';
 import { localeHref } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
-import { telHref, mailtoHref, whatsappHref } from '@/lib/contact';
+import { displayPhone, telHref, mailtoHref, whatsappHref } from '@/lib/contact';
 import styles from './SiteFooter.module.css';
 
 /**
@@ -114,7 +114,7 @@ export default function SiteFooter({ locale, dictionary, year, contact }) {
                   ) : null}
                   {phoneHref ? (
                     <a href={phoneHref} className={styles.link + ' ' + styles.ltr}>
-                      {contact.phone}
+                      {displayPhone(contact.phone)}
                     </a>
                   ) : null}
                 </address>

@@ -394,10 +394,13 @@
   --shadow-drawer: 0 0 3rem rgb(44 39 35 / 16%);
   --duration-slow: 420ms;
   --duration: 200ms;
-  /* The scroll reveal: slower than a hover, because it is the page arriving
-     rather than a control answering. */
-  --duration-reveal: 600ms;
-  --reveal-rise: 1rem;
+  /* The cards' rise as they come into view (components/layout/QuietMotion):
+     slower than a hover, because it is the work arriving rather than a
+     control answering, and short enough that nothing sits empty. */
+  --duration-rise: 450ms;
+  --rise-distance: 0.75rem;
+  /* Where a rising card starts: dimmed, never invisible. */
+  --rise-from-opacity: 0.4;
   --ease: cubic-bezier(0.2, 0, 0.1, 1);
 
   /**

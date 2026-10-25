@@ -56,11 +56,13 @@ import styles from './ArtworkDetail.module.css';
  * ## The reading order, and the placements inside it that are decisions
  *
  * Category, title, the price with the physical facts at the far end of its
- * row, what reassures and the question to the artist, and **the buy controls
- * last** — the box ends on them, roughly level with the painting's base, so the
- * reading runs down into the thing to do (decided by eye on 24-10-2026). The
- * cost, accepted: on a screen under about 660px tall the buttons are the first
- * thing to fall below it, and on a phone the buy bar is what covers that. **Her description
+ * row, **the buy controls directly after them**, and then what reassures and
+ * the question to the artist (reordered on 25-10-2026; until then the buttons
+ * came last, below the list). The decision rests on the price and the facts,
+ * so the thing to do follows them at once and sits high on every screen; the
+ * reassurance is read after the decision has formed, and must never stand
+ * between a buyer and the button. On a work that cannot be bought the question
+ * is the action, and it takes the buttons' place. **Her description
  * is not in this column at all** — it is a band of its own below, "about the
  * work", so the column beside the painting is a buy box that ends where the
  * painting does.
@@ -253,7 +255,7 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
     {
       key: 'dimensions',
       label: dictionary.artwork.dimensions,
-      value: formatDimensions(work.dimensions),
+      value: formatDimensions(work.dimensions, dictionary),
       /* Latin digits and a unit inside Hebrew prose — isolated, as the card does. */
       isolate: true,
     },
@@ -264,7 +266,7 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
     <ArtworkViewer
       images={viewerImages}
       title={title}
-      dimensions={formatDimensions(work.dimensions)}
+      dimensions={formatDimensions(work.dimensions, dictionary)}
       locale={locale}
       copy={{
         viewClose: dictionary.artwork.viewClose,
@@ -370,10 +372,34 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
           </div>
 
           {/*
-            Above the buy controls, what settles the last hesitation, and a way
-            to ask about this one work — so the buttons are the last thing in
-            the box, where the eye ends up. Decided by status alone, like the
-            badge, so the admin preview shows a draft the way it will look live.
+            The size, the year and the description are stand-ins on every seeded
+            record, and deliberately absurd ones so they cannot ship unnoticed.
+            The price marks itself; this is what keeps the rest from being read
+            as fact. It goes directly above the buy control, under the numbers
+            it disclaims, rather than at the foot of the page where it would be
+            a disclaimer nobody reaches.
+          */}
+          {work.hasPlaceholderData ? (
+            <p className={styles.placeholder}>{dictionary.placeholder.notice}</p>
+          ) : null}
+
+          {/*
+            The buy controls come straight after the price and the facts that
+            decide it. Draws itself only for a published, buyable work — so a
+            draft in the admin preview, a sold painting and a work that is not
+            for sale all simply have no button, rather than one that leads to a
+            refusal.
+          */}
+          <AddToCart work={work} dictionary={dictionary} locale={locale} />
+
+          {/*
+            After the buttons, what settles the last hesitation and a way to ask
+            about this one work: read once the decision has formed, never in the
+            way of acting on it. Decided by status alone, like the badge, so the
+            admin preview shows a draft the way it will look live.
+
+            On a work that cannot be bought there are no buy controls, and the
+            question to the artist takes their place as the page's action.
           */}
           {isBuyable(work.status) ? (
             <>
@@ -394,32 +420,7 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
                 available
               />
             </>
-          ) : null}
-
-          {/*
-            The size, the year and the description are stand-ins on every seeded
-            record, and deliberately absurd ones so they cannot ship unnoticed.
-            The price marks itself; this is what keeps the rest from being read
-            as fact. It goes directly above the buy control, under the numbers
-            it disclaims, rather than at the foot of the page where it would be
-            a disclaimer nobody reaches.
-          */}
-          {work.hasPlaceholderData ? (
-            <p className={styles.placeholder}>{dictionary.placeholder.notice}</p>
-          ) : null}
-
-          {/*
-            Draws itself only for a published, buyable work — so a draft in the
-            admin preview, a sold painting and a work that is not for sale all
-            simply have no button, rather than one that leads to a refusal.
-          */}
-          <AddToCart work={work} dictionary={dictionary} locale={locale} />
-
-          {/*
-            On a work that cannot be bought there are no buy controls, and the
-            question to the artist takes their place as the page's action.
-          */}
-          {isBuyable(work.status) ? null : (
+          ) : (
             <AskAboutWork
               work={work}
               locale={locale}

@@ -45,7 +45,7 @@ export default function WorksGrid({ works, locale, dictionary }) {
   return (
     <Section before="generous">
       <Container>
-        <SectionHeading label={dictionary.home.works.label} intro={dictionary.home.works.intro}>
+        <SectionHeading intro={dictionary.home.works.intro}>
           {dictionary.home.works.heading}
         </SectionHeading>
 

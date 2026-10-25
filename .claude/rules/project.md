@@ -173,7 +173,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Both root layouts, public shell, admin shell | Done |
 | Every route in the locked map above | Done. The four legal pages are still stubs; About and contact are built from the site settings |
 | The four homepage sections + UI primitives | Done |
-| Gallery | Built — the full catalogue, filtered by category through the URL. **Pagination deliberately not built** at sixteen works |
+| Gallery | Built — the full catalogue, filtered by category through the URL, the two categories shown as picture tiles with their counts. **Pagination deliberately not built** at sixteen works |
 | Deleting a painting | Built — from the works list, behind a confirmation that asks a **different question** of a draft and of a published work, and offers taking it off the site instead of breaking a permanent address. One click never deletes. A work on an order cannot be deleted at all |
 | Finding a painting in the admin | Built — `/admin` **is** the works list: every work with its publication state, sale status and sale channel, drafts sorted first, each row opening its edit page. It reads `getWorksForAdmin`, the admin-scoped list added for it |
 | Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **Its photograph can be attached here too**, in the same save: the upload waits in a hidden field and the work and its image are written in one transaction, so a painting can arrive complete and published in one step |
@@ -184,7 +184,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Artwork page body | **Built** — one painting large beside its details, reusing the grid's frame, price, badge and status table. The frame's `bare` mount finally has its caller. No buy button while the cart does not exist |
 | Buy bar on a phone | **Built** (24-10-2026) — below 60rem, on a work that can be bought, a slim bar with the title, the price and "add to cart" slides up once the real buy controls have scrolled away, and leaves when they return; the WhatsApp button rises above it, the drawer and the full-screen view sit over it, the home indicator is respected and the page keeps room for it. Verified at 375 and 414 in both languages; none on unavailable works, from 1024, or in the admin preview |
 | More works under a painting | **Built** (24-10-2026) — up to four other published works at the foot of the public artwork page: buyable first, the same category before the other, never the work itself; a link on to the rest of its category. From the gallery's cached catalogue, so no query of its own per page. Not in the admin preview |
-| Reassurance and a question to the artist | **Built** (24-10-2026) — above the buy controls on a work that can be bought, four lines (original and signed, insured delivery from the settings, 14 days to cancel, secure payment) and a WhatsApp link that names the painting; on a sold, reserved or not-for-sale work that link becomes the page's action, with a sentence true of its status. Nothing renders without a WhatsApp number |
+| Reassurance and a question to the artist | **Built** (24-10-2026) — below the buy controls on a work that can be bought (moved there 25-10-2026), four lines (original and signed, insured delivery from the settings, 14 days to cancel, secure payment) and a WhatsApp link that names the painting; on a sold, reserved or not-for-sale work that link becomes the page's action, with a sentence true of its status. Nothing renders without a WhatsApp number |
 | Full-screen view of a painting | **Built** (24-10-2026) — clicking or tapping the painting opens it whole on a neutral near-black, with its title and physical size beneath; Escape, the close control, a tap on the ground or a downward swipe close it; several images page by arrows, keys and swipe, mirrored in Hebrew. Never requested or drawn larger than the original. Verified in both languages at 375 and 1440, keyboard only and with real two-finger pinch |
 | Cart | Built, **as a panel that slides in from the edge of the screen**. Adding a painting opens it in place and never navigates. A cookie of work ids and nothing else, so **every fact is re-read from the database**: a painting sold elsewhere while it sat there is caught when the cart is drawn and again when anything is added, and is excluded from the total with a sentence saying why. No quantity anywhere. `/cart` is still the whole page, server-rendered, reachable from the foot of the panel, and the one that will grow a real checkout |
 | Checkout controls | **Real.** All three — the drawer's, `/cart`'s, and "buy now" on the artwork page — are ordinary links into `/[locale]/checkout`. The `aria-disabled` attributes and the shared "not open yet" sentence went with them, and that locale key is deleted rather than left unused. "Buy now" carries `?work=<id>`: one painting, cart untouched |
@@ -220,8 +220,8 @@ so being absent from checkout has to be decided where the path is known.
 same reason as the other two admin forms.
 **The fourteenth is `HomeMarkLink`**, the wordmark's link: on the homepage
 it glides back to the hero, and only the browser knows which page it is on.
-**The fifteenth is `QuietMotion`**, which renders nothing: it reveals sections
-below the first screen and fades paintings in, and the page is whole without it.
+**The fifteenth is `QuietMotion`**, which renders nothing: painting cards below
+the first screen rise in, staggered, and the page is whole without it.
 **The sixteenth is `ArtworkViewer`**, the artwork page's full-screen view. It
 wraps the server-rendered body and holds only the dialog; the buttons that open
 it are server markup, so the frame and the label stay on the server.
@@ -290,16 +290,19 @@ values or ship by accident: `999 × 999 cm`, `₪99,999`, year `1000`, and copy
 prefixed `[PLACEHOLDER]` / `[טקסט זמני]`. Prices additionally render with a
 visible "sample price" marker, driven by `hasPlaceholderData` on each work.
 
-Do not tidy these into plausible-looking values, and do not write real marketing
-copy — **including the four homepage promises**, whose real wording is settled
-(see the section order above and commerce.md) but is deliberately not in the
-locale files yet. When the real values arrive they replace the constants at the
-top of `lib/data/artworks.js`.
+Do not tidy these into plausible-looking values. When the real values arrive
+they replace the constants at the top of `lib/data/artworks.js`.
+
+**The homepage's copy is real since 25-10-2026**: the site description, the
+works heading and intro, the four promises and the story paragraph, in both
+languages. The only bracketed strings left in the locale files are the four
+legal page bodies and the artwork page's dummy-data notice, which are handled
+separately.
 
 **One exception landed on 26-09-2026, by the owner's decision: the hero's
 positioning line.** `home.hero.positioning` now reads "Paintings that bring
 light into a home",
-where every other line on the homepage is still bracketed. Two things about it
+while every other line on the homepage was still bracketed. Two things about it
 are worth knowing rather than rediscovering. **It is in English on the Hebrew
 site too** — the same string in both locale files, the `<h1>` marked
 `lang="en"`, treated as part of the mark rather than as copy; i18n.md carries

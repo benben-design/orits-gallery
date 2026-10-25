@@ -22,9 +22,8 @@ import styles from './MoreWorks.module.css';
  * current work never. This only draws what it is handed, and draws nothing when
  * that is empty.
  *
- * The cards are the grid's own, and so is the grid's rhythm. A `<Section>`, so
- * it rises into place as it scrolls in, like every section below the first
- * screen (components/layout/QuietMotion). The titles are `h3`s under this
+ * The cards are the grid's own, and so is the grid's rhythm — and their rise as
+ * they scroll in (components/layout/QuietMotion). The titles are `h3`s under this
  * section's `h2`, which sits under the work's `h1`.
  *
  * **The way on is the rest of the work's own category**, not the whole gallery:
@@ -56,7 +55,7 @@ export default function MoreWorks({ works, category, locale, dictionary }) {
     /* A generous gap above: the subject changes from one painting to the body of work. */
     <Section before="generous">
       <Container>
-        <SectionHeading label={copy.moreWorksLabel}>{copy.moreWorksHeading}</SectionHeading>
+        <SectionHeading>{copy.moreWorksHeading}</SectionHeading>
 
         <ul className={styles.grid}>
           {works.map((work) => (

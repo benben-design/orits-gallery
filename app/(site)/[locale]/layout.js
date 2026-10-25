@@ -54,7 +54,7 @@ export async function generateMetadata({ params }) {
     metadataBase: new URL(siteUrl()),
     title: {
       default: dictionary.site.title,
-      template: `%s — ${dictionary.site.artistName}`,
+      template: `%s - ${dictionary.site.artistName}`,
     },
     description: dictionary.site.description,
   };
@@ -147,8 +147,8 @@ export default async function SiteLayout({ children, params }) {
             label={dictionary.nav.whatsapp}
             locale={locale}
           />
-          {/* Scroll reveal and painting fades. Renders nothing, and the page is
-              whole without it. See QuietMotion. */}
+          {/* The cards' rise as they scroll in. Renders nothing, and the page
+              is whole without it. See QuietMotion. */}
           <QuietMotion />
         </CartProvider>
       </body>

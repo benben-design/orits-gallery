@@ -1,9 +1,8 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
-import SectionLabel from '@/components/ui/SectionLabel';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { getSiteSettings } from '@/lib/data/settings-repository';
-import { contactMethods, displayUrl } from '@/lib/contact';
+import { contactMethods, displayPhone, displayUrl } from '@/lib/contact';
 import styles from './page.module.css';
 
 /**
@@ -50,7 +49,7 @@ export default async function ContactPage({ params }) {
   */
   const textFor = {
     whatsapp: dictionary.nav.whatsapp,
-    phone: settings.phone,
+    phone: displayPhone(settings.phone),
     email: settings.email,
     instagram: settings.instagramUrl ? displayUrl(settings.instagramUrl) : null,
     facebook: settings.facebookUrl ? displayUrl(settings.facebookUrl) : null,
@@ -59,7 +58,6 @@ export default async function ContactPage({ params }) {
   return (
     <Section as="div">
       <Container width="measure">
-        <SectionLabel>{dictionary.contact.label}</SectionLabel>
         <h1 className={styles.title}>{dictionary.contact.title}</h1>
 
         {methods.length > 0 ? (

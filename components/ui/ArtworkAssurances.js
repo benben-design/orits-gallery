@@ -5,8 +5,9 @@ import styles from './ArtworkAssurances.module.css';
 
 /**
  * The four things a stranger wants settled before paying ₪2,000 to a site they
- * have never heard of, set directly above the buy controls on an artwork page,
- * so the buttons are the last thing in the box and the list leads into them.
+ * have never heard of, set directly below the buy controls on an artwork page:
+ * read once the decision has formed, and never standing between a buyer and
+ * the button (reordered on 25-10-2026; it used to lead into them).
  *
  * Trust converts here (commerce.md): the questions this answers — is it the
  * real thing, what does it cost to get it home, can I change my mind, is my card

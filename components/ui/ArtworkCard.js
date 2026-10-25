@@ -35,7 +35,9 @@ export default function ArtworkCard({
   const href = localeHref(locale, `/art/${work.slug[locale]}`);
 
   return (
-    <article className={styles.card}>
+    /* `data-rise` is the hook for the cards' rise (components/layout/
+       QuietMotion). Empty on the server, so a page with no script is whole. */
+    <article className={styles.card} data-rise="">
       <Link href={href} className={styles.link}>
         <ArtworkFrame
           image={mainImage}
@@ -74,7 +76,7 @@ export default function ArtworkCard({
                 <span aria-hidden="true" className={styles.separator} />
               </>
             ) : null}
-            <bdi>{formatDimensions(work.dimensions)}</bdi>
+            <bdi>{formatDimensions(work.dimensions, dictionary)}</bdi>
           </p>
 
           {/*

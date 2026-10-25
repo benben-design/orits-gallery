@@ -72,8 +72,6 @@ export default function ArtworkFrame({
         {image ? (
           <Image
             className={styles.painting}
-            /* The hook for the load fade (components/layout/QuietMotion). */
-            data-painting=""
             src={image.src}
             alt={alt}
             width={image.width}

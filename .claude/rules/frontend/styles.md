@@ -103,14 +103,18 @@ for things that belong together, `--rhythm-standard` (64 → 104px) for the
 ordinary gap, and `--rhythm-generous` (88 → 144px) before a change of subject.
 `Section` is the only thing that spends them. On the homepage the hero is one
 unit, the works grid opens after a generous gap, and the promises and story
-take standard. **Above a title, a label** — `SectionLabel`, see app-files.md.
+take standard. **A heading stands on its own** — the small labels above section
+headings were removed on 25-10-2026 as template chrome; only About keeps one,
+above the artist's name.
 
-**Motion is quiet, and never a condition of being seen (23-10-2026).** Three
-things move: a section below the first screen rises 16px into place once, as it
-scrolls in (`--duration-reveal`, 600ms); a painting below the first screen fades
-in as it loads; and on a device that hovers a card's painting lifts 3px with its
-shadow deepening to the bare one. All three live behind
-`prefers-reduced-motion: no-preference`, and the first two are switched on by
+**Motion is one moment, and never a condition of being seen (25-10-2026).** Two
+things move: painting cards below the first screen rise into place once, as
+they come into view, a beat apart in reading order (`--duration-rise`, starting
+from `--rise-from-opacity` so nothing is ever blank); and on a device that
+hovers a card's painting lifts 3px with its shadow deepening to the bare one.
+Sections used to rise in and paintings to fade in as they loaded; both were
+removed because, with the spacing, they made the scroll feel empty. Both moves
+live behind `prefers-reduced-motion: no-preference`, and the rise is switched on by
 `QuietMotion` after hydration only — **never hide content in CSS that a script
 has to reveal**, because a page whose script fails would then be blank.
 

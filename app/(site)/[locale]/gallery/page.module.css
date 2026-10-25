@@ -21,44 +21,150 @@
 }
 
 /**
- * The filter row. A rule beneath it rather than a filled bar: the gallery wall
- * has as little furniture as possible, and a tinted toolbar above the work
- * would be the first thing the eye lands on instead of the paintings.
+ * The filter: two category tiles and a quiet "all".
+ *
+ * A rule beneath it rather than a filled bar: the gallery wall has as little
+ * furniture as possible. The tiles are outlined on the wall rather than filled,
+ * so the only white in them is the little mat each painting hangs on — the
+ * same board as the cards below, which is what makes them read as the same
+ * object, smaller.
+ *
+ * Compact on purpose. Side by side on a phone too, and short enough that the
+ * first row of the grid still begins on the first screen.
  */
 .filters {
-  margin-block-start: var(--space-7);
-  border-block-end: var(--border-hairline) solid var(--line);
-  padding-block-end: var(--space-4);
-}
-
-.filterList {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-5);
-  font-size: var(--text-sm);
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+  margin-block-start: var(--space-7);
+  border-block-end: var(--border-hairline) solid var(--line);
+  padding-block-end: var(--space-5);
 }
 
-.filter {
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  flex: 1 1 100%;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  block-size: 100%;
+  padding: var(--space-2);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease);
+}
+
+/*
+  The thumbnail. ArtworkFrame's own box and mat, squared and with a narrower
+  mat than a card's, because the card's inset would leave a thumbnail this
+  size mostly board.
+*/
+.tileFrame {
+  flex: none;
+  inline-size: 3.5rem;
+  --frame-inset: var(--space-1);
+}
+
+.tileText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+
+.tileName {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.tileCount {
+  font-size: var(--text-xs);
   color: var(--text-muted);
-  padding-block-end: var(--space-1);
+}
+
+/**
+ * The selected tile is marked by weight, not hue: its border doubles, drawn
+ * as an inset shadow over the hairline so the tile does not shift by a pixel
+ * when it is chosen. The accent is allowed here because a tile is a control.
+ * aria-current says the same thing to a screen reader.
+ */
+.tileActive {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 var(--border-hairline) var(--accent);
+}
+
+/* "All": a text link, quiet, and underlined when it is the current view. */
+.all {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-block: var(--space-1);
   border-block-end: 2px solid transparent;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
   transition: color var(--duration) var(--ease),
     border-color var(--duration) var(--ease);
 }
 
-/**
- * The active filter is marked twice over — the ink darkens *and* an underline
- * appears — so which one is on does not depend on noticing a shade. Same
- * principle as the sale statuses: never colour alone.
- */
-.filterActive {
+.allSeparator {
+  color: var(--line-strong);
+}
+
+.allActive {
   color: var(--text-primary);
   border-block-end-color: var(--accent);
 }
 
 @media (hover: hover) {
-  .filter:hover {
+  .tile:hover {
+    border-color: var(--text-muted);
+  }
+
+  .tileActive:hover {
+    border-color: var(--accent);
+  }
+
+  .all:hover {
     color: var(--text-primary);
+  }
+}
+
+@media (min-width: 48rem) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 20rem));
+    gap: var(--space-5);
+    flex: 0 1 auto;
+  }
+
+  .tile {
+    gap: var(--space-4);
+    padding: var(--space-3);
+  }
+
+  .tileFrame {
+    inline-size: 6rem;
+    --frame-inset: var(--space-2);
+  }
+
+  .tileName {
+    font-size: var(--text-md);
+  }
+
+  .tileCount {
+    font-size: var(--text-sm);
+  }
+
+  .all {
+    margin-inline-start: auto;
   }
 }
 

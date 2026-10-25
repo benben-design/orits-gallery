@@ -215,8 +215,8 @@ export async function generateMetadata({ params }) {
   const image = shareImage(work, locale, dictionary);
 
   /* The layout's title template appends the artist, so "Lemons" arrives as
-     "Lemons — Orit Bar Shai". Open Graph has no template, so it is spelled out. */
-  const sharedTitle = `${title} — ${dictionary.site.artistName}`;
+     "Lemons - Orit Bar Shai". Open Graph has no template, so it is spelled out. */
+  const sharedTitle = `${title} - ${dictionary.site.artistName}`;
 
   return {
     title,

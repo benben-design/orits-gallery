@@ -3,6 +3,39 @@
   flex-direction: column;
 }
 
+/*
+  The one moment of motion on the site: a card below the first screen rises
+  into place as it comes into view, a beat after the card before it in the
+  row. QuietMotion sets `pending` only after hydration and only below the
+  first screen, so a page with no script never hides anything. Print and
+  reduced motion show everything at once.
+
+  **It never starts from nothing.** A pending card is already at
+  --rise-from-opacity, so a fast fling or a jump a screen at a time — which
+  outruns the observer's look-ahead — lands on paintings that are there and
+  settling, never on an empty band of page. Measured on 25-10-2026: from zero,
+  a row reached on a jump was still invisible 120ms later.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .card[data-rise='pending'] {
+    opacity: var(--rise-from-opacity);
+    transform: translateY(var(--rise-distance));
+  }
+
+  .card[data-rise='shown'] {
+    transition:
+      opacity var(--duration-rise) var(--ease) var(--rise-delay, 0ms),
+      transform var(--duration-rise) var(--ease) var(--rise-delay, 0ms);
+  }
+}
+
+@media print {
+  .card[data-rise='pending'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .link {
   display: flex;
   flex-direction: column;

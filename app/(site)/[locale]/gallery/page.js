@@ -3,9 +3,15 @@ import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ArtworkCard from '@/components/ui/ArtworkCard';
+import ArtworkFrame from '@/components/ui/ArtworkFrame';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
-import { getGalleryWorks, WORK_CATEGORIES } from '@/lib/data/works-repository';
+import { interpolate } from '@/lib/i18n/interpolate';
+import {
+  getGalleryCategories,
+  getGalleryWorks,
+  WORK_CATEGORIES,
+} from '@/lib/data/works-repository';
 import styles from './page.module.css';
 
 /**
@@ -33,6 +39,14 @@ import styles from './page.module.css';
 
 /** Widths this grid actually renders at, matching the homepage's. */
 const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
+
+/** The category tiles' thumbnails, matching .tileFrame in page.module.css. */
+const TILE_SIZES = '(max-width: 48rem) 3.5rem, 6rem';
+
+/** "1 work" is its own string rather than "{count} works" with a 1 in it. */
+function workCount(count, one, many) {
+  return count === 1 ? one : interpolate(many, { count });
+}
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -67,52 +81,90 @@ export default async function GalleryPage({ params, searchParams }) {
    * `category` is passed as a string or null rather than an options object
    * because it is part of the cache key.
    */
-  const works = await getGalleryWorks(category);
-
-  const filters = [
-    { value: null, label: dictionary.gallery.filterAll },
-    ...WORK_CATEGORIES.map((value) => ({
-      value,
-      label: dictionary.category[value],
-    })),
-  ];
+  /*
+    The tiles' counts and pictures are one read of the whole catalogue — the
+    same cached read, not one query per category — and independent of the
+    filtered list, so the two run side by side.
+  */
+  const [works, categories] = await Promise.all([
+    getGalleryWorks(category),
+    getGalleryCategories(),
+  ]);
+  const total = categories.reduce((sum, tile) => sum + tile.count, 0);
 
   return (
     <Section>
       <Container>
         {/* The page's <h1>, so each card's title is an <h2> beneath it. */}
-        <SectionHeading as="h1" label={dictionary.gallery.label} intro={dictionary.gallery.intro}>
+        <SectionHeading as="h1" intro={dictionary.gallery.intro}>
           {dictionary.gallery.title}
         </SectionHeading>
 
+        {/*
+          The filter is two picture tiles and a quiet "all". Every one is an
+          ordinary link to the same address as before, so filtering still works
+          with no JavaScript, is linkable, and lives in the browser's history.
+
+          The current choice is announced (aria-current) and drawn with a
+          heavier border, never with a colour change alone — the same reason a
+          sale status never relies on colour.
+        */}
         <nav className={styles.filters} aria-label={dictionary.gallery.filterLabel}>
-          <ul className={styles.filterList}>
-            {filters.map((filter) => {
-              const active = filter.value === category;
+          <ul className={styles.tiles}>
+            {categories.map((tile) => {
+              const active = tile.category === category;
 
               return (
-                <li key={filter.value ?? 'all'}>
+                <li key={tile.category}>
                   <Link
-                    href={localeHref(
-                      locale,
-                      filter.value ? `/gallery?category=${filter.value}` : '/gallery'
-                    )}
-                    className={[styles.filter, active ? styles.filterActive : '']
+                    href={localeHref(locale, `/gallery?category=${tile.category}`)}
+                    className={[styles.tile, active ? styles.tileActive : '']
                       .filter(Boolean)
                       .join(' ')}
-                    /*
-                      The current filter is announced rather than only drawn
-                      differently — the same reason a sale status never relies
-                      on colour alone.
-                    */
                     aria-current={active ? 'true' : undefined}
                   >
-                    {filter.label}
+                    {/*
+                      The painting is fitted inside its mat by ArtworkFrame, the
+                      same component every card uses, so it is never cropped
+                      here either. Its alt is empty: it stands for the category,
+                      and the link's words already name it.
+                    */}
+                    <ArtworkFrame
+                      className={styles.tileFrame}
+                      image={tile.image ?? undefined}
+                      alt=""
+                      ratio="1 / 1"
+                      sizes={TILE_SIZES}
+                    />
+                    <span className={styles.tileText}>
+                      <span className={styles.tileName}>
+                        {dictionary.category[tile.category]}
+                      </span>
+                      <span className={styles.tileCount}>
+                        {workCount(
+                          tile.count,
+                          dictionary.gallery.workCountOne,
+                          dictionary.gallery.workCount
+                        )}
+                      </span>
+                    </span>
                   </Link>
                 </li>
               );
             })}
           </ul>
+
+          <Link
+            href={localeHref(locale, '/gallery')}
+            className={[styles.all, category ? '' : styles.allActive].filter(Boolean).join(' ')}
+            aria-current={category ? undefined : 'true'}
+          >
+            {dictionary.gallery.filterAll}
+            <span aria-hidden="true" className={styles.allSeparator}>
+              ·
+            </span>
+            <bdi>{total}</bdi>
+          </Link>
         </nav>
 
         {works.length === 0 ? (

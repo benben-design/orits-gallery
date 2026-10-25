@@ -10,12 +10,25 @@
   gap: var(--space-2);
 }
 
+/*
+  The glyph in the muted ink, never the accent: nothing here is pressable, and
+  the reassurance list on an artwork page draws the same icons the same way.
+*/
+.icon {
+  color: var(--text-muted);
+  margin-block-end: var(--space-1);
+}
+
+/*
+  The display face rather than a tracked capital label: these are now real
+  sentences a buyer reads, and Hebrew has no capitals for the label style to
+  lean on.
+*/
 .title {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-tight);
   color: var(--text-primary);
 }
 
