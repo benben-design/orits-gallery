@@ -8,6 +8,8 @@ import { HYP_PAYMENT_ORIGIN } from './lib/payments/hyp-endpoint.js';
 import { API_HOST as IMAGE_HOST_API_ORIGIN } from './lib/image-host-endpoint.js';
 /* Also environment-free, for the same reason. */
 import { IMAGE_SIZES, DEVICE_SIZES } from './lib/image-widths.js';
+/* The pre-launch switch. Environment, but no secret, and no server-only marker. */
+import { isSearchIndexingAllowed } from './lib/search-indexing.js';
 
 /* ------------------------------------------------------------------ *
  * Security headers
@@ -193,6 +195,20 @@ const nextConfig = {
         source,
         headers: [{ key: 'X-Robots-Tag', value: NOINDEX }],
       })),
+      /*
+        Until launch, the same header on every path — the whole public site in
+        both languages, not only the admin. Blocked unless
+        ALLOW_SEARCH_INDEXING is exactly `true` at build time, so a forgotten
+        switch leaves the site hidden. See lib/search-indexing.js and
+        deployment.md. The admin rules above are untouched and keep applying
+        after launch.
+      */
+      ...(isSearchIndexingAllowed()
+        ? []
+        : ['/', '/:path*'].map((source) => ({
+            source,
+            headers: [{ key: 'X-Robots-Tag', value: NOINDEX }],
+          }))),
     ];
   },
 

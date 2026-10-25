@@ -8,6 +8,7 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import QuietMotion from '@/components/layout/QuietMotion';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
+import { isSearchIndexingAllowed } from '@/lib/search-indexing';
 import { whatsappHref } from '@/lib/contact';
 import { getSiteSettings } from '@/lib/data/settings-repository';
 import { locales, isLocale, getDirection, getLocaleTag } from '@/lib/i18n/config';
@@ -57,6 +58,15 @@ export async function generateMetadata({ params }) {
       template: `%s - ${dictionary.site.artistName}`,
     },
     description: dictionary.site.description,
+    /*
+      Until launch, every public page says noindex in its own markup as well
+      as in the header next.config.mjs sends — the meta is the backup. A page
+      that sets its own robots (cart, checkout, an empty About or contact)
+      already says noindex. See lib/search-indexing.js.
+    */
+    ...(isSearchIndexingAllowed()
+      ? {}
+      : { robots: { index: false, follow: false, noarchive: true } }),
   };
 }
 

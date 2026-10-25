@@ -98,6 +98,13 @@ worse than none.
 
 ## Sitemap and robots
 
+**Until launch the whole site is blocked from search** (since 25-10-2026): every
+response carries `X-Robots-Tag: noindex, nofollow, noarchive`, every public
+page a robots meta, and `robots.txt` disallows everything without naming the
+sitemap. One switch, `ALLOW_SEARCH_INDEXING`, blocked unless exactly `true` —
+see `lib/search-indexing.js` and deployment.md. Everything below describes the
+site after launch.
+
 The sitemap covers every **built** public page in every locale, including one
 entry per artwork per language. It is generated from the repository, not
 maintained by hand — `app/sitemap.js`, which enumerates `locales` and never
