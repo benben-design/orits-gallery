@@ -138,7 +138,7 @@ starting with these exclusions.
 
 **Connected, as of 12-09-2026.** The production database is a Neon project
 named **"Orit's gallery"**, region **US East (Ohio)**, **PostgreSQL 18**. It
-carries migrations **001 through 014** (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026), the catalogue, and **both admin
+carries migrations **001 through 015** (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026), the catalogue, and **both admin
 accounts**. Development is unchanged and stays on the local Postgres.
 
 **A production deploy reads it.** The site is deployed on Netlify and is
@@ -629,6 +629,14 @@ Beyond a green build, these are launch blockers and are easy to forget:
   as the admin's sign-in erroring on a typo, on the live site, with nothing in
   the build to warn. Apply it first. A correct password still signs in without
   it, since success writes nothing.
+- ~~**Migration 015 applied to Neon before the star ships.**~~ **Done on
+  26-10-2026, on both**, before the merge that ships the star — on Neon from a
+  session through its connector, then reconciled: `works_single_featured`
+  gone, twelve works starred, none of them a draft, and they are exactly the
+  twelve the live homepage was showing. Kept for its reason: like 012 to 014
+  it does not fail the build — the homepage reads `featured` either way. It
+  fails at runtime, the first time a second work is starred, on 001's
+  one-featured index.
 - ~~**Migration 014 applied to the local database and to Neon before the
   payment-return rate limit deploys or runs.**~~ **Done on 30-09-2026, on both**
   — locally from a session, where the catalog matched the file and the limit

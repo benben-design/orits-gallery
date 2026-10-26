@@ -3,7 +3,7 @@
 PostgreSQL, and **there are two databases now.** Development runs against a
 **local Postgres**, created by hand in pgAdmin and called `art_studio`.
 Production is a **Neon project named "Orit's gallery"** — region US East
-(Ohio), PostgreSQL 18 — carrying migrations 001 through 014 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026) and both admin
+(Ohio), PostgreSQL 18 — carrying migrations 001 through 015 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026) and both admin
 accounts as of 12-09-2026.
 
 The schema is plain SQL in `database/migrations/`, and **the application reads
@@ -79,7 +79,7 @@ These apply to every migration from here on.
 | `status` | Required, **no default**: the four sale statuses |
 | `sale_channel` | Optional: `this-site`, `under1000`, `elsewhere` |
 | `published_at` | `timestamptz`, **nullable — null means draft** |
-| `featured` | Boolean. At most one row may be true |
+| `featured` | Boolean. **Starred for the homepage grid** — any number since 015 |
 | `has_placeholder_data` | Boolean, defaults true |
 | `added_at` | `date`, required. What "most recent" orders by |
 | `created_at`, `updated_at` | No trigger — the application sets `updated_at` |
@@ -107,13 +107,13 @@ still `available`. The constraint `works_reduced_price_below_price` enforces
 that a discount actually undercuts the regular price, and null means no
 discount — not zero, which would be a free painting.
 
-**At most one work may be `featured`, and the database enforces it.** A unique
-index over a constant expression, restricted to featured rows
-(`works_single_featured`). Zero featured works is allowed; the repository falls
-back to the most recent. The consequence is operational: **changing which work
-is featured must clear the previous one in the same transaction.** Setting the
-new flag first fails on the index. `scripts/seed-local-database.mjs` does this
-correctly and is the reference.
+**`featured` means "on the homepage", and any number of works may carry it**
+(migration 015, 26-10-2026). It used to mean the single homepage hero, and 001
+enforced one with `works_single_featured`; the hero became footage, the flag
+went unread, and 015 dropped the index and starred the twelve works the
+homepage was then showing. The artist sets it with the star on each row of the
+works list. Zero starred is allowed: the homepage falls back to the twelve most
+recent.
 
 ### `work_images` — several rows per painting
 

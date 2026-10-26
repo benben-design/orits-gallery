@@ -283,7 +283,7 @@ deployment. Never commit real credentials.
 
 A **local Postgres**, created by hand in pgAdmin, called `art_studio` — and
 since 12-09-2026 a **Neon project for production** as well: "Orit's gallery",
-US East (Ohio), PostgreSQL 18, carrying 001 through 014 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026) and both admin
+US East (Ohio), PostgreSQL 18, carrying 001 through 015 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026) and both admin
 accounts.
 
 Development stays on the local one. **The Neon connection string is not in

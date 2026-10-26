@@ -54,9 +54,9 @@ export const FORM_ID = 'work-form';
  *
  * One thing is still deliberately absent:
  *
- *   - **No "featured" control.** At most one work may be featured and the
- *     database enforces it, so setting it means clearing the previous one in
- *     the same transaction. That is its own action, not a checkbox here.
+ *   - **No "featured" control.** Starring a work for the homepage is the star
+ *     on its row in the works list — one click, its own action, and not
+ *     behind this form's translation gate.
  */
 export default function AdminWorkForm({
   action,

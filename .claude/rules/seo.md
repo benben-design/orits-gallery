@@ -38,7 +38,7 @@ exists.
 highest-value SEO detail on the site: when someone sends a link to a friend, the
 painting is the message.
 
-Every public page needs a sensible OG image; the homepage uses the featured work.
+Every public page needs a sensible OG image; the homepage uses the newest starred work.
 
 **The crop question, decided.** Platforms want roughly 1200x630 and these
 paintings run from 0.62 to 1.51, so no one file satisfies both that and the rule

@@ -4,7 +4,7 @@ import PromisesRow from '@/components/home/PromisesRow';
 import StorySection from '@/components/home/StorySection';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { getSiteSettings } from '@/lib/data/settings-repository';
-import { getRecentWorks } from '@/lib/data/works-repository';
+import { getFeaturedWorks, getRecentWorks } from '@/lib/data/works-repository';
 
 /**
  * The homepage: hero, works grid, promises, story.
@@ -14,11 +14,10 @@ import { getRecentWorks } from '@/lib/data/works-repository';
  * live in. When that repository is backed by a real database, this page does
  * not change.
  *
- * The hero is studio footage rather than a painting, so nothing is excluded
- * from the grid any more: no work is hanging above it to be shown twice. The
- * `featured` flag on a work is therefore unused by this page — it is kept for
- * the homepage's Open Graph image, which seo.md specifies as the featured work
- * and which has not been built yet.
+ * **The grid is the works the artist starred** in the admin's list
+ * (`featured`, any number since migration 015), newest first. With none
+ * starred it falls back to the most recent works, so the homepage is never an
+ * empty wall because every star was taken off.
  */
 
 /**
@@ -35,19 +34,19 @@ import { getRecentWorks } from '@/lib/data/works-repository';
  * appears immediately. The window only catches a change that reached the
  * database without going through either.
  *
- * The gallery cannot do this — it reads `searchParams` — and takes the win at
- * the data layer instead. See `getGalleryWorks`.
+ * The gallery is prerendered the same way.
  */
 export const revalidate = 3600;
 
-/** Number of works in the homepage grid. */
-const GRID_SIZE = 12;
+/** How many recent works stand in when nothing is starred. */
+const FALLBACK_SIZE = 12;
 
 export default async function HomePage({ params }) {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
 
-  const works = await getRecentWorks(GRID_SIZE);
+  const featured = await getFeaturedWorks();
+  const works = featured.length > 0 ? featured : await getRecentWorks(FALLBACK_SIZE);
   const { portrait } = await getSiteSettings();
 
   return (

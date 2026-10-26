@@ -236,9 +236,9 @@ async function seed() {
   try {
     await client.query('begin');
 
-    // At most one work may be featured (works_single_featured). Clearing the
-    // flag first means a re-run cannot collide with a row that was made
-    // featured by hand between runs.
+    // Clearing every star first, so the fixture's flags are the whole answer.
+    // This used to be required by works_single_featured, which allowed one;
+    // migration 015 dropped it, and many works may be starred now.
     await client.query('update works set featured = false where featured');
 
     for (const work of works) {

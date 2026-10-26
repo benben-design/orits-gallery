@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Star } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import ArtworkFrame from '@/components/ui/ArtworkFrame';
@@ -7,6 +8,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { getWorksForAdmin } from '@/lib/data/works-repository';
+import { setWorkFeatured } from '@/app/(admin)/admin/actions';
 import styles from './page.module.css';
 
 /**
@@ -107,6 +109,35 @@ export default async function AdminWorksPage({ searchParams }) {
                   holds two destinations and an anchor may not contain another.
                 */
                 <li key={work.id} className={styles.row}>
+                  {/*
+                    The star: whether this painting hangs in the homepage grid.
+                    A form post rather than a link, because pressing it changes
+                    something — and the state it asks for is bound per row, so
+                    a double press lands on what the button showed. A toggle
+                    button with one fixed name and aria-pressed, so a screen
+                    reader hears the state rather than a label that flips.
+
+                    First in the row, beside the painting it is about, so it
+                    stays on the painting's line when the actions wrap on a
+                    phone.
+                  */}
+                  <form action={setWorkFeatured.bind(null, work.id, !work.featured)} className={styles.starForm}>
+                    <button
+                      type="submit"
+                      className={work.featured ? styles.starOn : styles.star}
+                      aria-pressed={work.featured}
+                      aria-label={dictionary.admin.works.featureLabel}
+                      title={dictionary.admin.works.featureLabel}
+                    >
+                      <Star
+                        aria-hidden="true"
+                        size={18}
+                        strokeWidth={1.5}
+                        fill={work.featured ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                  </form>
+
                   <Link className={styles.open} href={workPath}>
                     <ArtworkFrame
                       image={image}
@@ -160,6 +191,15 @@ export default async function AdminWorksPage({ searchParams }) {
                           something she should see rather than something this
                           page should quietly hide.
                         */}
+                        {/*
+                          Starred for the homepage, in words as well as by the
+                          filled star beside the row, so the state does not
+                          rest on the icon's fill alone.
+                        */}
+                        {work.featured ? (
+                          <span className={styles.featured}>{dictionary.admin.works.featured}</span>
+                        ) : null}
+
                         {work.saleChannel ? (
                           <span className={styles.channel}>
                             {dictionary.admin.works.soldThrough}{' '}
