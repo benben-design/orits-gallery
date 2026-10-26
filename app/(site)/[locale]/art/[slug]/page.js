@@ -309,7 +309,7 @@ export default async function ArtworkPage({ params }) {
         Here rather than in ArtworkDetail, so the admin preview — which renders
         that body — cannot grow it. See components/artwork/MoreWorks.js.
       */}
-      <MoreWorks works={moreWorks} category={work.category} locale={locale} dictionary={dictionary} />
+      <MoreWorks works={moreWorks} locale={locale} dictionary={dictionary} />
 
       {/*
         The phone's buy bar, for a work that can be bought and on this route

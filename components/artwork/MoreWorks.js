@@ -26,30 +26,19 @@ import styles from './MoreWorks.module.css';
  * they scroll in (components/layout/QuietMotion). The titles are `h3`s under this
  * section's `h2`, which sits under the work's `h1`.
  *
- * **The way on is the rest of the work's own category**, not the whole gallery:
- * someone looking at a still life who wants more wants more still lifes. When
- * none of the four shares the work's category, that link would lead to a
- * gallery holding nothing but the painting already seen, so it goes to the
- * whole gallery instead.
+ * **The way on is the whole gallery.** It used to be the rest of the work's own
+ * category, and that went with the gallery's category filter on 26-10-2026.
  *
  * @param {object} props
  * @param {object[]} props.works - From `getMoreWorks`.
- * @param {string} props.category - The current work's category.
  * @param {string} props.locale
  * @param {object} props.dictionary - The public dictionary.
  */
 
-/** The link under the grid, by the current work's category. */
-const CATEGORY_LINK_KEY = {
-  landscape: 'moreLandscapes',
-  'still-life': 'moreStillLifes',
-};
-
-export default function MoreWorks({ works, category, locale, dictionary }) {
+export default function MoreWorks({ works, locale, dictionary }) {
   if (!works?.length) return null;
 
   const copy = dictionary.artwork;
-  const sharesCategory = works.some((work) => work.category === category) && CATEGORY_LINK_KEY[category];
 
   return (
     /* A generous gap above: the subject changes from one painting to the body of work. */
@@ -66,13 +55,7 @@ export default function MoreWorks({ works, category, locale, dictionary }) {
         </ul>
 
         <div className={styles.actions}>
-          {sharesCategory ? (
-            <ButtonLink href={localeHref(locale, `/gallery?category=${category}`)}>
-              {copy[CATEGORY_LINK_KEY[category]]}
-            </ButtonLink>
-          ) : (
-            <ButtonLink href={localeHref(locale, '/gallery')}>{dictionary.home.works.viewAll}</ButtonLink>
-          )}
+          <ButtonLink href={localeHref(locale, '/gallery')}>{dictionary.home.works.viewAll}</ButtonLink>
         </div>
       </Container>
     </Section>

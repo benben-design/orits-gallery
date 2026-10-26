@@ -603,10 +603,13 @@ Beyond a green build, these are launch blockers and are easy to forget:
   media are the artist's own, from her under1000 listings, and the English
   descriptions are machine translations of her Hebrew, written without passing
   through the admin's approval gate — **so no human has read them yet.** Still
-  outstanding: `year` is null on every work, and the **sale statuses are still
-  demo data** —
-  two works claim to be sold and two reserved, while under1000 lists all
-  sixteen as available. The original wording follows.
+  outstanding: `year` is null on every work. **On Neon the catalogue matches
+  under1000 as of 26-10-2026**: thirty-one works, all published, the demo
+  statuses gone — every work available except the two under1000 shows sold,
+  marked sold through under1000. The fifteen added that day were entered
+  through the admin with her own under1000 English, lightly corrected. **The
+  local database was not refreshed** and still holds the sixteen with their demo
+  statuses. The original wording follows.
 - **Real content.** The placeholder dimensions, prices, years, media and
   descriptions are deliberately absurd so they cannot ship unnoticed. They must
   all be replaced.

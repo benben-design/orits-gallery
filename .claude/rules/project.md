@@ -173,7 +173,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Both root layouts, public shell, admin shell | Done |
 | Every route in the locked map above | Done. The four legal pages are still stubs; About and contact are built from the site settings |
 | The four homepage sections + UI primitives | Done |
-| Gallery | Built — the full catalogue, filtered by category through the URL, the two categories shown as picture tiles with their counts. **Pagination deliberately not built** at sixteen works |
+| Gallery | Built — the full catalogue on one wall, **no category filter** (removed 26-10-2026), prerendered per locale. **Pagination deliberately not built** at thirty-one works |
 | Deleting a painting | Built — from the works list, behind a confirmation that asks a **different question** of a draft and of a published work, and offers taking it off the site instead of breaking a permanent address. One click never deletes. A work on an order cannot be deleted at all |
 | Finding a painting in the admin | Built — `/admin` **is** the works list: every work with its publication state, sale status and sale channel, drafts sorted first, each row opening its edit page. It reads `getWorksForAdmin`, the admin-scoped list added for it |
 | Adding a painting from the admin | Built — `/admin/works/new` writes to the database and the work appears on the gallery and the homepage. **Its photograph can be attached here too**, in the same save: the upload waits in a hidden field and the work and its image are written in one transaction, so a painting can arrive complete and published in one step |
@@ -278,9 +278,14 @@ reimpose them — see the warning in setup.md before running `seed:local`.
 One field is still absent rather than fake, which is the schema's own honest
 value: `year` is null on every work. **The English descriptions were machine
 translated and written straight to the database**, which deliberately bypasses
-the admin's approval gate — see the warning in i18n.md. **Sale statuses are
-still demo data** — two sold, two reserved, two not-for-sale — and every one of
-those sixteen paintings is listed as available on under1000.
+the admin's approval gate — see the warning in i18n.md. **On Neon the catalogue
+was synced to under1000 on 26-10-2026**, through the admin: fifteen works
+added, the whisky still life's price, size and description updated, and the
+demo statuses replaced — all thirty-one published and available except the two
+under1000 shows sold. under1000's own width and height are sometimes swapped,
+so each size was set by the photograph's orientation. **The local database
+still holds the sixteen with their demo statuses** — two sold, two reserved, two
+not-for-sale.
 
 Titles, categories, slugs and the sixteen images are **real**.
 
