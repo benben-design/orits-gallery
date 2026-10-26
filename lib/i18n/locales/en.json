@@ -289,7 +289,9 @@
       "empty": "No works have been added yet.",
       "markSold": "Mark as sold",
       "returnToSale": "Return to sale",
-      "delete": "Delete"
+      "delete": "Delete",
+      "featured": "On the homepage",
+      "featureLabel": "Featured on the homepage"
     },
     "login": {
       "title": "Admin login",

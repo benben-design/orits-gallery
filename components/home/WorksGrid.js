@@ -7,7 +7,7 @@ import { localeHref } from '@/lib/i18n/config';
 import styles from './WorksGrid.module.css';
 
 /**
- * Homepage section 2 — twelve works, each with title, price and status, and a
+ * Homepage section 2 — the starred works (or the twelve most recent), each with title, price and status, and a
  * way through to the full gallery.
  *
  * The grid is uniform: every cell is the same fixed frame, so the nine

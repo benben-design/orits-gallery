@@ -72,7 +72,7 @@ Three consequences worth knowing before editing that file:
 ## What the repository looks like
 
 Functions are named in product terms, not storage terms: the works on show, the
-work at this slug, the most recent works, the featured work. Two properties kept
+work at this slug, the most recent works, the starred works. Two properties kept
 the promise that swapping the backend was invisible, and they were what made the
 swap a one-file change:
 
@@ -122,7 +122,7 @@ public one, every time.
 | `status` | `available` \| `reserved` \| `sold` \| `not-for-sale` |
 | `saleChannel` | `this-site` \| `under1000` \| `elsewhere`, or null. Which channel it sold through — the question `status` leaves open. **Admin-facing only: nothing on the public site may render it** |
 | `images` | Ordered collection; each has a type: `main`, `detail`, `in-situ` |
-| `featured` | Marks the homepage hero work |
+| `featured` | Starred for the homepage grid, by the star on the works list. Any number may be |
 | `addedAt` | What "most recent" orders by |
 | `publishedAt` | When it went live, or **null for a draft**. The only field that answers "is this on the public site" — a sale status never does. Always non-null on a work returned by a public read; it is here for the admin, which sees both kinds |
 | `hasPlaceholderData` | True while the stand-in values below are still in place. False on anything the artist entered herself |

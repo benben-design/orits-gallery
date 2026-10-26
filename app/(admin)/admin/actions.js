@@ -33,6 +33,7 @@ import {
   unpublishWork as unpublishWorkRecord,
   markWorkSold as markWorkSoldRecord,
   returnWorkToSale as returnWorkToSaleRecord,
+  setWorkFeatured as setWorkFeaturedRecord,
   setMainImage as setMainImageRecord,
   getWorkById,
   DuplicateSlugError,
@@ -583,6 +584,33 @@ export async function returnWorkToSale(workId) {
   revalidatePublicSite();
 
   redirect(savedPath('returnedToSale'));
+}
+
+/**
+ * Stars a work for the homepage, or takes the star off — the star on each row
+ * of the works list.
+ *
+ * **It does not redirect.** She is likely to star several paintings in a row,
+ * and a redirect would land her back at the top of a list of thirty each time.
+ * Returning instead re-renders the list in place, because the revalidation
+ * below includes it; with no JavaScript the post renders the same page.
+ *
+ * The state is bound per button rather than toggled here, so the button means
+ * what it showed when she pressed it. Neither bound value is tamper-proof —
+ * see `updateWork` — which is acceptable because the session is checked first
+ * and a signed-in admin may star any work anyway. `featured` is narrowed to a
+ * boolean for the same reason `markWorkSold` narrows its channel.
+ *
+ * @param {string} workId - Bound by the page.
+ * @param {boolean} featured - Bound by the page: the state the press asks for.
+ */
+export async function setWorkFeatured(workId, featured) {
+  if (!(await readAdminSession())) redirect(ADMIN_LOGIN_PATH);
+
+  await setWorkFeaturedRecord(workId, featured === true);
+
+  // The homepage grid is built from these stars, and it is a prerendered page.
+  revalidatePublicSite();
 }
 
 /* ------------------------------------------------------------------ *

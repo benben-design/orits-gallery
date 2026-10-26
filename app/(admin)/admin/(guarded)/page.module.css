@@ -146,6 +146,48 @@
   color: var(--text-muted);
 }
 
+/**
+ * The star. A filled star in the accent when the work is on the homepage, an
+ * outline in the secondary ink when it is not — told apart by fill as well as
+ * ink, and by the word in the row's states, never by colour alone. As tall as
+ * the row, for the reason the two links are.
+ */
+.starForm {
+  flex: none;
+  align-self: stretch;
+  display: flex;
+}
+
+.star,
+.starOn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-2);
+  cursor: pointer;
+  transition: color var(--duration) var(--ease);
+}
+
+.star {
+  color: var(--text-muted);
+}
+
+.starOn {
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .star:hover {
+    color: var(--text-primary);
+  }
+
+  .starOn:hover {
+    color: var(--accent-hover);
+  }
+}
+
 @media (hover: hover) {
   .row:hover {
     background-color: var(--surface-mat);
@@ -236,4 +278,9 @@
  */
 .channel {
   color: var(--text-muted);
+}
+
+/* On the homepage: the star's state in words, in the primary ink. */
+.featured {
+  color: var(--text-primary);
 }
