@@ -62,12 +62,7 @@
   "gallery": {
     "title": "גלריה",
     "empty": "אין עדיין עבודות להצגה.",
-    "intro": "כל העבודות",
-    "filterLabel": "סינון לפי קטגוריה",
-    "filterAll": "הכל",
-    "workCount": "{count} עבודות",
-    "workCountOne": "עבודה אחת",
-    "emptyInCategory": "אין עבודות בקטגוריה הזאת."
+    "intro": "כל העבודות"
   },
   "artwork": {
     "title": "עבודה",
@@ -103,8 +98,6 @@
     "unavailableAction": "כתבו לאורית",
     "unavailableMessage": "היי אורית, ראיתי באתר את הציור \"{title}\" ואשמח לשמוע אם יש משהו דומה\n{url}",
     "moreWorksHeading": "עבודות נוספות",
-    "moreLandscapes": "לכל הנופים",
-    "moreStillLifes": "לכל הטבע הדומם",
     "backToPainting": "{title}, חזרה לציור",
     "aboutWork": "על היצירה",
     "units": {

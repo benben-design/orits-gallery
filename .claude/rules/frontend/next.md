@@ -93,13 +93,13 @@ of the query. Two shapes are in use, and **which one a page gets is decided by
 whether it reads `searchParams`, not by preference**.
 
 - **A page that takes only `params` gets `export const revalidate`.** It is
-  prerendered per locale and rebuilt on a window. The homepage is this.
+  prerendered per locale and rebuilt on a window. The homepage and the gallery
+  are this.
 - **A page that reads `searchParams` renders per request whatever window is
   declared on it**, so a `revalidate` export there is inert and misleading.
-  Cache the *data read* instead, with `unstable_cache` in the repository. The
-  gallery is this, because its category filter is a query parameter and
-  categories staying a filter rather than separate routes is a settled product
-  decision.
+  Cache the *data read* instead, with `unstable_cache` in the repository. No
+  public page is this today: the gallery was, for its category filter, until
+  the filter was removed on 26-10-2026 and the gallery joined the homepage.
 
 Three rules around it:
 

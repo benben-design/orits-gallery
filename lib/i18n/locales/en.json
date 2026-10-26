@@ -62,12 +62,7 @@
   "gallery": {
     "title": "Gallery",
     "empty": "There are no works to show yet.",
-    "intro": "Every work",
-    "filterLabel": "Filter by category",
-    "filterAll": "All",
-    "workCount": "{count} works",
-    "workCountOne": "1 work",
-    "emptyInCategory": "No works in this category."
+    "intro": "Every work"
   },
   "artwork": {
     "title": "Work",
@@ -103,8 +98,6 @@
     "unavailableAction": "Message Orit",
     "unavailableMessage": "Hi Orit, I saw the painting “{title}” on your site and would love to hear if there is something similar\n{url}",
     "moreWorksHeading": "More works",
-    "moreLandscapes": "All landscapes",
-    "moreStillLifes": "All still lifes",
     "backToPainting": "{title}, back to the painting",
     "aboutWork": "About the work",
     "units": {
