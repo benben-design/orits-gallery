@@ -142,6 +142,26 @@
 }
 
 /*
+  A thumb's worth of height for every link, below the width where the footer
+  sits beside the name. The links were 19 to 25px tall with 8px between them;
+  stretching each one with padding alone would have overlapped its
+  neighbours by 17px. So the gap goes and each link is its own 44px line,
+  still plain text in the muted ink with no rule, fill or edge — an airy
+  list, not a column of buttons. From 64rem the list is exactly as it was.
+*/
+@media (max-width: 63.999rem) {
+  .list {
+    gap: 0;
+  }
+
+  .link {
+    display: flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+}
+
+/*
   As many equal columns as there are, rather than a fixed three. A column with
   nothing in it is not rendered — no social pages yet, or no contact details —
   and a fixed track count would leave its cell standing empty in the row.

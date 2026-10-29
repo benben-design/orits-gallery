@@ -211,21 +211,73 @@
  *
  * The rise is the one motion this button has, and only because something
  * arrived beneath it; under reduced motion it moves without travelling.
+ *
+ * **It travels by `translate`, not by its offset** (29-10-2026). Animating
+ * `inset-block-end` moved its layout box on every frame, and each frame was
+ * reported as a layout shift — 0.009 on every artwork page, the whole of what
+ * was left once the paintings stopped jumping. A translation moves the same
+ * pixels and is not a shift.
  */
 @media (max-width: 59.999rem) {
   :global(html:has([data-buy-bar='shown'])) .button {
-    inset-block-end: calc(
-      var(--contact-button-inset) + var(--buy-bar-height) + env(safe-area-inset-bottom)
-    );
+    translate: 0 calc(-1 * var(--buy-bar-height));
+  }
+}
+
+/*
+  The cart page's total and checkout are the same kind of bar below 40rem
+  (`data-cart-bar`, CART_BAR_ATTRIBUTE in components/artwork/buyControls.js),
+  always there rather than arriving, so the disc simply sits above it.
+*/
+@media (max-width: 39.999rem) {
+  :global(html:has([data-cart-bar])) .button {
+    translate: 0 calc(-1 * var(--buy-bar-height));
+  }
+}
+
+/**
+ * On a work that cannot be bought, the page's "message Orit" button is this
+ * same action, and at 390px the two met in the corner. While that button is on
+ * screen the disc steps down out of view; once it has scrolled away the disc
+ * comes back. The disc's own observer marks the button (`data-message-control`,
+ * MESSAGE_CONTROL_ATTRIBUTE in components/artwork/buyControls.js, written out
+ * here because CSS cannot import it); this rule only reads it, as the rise
+ * above reads the bar.
+ *
+ * `visibility: hidden` is what keeps it honest while it is away: a hidden
+ * link takes no focus and is not announced, so a keyboard or a screen reader
+ * never lands on a control nobody can see. Phones only, like the rise — from
+ * 60rem the button sits in the buy box beside the painting, far from the corner.
+ */
+@media (max-width: 59.999rem) {
+  :global(html:has([data-message-control='shown'])) .button {
+    translate: 0 calc(100% + var(--contact-button-inset) + env(safe-area-inset-bottom) + var(--space-4));
+    opacity: 0;
+    visibility: hidden;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .button {
-    /* Both, because a later transition replaces the colour one rather than adding to it. */
+    /*
+      All of them, because a later transition replaces the colour one rather
+      than adding to it. Visibility flips at once on the way back, so the disc
+      can be focused the moment it can be seen...
+    */
     transition:
       color var(--duration) var(--ease),
-      inset-block-end var(--duration-slow) var(--ease);
+      translate var(--duration-slow) var(--ease),
+      opacity var(--duration-slow) var(--ease),
+      visibility 0s;
+  }
+
+  /* ...and only once it has finished leaving on the way out. */
+  :global(html:has([data-message-control='shown'])) .button {
+    transition:
+      color var(--duration) var(--ease),
+      translate var(--duration-slow) var(--ease),
+      opacity var(--duration-slow) var(--ease),
+      visibility 0s linear var(--duration-slow);
   }
 }
 

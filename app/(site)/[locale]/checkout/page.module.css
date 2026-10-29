@@ -31,6 +31,66 @@
 }
 
 /**
+ * The order folded into one line, on a phone only (29-10-2026). Not drawn from
+ * 40rem, where the list beside it is shown as it always was; below 40rem the
+ * list is hidden while the line is closed — one copy of it, shown or not by
+ * whether the <details> before it is open, so it needs no script and opens
+ * with JavaScript off.
+ *
+ * A quiet row between two hairlines, the whole of it the control and 44px at
+ * least, with a chevron that turns over when it is open. The words are the
+ * body face at reading size: it is a sentence about the order, not a heading.
+ */
+.summaryToggle {
+  display: none;
+}
+
+@media (max-width: 39.999rem) {
+  .summaryToggle {
+    display: block;
+    margin-block-start: var(--space-5);
+    border-block: var(--border-hairline) solid var(--line);
+  }
+
+  .summaryLine {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-block-size: 2.75rem;
+    padding-block: var(--space-3);
+    list-style: none;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .summaryLine::-webkit-details-marker {
+    display: none;
+  }
+
+  .summaryChevron {
+    flex: none;
+    color: var(--text-muted);
+    transition: rotate var(--duration) var(--ease);
+  }
+
+  .summaryToggle[open] .summaryChevron {
+    rotate: 180deg;
+  }
+
+  .summaryToggle:not([open]) + .summaryBody {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summaryChevron {
+    transition: none;
+  }
+}
+
+/**
  * Nothing to pay for. An invitation rather than a dead end, the same shape the
  * empty cart takes.
  */

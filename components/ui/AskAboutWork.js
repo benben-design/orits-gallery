@@ -1,4 +1,5 @@
 import WhatsAppIcon from './WhatsAppIcon';
+import { MESSAGE_CONTROL_ATTRIBUTE } from '@/components/artwork/buyControls';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { localeHref } from '@/lib/i18n/config';
 import { absoluteUrl } from '@/lib/site-url';
@@ -79,7 +80,13 @@ export default function AskAboutWork({ work, locale, copy, whatsappNumber, avail
       <p className={styles.reason}>
         {copy[UNAVAILABLE_KEY_BY_STATUS[work.status] ?? 'unavailableSold']}
       </p>
-      <a href={href} className={styles.message} target="_blank" rel="noopener noreferrer">
+      <a
+        href={href}
+        className={styles.message}
+        target="_blank"
+        rel="noopener noreferrer"
+        {...{ [MESSAGE_CONTROL_ATTRIBUTE]: '' }}
+      >
         <WhatsAppIcon className={styles.icon} />
         <span>{copy.unavailableAction}</span>
       </a>

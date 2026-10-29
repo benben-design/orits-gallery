@@ -220,195 +220,219 @@ export default function CartDrawer({ dictionary, locale }) {
         : null;
 
   return (
-    <div
-      ref={panelRef}
-      className={[styles.panel, open ? styles.open : '', dragging ? styles.dragging : '']
-        .filter(Boolean)
-        .join(' ')}
-      role="dialog"
-      aria-label={dictionary.cart.drawerTitle}
-      /* Hidden from tab order and from assistive technology while shut. */
-      aria-hidden={open ? undefined : 'true'}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={endGesture}
-      /*
-        While a drag is live the panel follows the finger exactly, so the
-        transition is off — with it on, every move would be chasing a 420ms
-        animation and the panel would lag behind the pointer. Letting go removes
-        both and the stylesheet takes it from there.
-      */
-      style={
-        dragging
-          ? { transform: `translateX(${closingSign * dragOffset}px)`, transition: 'none' }
-          : undefined
-      }
-    >
+    <>
       {/*
-        The grip: the only thing that says the panel can be pushed shut, since a
-        gesture leaves no trace on the page. Purely a sign — the drag is handled
-        on the panel as a whole, so this is `aria-hidden` and takes no focus.
-        Nothing depends on it: Escape and the close button are the routes that
-        work from a keyboard, and this offers a mouse and a thumb the third.
+        The strip of page beside the panel on a phone, and the way back to it.
+
+        Below 40rem the panel stops 3rem short of the far edge, so it still reads
+        as a panel over the page rather than as a page of its own, and this lies
+        over that strip: dimmed, and a tap on it closes the drawer. Above 40rem
+        it is not drawn at all and the page beside the panel stays usable, as it
+        always was. It is a mouse and thumb affordance only — `aria-hidden`, no
+        focus — because Escape and the close button are the routes a keyboard
+        and a screen reader already have.
       */}
-      <span className={styles.grip} aria-hidden="true" />
-
-      <div className={styles.top}>
-        <h2 className={styles.title}>{dictionary.cart.drawerTitle}</h2>
+      <div
+        className={[styles.scrim, open ? styles.scrimOpen : ''].filter(Boolean).join(' ')}
+        onClick={closeCart}
+        aria-hidden="true"
+      />
+      <div
+        ref={panelRef}
+        className={[styles.panel, open ? styles.open : '', dragging ? styles.dragging : '']
+          .filter(Boolean)
+          .join(' ')}
+        /*
+          Read by the stylesheet to stop the page scrolling behind the panel on a
+          phone (`html:has([data-cart-open])`), so the lock needs no script of
+          its own and cannot outlive the drawer.
+        */
+        data-cart-open={open ? '' : undefined}
+        role="dialog"
+        aria-label={dictionary.cart.drawerTitle}
+        /* Hidden from tab order and from assistive technology while shut. */
+        aria-hidden={open ? undefined : 'true'}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={endGesture}
+        /*
+          While a drag is live the panel follows the finger exactly, so the
+          transition is off — with it on, every move would be chasing a 420ms
+          animation and the panel would lag behind the pointer. Letting go removes
+          both and the stylesheet takes it from there.
+        */
+        style={
+          dragging
+            ? { transform: `translateX(${closingSign * dragOffset}px)`, transition: 'none' }
+            : undefined
+        }
+      >
         {/*
-          The glyph alone, with the wording carried as the accessible name. A
-          close control is the one place an icon needs no label beside it: the
-          ✕ is unambiguous, it is where every panel puts it, and the word
-          repeated next to it was reading as a second thing to decide. Nothing
-          is lost to a screen reader, which announces `aria-label`.
+          The grip: the only thing that says the panel can be pushed shut, since a
+          gesture leaves no trace on the page. Purely a sign — the drag is handled
+          on the panel as a whole, so this is `aria-hidden` and takes no focus.
+          Nothing depends on it: Escape and the close button are the routes that
+          work from a keyboard, and this offers a mouse and a thumb the third.
         */}
-        <button
-          ref={closeRef}
-          type="button"
-          className={styles.close}
-          onClick={closeCart}
-          aria-label={dictionary.cart.close}
-        >
-          <X size={18} strokeWidth={1.5} aria-hidden="true" />
-        </button>
-      </div>
+        <span className={styles.grip} aria-hidden="true" />
 
-      <div className={styles.body}>
-        {noticeText ? (
-          <p className={styles.notice} role="alert">
-            {noticeText}
-          </p>
-        ) : null}
+        <div className={styles.top}>
+          <h2 className={styles.title}>{dictionary.cart.drawerTitle}</h2>
+          {/*
+            The glyph alone, with the wording carried as the accessible name. A
+            close control is the one place an icon needs no label beside it: the
+            ✕ is unambiguous, it is where every panel puts it, and the word
+            repeated next to it was reading as a second thing to decide. Nothing
+            is lost to a screen reader, which announces `aria-label`.
+          */}
+          <button
+            ref={closeRef}
+            type="button"
+            className={styles.close}
+            onClick={closeCart}
+            aria-label={dictionary.cart.close}
+          >
+            <X size={18} strokeWidth={1.5} aria-hidden="true" />
+          </button>
+        </div>
 
-        {loading ? <p className={styles.muted}>{dictionary.cart.loading}</p> : null}
-
-        {!loading && works.length === 0 && missingCount === 0 ? (
-          <p className={styles.muted}>{dictionary.cart.empty}</p>
-        ) : null}
-
-        {works.map((work) => {
-          const title = work.title[locale];
-          const available = isBuyable(work.status);
-          const mainImage = work.images.find((image) => image.type === 'main') ?? work.images[0];
-
-          return (
-            <article
-              key={work.id}
-              className={[styles.item, available ? '' : styles.unavailable].filter(Boolean).join(' ')}
-            >
-              {/*
-                The frame, so a painting is never cropped even at this size, and
-                the mounted tone — several small works warm on warm each need
-                their own edge. See images.md.
-              */}
-              <Link
-                href={localeHref(locale, `/art/${work.slug[locale]}`)}
-                className={styles.thumbnail}
-                onClick={closeCart}
-                tabIndex={-1}
-                aria-hidden="true"
-              >
-                <ArtworkFrame
-                  image={mainImage}
-                  alt=""
-                  emptyLabel={dictionary.artwork.noImage}
-                  sizes="4rem"
-                />
-              </Link>
-
-              <div className={styles.itemText}>
-                <h3 className={styles.itemTitle}>
-                  <Link
-                    href={localeHref(locale, `/art/${work.slug[locale]}`)}
-                    className={styles.itemLink}
-                    onClick={closeCart}
-                  >
-                    {title}
-                  </Link>
-                </h3>
-
-                <p className={styles.itemMeta}>
-                  <Price
-                    price={work.price}
-                    locale={locale}
-                    dictionary={dictionary}
-                    isPlaceholder={work.hasPlaceholderData}
-                    status={work.status}
-                  />
-                  {getStatusPresentation(work.status).badge ? (
-                    <StatusBadge status={work.status} dictionary={dictionary} />
-                  ) : null}
-                </p>
-
-                {available ? null : (
-                  <p className={styles.itemNote}>{dictionary.cart.unavailableNote}</p>
-                )}
-
-                <button
-                  type="button"
-                  className={styles.remove}
-                  onClick={() => removeWork(work.id)}
-                  aria-label={interpolate(dictionary.cart.removeLabel, { title })}
-                >
-                  <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
-                  <span>{dictionary.cart.remove}</span>
-                </button>
-              </div>
-            </article>
-          );
-        })}
-
-        {missingCount > 0 ? (
-          /*
-            Paintings that no longer resolve to anything public. They cannot be
-            named, so they are counted, and one control clears all of them.
-          */
-          <div className={styles.missing}>
-            <p className={styles.missingCount}>
-              {interpolate(dictionary.cart.missingCount, { count: missingCount })}
+        <div className={styles.body}>
+          {noticeText ? (
+            <p className={styles.notice} role="alert">
+              {noticeText}
             </p>
-            <button type="button" className={styles.missingAction} onClick={clearMissing}>
-              <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
-              <span>{dictionary.cart.removeMissing}</span>
-            </button>
-          </div>
-        ) : null}
+          ) : null}
+
+          {loading ? <p className={styles.muted}>{dictionary.cart.loading}</p> : null}
+
+          {!loading && works.length === 0 && missingCount === 0 ? (
+            <p className={styles.muted}>{dictionary.cart.empty}</p>
+          ) : null}
+
+          {works.map((work) => {
+            const title = work.title[locale];
+            const available = isBuyable(work.status);
+            const mainImage = work.images.find((image) => image.type === 'main') ?? work.images[0];
+
+            return (
+              <article
+                key={work.id}
+                className={[styles.item, available ? '' : styles.unavailable].filter(Boolean).join(' ')}
+              >
+                {/*
+                  The frame, so a painting is never cropped even at this size, and
+                  the mounted tone — several small works warm on warm each need
+                  their own edge. See images.md.
+                */}
+                <Link
+                  href={localeHref(locale, `/art/${work.slug[locale]}`)}
+                  className={styles.thumbnail}
+                  onClick={closeCart}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                >
+                  <ArtworkFrame
+                    image={mainImage}
+                    alt=""
+                    emptyLabel={dictionary.artwork.noImage}
+                    sizes="4rem"
+                  />
+                </Link>
+
+                <div className={styles.itemText}>
+                  <h3 className={styles.itemTitle}>
+                    <Link
+                      href={localeHref(locale, `/art/${work.slug[locale]}`)}
+                      className={styles.itemLink}
+                      onClick={closeCart}
+                    >
+                      {title}
+                    </Link>
+                  </h3>
+
+                  <p className={styles.itemMeta}>
+                    <Price
+                      price={work.price}
+                      locale={locale}
+                      dictionary={dictionary}
+                      isPlaceholder={work.hasPlaceholderData}
+                      status={work.status}
+                    />
+                    {getStatusPresentation(work.status).badge ? (
+                      <StatusBadge status={work.status} dictionary={dictionary} />
+                    ) : null}
+                  </p>
+
+                  {available ? null : (
+                    <p className={styles.itemNote}>{dictionary.cart.unavailableNote}</p>
+                  )}
+
+                  <button
+                    type="button"
+                    className={styles.remove}
+                    onClick={() => removeWork(work.id)}
+                    aria-label={interpolate(dictionary.cart.removeLabel, { title })}
+                  >
+                    <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+                    <span>{dictionary.cart.remove}</span>
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+
+          {missingCount > 0 ? (
+            /*
+              Paintings that no longer resolve to anything public. They cannot be
+              named, so they are counted, and one control clears all of them.
+            */
+            <div className={styles.missing}>
+              <p className={styles.missingCount}>
+                {interpolate(dictionary.cart.missingCount, { count: missingCount })}
+              </p>
+              <button type="button" className={styles.missingAction} onClick={clearMissing}>
+                <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+                <span>{dictionary.cart.removeMissing}</span>
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className={styles.bottom}>
+          {total ? (
+            <p className={styles.totalRow}>
+              <span className={styles.totalLabel}>{dictionary.cart.total}</span>
+              <span className={styles.totalAmount}>
+                <bdi>{formatPrice(total, locale)}</bdi>
+              </span>
+            </p>
+          ) : null}
+
+          {/*
+            The checkout control, and **a real link now that there is a checkout**.
+            It was an inert `<button>` carrying `aria-disabled` for as long as there
+            was nowhere to go; it looks exactly the same, because it always looked
+            the way it would when it worked.
+
+            It closes the drawer on the way, like the link below it: this is a
+            navigation, and a panel left hanging open over the page somebody has just
+            navigated to is the drawer forgetting what it is for.
+          */}
+          <Link
+            href={localeHref(locale, '/checkout')}
+            className={styles.checkout}
+            onClick={closeCart}
+          >
+            <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+            <span>{dictionary.cart.checkout}</span>
+          </Link>
+
+          <Link href={localeHref(locale, '/cart')} className={styles.viewCart} onClick={closeCart}>
+            {dictionary.cart.viewCart}
+          </Link>
+        </div>
       </div>
-
-      <div className={styles.bottom}>
-        {total ? (
-          <p className={styles.totalRow}>
-            <span className={styles.totalLabel}>{dictionary.cart.total}</span>
-            <span className={styles.totalAmount}>
-              <bdi>{formatPrice(total, locale)}</bdi>
-            </span>
-          </p>
-        ) : null}
-
-        {/*
-          The checkout control, and **a real link now that there is a checkout**.
-          It was an inert `<button>` carrying `aria-disabled` for as long as there
-          was nowhere to go; it looks exactly the same, because it always looked
-          the way it would when it worked.
-
-          It closes the drawer on the way, like the link below it: this is a
-          navigation, and a panel left hanging open over the page somebody has just
-          navigated to is the drawer forgetting what it is for.
-        */}
-        <Link
-          href={localeHref(locale, '/checkout')}
-          className={styles.checkout}
-          onClick={closeCart}
-        >
-          <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
-          <span>{dictionary.cart.checkout}</span>
-        </Link>
-
-        <Link href={localeHref(locale, '/cart')} className={styles.viewCart} onClick={closeCart}>
-          {dictionary.cart.viewCart}
-        </Link>
-      </div>
-    </div>
+    </>
   );
 }

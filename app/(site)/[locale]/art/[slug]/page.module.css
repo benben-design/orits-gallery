@@ -25,6 +25,22 @@
   color: var(--text-muted);
 }
 
+/*
+  On a phone the price and "add to cart" have to be on the first screen of a
+  390x844 phone, and the 16px each taken from here — the section's top gap and
+  the breadcrumb's — is part of the budget that puts them there. ArtworkDetail
+  owns the rest: its `--plate-block` is worked out from what is left.
+*/
+@media (max-width: 59.999rem) {
+  .section {
+    padding-block-start: var(--space-4);
+  }
+
+  .breadcrumb {
+    margin-block-end: var(--space-4);
+  }
+}
+
 @media (min-width: 60rem) {
   .breadcrumb {
     margin-block-end: var(--space-7);
@@ -51,7 +67,27 @@
 }
 
 .crumbs a {
+  /* Anchors the 44px hit area below. */
+  position: relative;
   transition: color var(--duration) var(--ease);
+}
+
+/*
+  A 44px target on a line of 14px words — on a phone it was 18px tall, and
+  "גלריה" 29px wide. The hit area is a box centred on the link that takes no
+  room, at least 2.75rem each way, so the trail keeps its exact geometry and
+  nothing on the page moves, on a phone or on a desktop. Centred, so `left`
+  is direction-neutral here. The widest it grows is 7.5px each side, which
+  leaves the neighbouring crumb more than 8px away across its separator.
+*/
+.crumbs a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: max(100%, 2.75rem);
+  block-size: 2.75rem;
+  translate: -50% -50%;
 }
 
 @media (hover: hover) {

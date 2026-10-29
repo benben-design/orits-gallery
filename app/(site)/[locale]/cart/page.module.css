@@ -176,3 +176,63 @@
     background-color: var(--accent-hover);
   }
 }
+
+/**
+ * On a phone the total and the way to pay are a bar at the foot of the screen
+ * (29-10-2026), the same bar the artwork page gives "add to cart": the mat,
+ * a hairline above, the drawer's soft shadow, `--buy-bar-height` tall and
+ * clear of the home indicator. With two paintings the button began at 861 on a
+ * 844px screen; four put it at 1344. A bar rather than `position: sticky`, so
+ * it is never caught half way between its place and the foot — which is what
+ * lets the WhatsApp disc rise above it by one fixed height, exactly as it does
+ * for the buy bar, with nothing in script.
+ *
+ * `data-cart-bar` is written out because a stylesheet cannot import
+ * CART_BAR_ATTRIBUTE from components/artwork/buyControls.js. From 40rem the
+ * block sits under the list as it always has.
+ */
+@media (max-width: 39.999rem) {
+  .summary {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    block-size: calc(var(--buy-bar-height) + env(safe-area-inset-bottom));
+    margin: 0;
+    padding-block: var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+    padding-inline: var(--page-gutter);
+    background-color: var(--surface-mat);
+    border-block-start: var(--border-hairline) solid var(--line);
+    box-shadow: var(--shadow-drawer);
+  }
+
+  .totalRow {
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    min-inline-size: 0;
+  }
+
+  .totalAmount {
+    font-size: var(--text-md);
+    line-height: var(--leading-snug);
+  }
+
+  .checkout {
+    flex: none;
+    inline-size: auto;
+    min-block-size: 2.75rem;
+    margin: 0;
+    padding-inline: var(--space-5);
+  }
+
+  /* Room at the foot of the page for as long as the bar is there, so it never
+     covers the last line — the buy bar's arrangement. */
+  :global(html:has([data-cart-bar])) :global(body) {
+    padding-block-end: calc(var(--buy-bar-height) + env(safe-area-inset-bottom));
+  }
+}

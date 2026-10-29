@@ -15,14 +15,29 @@ Therefore:
   inside it at its own aspect ratio, centred, with padding around it.
 - Rows stay aligned because the containers are equal — not because the images
   were forced to match.
-- `object-fit: cover` on a painting is a bug. So is a fixed `aspect-ratio` on the
-  image itself, and so is any crop applied at the image-service level.
+- `object-fit: cover` on a painting is a bug. So is a *shared* `aspect-ratio`
+  on the image itself — one shape forced on every work — and so is any crop
+  applied at the image-service level. The painting's **own** ratio, from its
+  file's pixel dimensions, is the opposite of a crop: it is how its box is
+  reserved before the file arrives (below).
 - The padding around a fitted painting is the mat, visually. Treat it as part of
   the design, not as leftover space.
 
 `components/ui/ArtworkFrame.js` owns this. `.frame` carries the shared
 `aspect-ratio`; the painting is centred inside a `.mat` that is
-`position: absolute`, with `max-width`/`max-height: 100%`.
+`position: absolute` and a **size container**, in a `.hang` box at the
+painting's own ratio (`--painting-ratio`, width over height of the file) and
+as large as fits in both axes: `min(100cqi, 100cqb × ratio)` wide.
+
+**The box is reserved before the file arrives, and that is why it is computed
+rather than left to the image** (29-10-2026). It used to be `max-width` /
+`max-height: 100%` with `width`/`height: auto` on the image, which gives the
+same fit once the file is there and **nothing before** — the image was 0×0
+until its intrinsic size was known, then appeared: a layout shift of 0.19 on
+the artwork page and 0.06 in the gallery. Now the box, its shadow and a quiet
+`--surface-sunk` fill are there from the first paint, and the file fades in
+over them. Do not go back to `width: auto` on the image. The hover lift and the
+shadow live on `.hang`, the card's load fade on the image.
 
 **The mat must stay out of normal flow.** In normal flow the image's intrinsic
 height beats the frame's `aspect-ratio` and stretches the box, so cards come out

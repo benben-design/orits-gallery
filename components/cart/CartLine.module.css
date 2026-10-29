@@ -64,7 +64,24 @@
 }
 
 .titleLink {
+  /* Anchors the hit area below. */
+  position: relative;
   color: inherit;
+}
+
+/*
+  A 44px target for a title that is 24px tall, drawn as nothing and laid out
+  as nothing: a box centred on the link that takes no room, so the line looks
+  exactly as it did on every screen.
+*/
+.titleLink::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: max(100%, 2.75rem);
+  block-size: 2.75rem;
+  translate: -50% -50%;
 }
 
 @media (hover: hover) {

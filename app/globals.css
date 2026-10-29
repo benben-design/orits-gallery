@@ -42,6 +42,21 @@ h4 {
   letter-spacing: var(--tracking-slight);
 }
 
+/*
+  No heading or painting title ends on one word alone on a phone or a tablet —
+  "Pink Flowers in a Blue / Vase" at 360px. `pretty` only rebalances the last
+  lines, and only below 64rem, so desktop wraps exactly as it always has. A
+  heading that wants every line even (the hero's) still says `balance` itself.
+*/
+@media (max-width: 63.999rem) {
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: pretty;
+  }
+}
+
 p {
   margin: 0;
 }

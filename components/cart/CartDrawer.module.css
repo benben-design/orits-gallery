@@ -302,6 +302,8 @@
 /** The total and the way out. Sunk, so it reads as the foot of the panel. */
 .bottom {
   padding: var(--space-5);
+  /* Clear of the home indicator now that the page reaches under it; 0 elsewhere. */
+  padding-block-end: max(var(--space-5), env(safe-area-inset-bottom));
   border-block-start: var(--border-hairline) solid var(--line);
   background-color: var(--surface-sunk);
 }
@@ -368,4 +370,104 @@
   .viewCart:hover {
     color: var(--text-primary);
   }
+}
+
+/* ================================================================ *
+ * On a phone (29-10-2026)
+ * ================================================================ */
+
+/*
+  Below 40rem the panel stops 3rem short of the far edge, so a strip of the
+  page stays in view at its inline start and it reads as a panel over the page
+  rather than as a page of its own. The strip is a 48px target, which is what a
+  thumb needs to tap it away. From 40rem the panel is as it always was.
+*/
+@media (max-width: 39.999rem) {
+  .panel {
+    inline-size: calc(100% - 3rem);
+  }
+
+  /*
+    The page does not scroll behind the panel. Read off the panel's own
+    attribute, so nothing in script has to remember to undo it: the lock lasts
+    exactly as long as the panel is open. Overscroll is contained in the list
+    too, so a fling past its end does not hand the scroll to the page.
+  */
+  :global(html:has([data-cart-open])) {
+    overflow: hidden;
+  }
+
+  .body {
+    overscroll-behavior: contain;
+  }
+}
+
+/*
+  The dimmed strip beside the panel, and a tap on it closes the drawer. Only on
+  a phone: the rule that the drawer has no overlay was made for a wide screen,
+  where the page beside it stays usable — here the page is locked anyway, and
+  the dim is what says "tap to go back". One step below the panel (100).
+*/
+.scrim {
+  display: none;
+}
+
+@media (max-width: 39.999rem) {
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    display: block;
+    background-color: color-mix(in srgb, var(--text-primary) 20%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-slow) var(--ease),
+      visibility 0s linear var(--duration-slow);
+  }
+
+  .scrimOpen {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--duration-slow) var(--ease);
+  }
+
+  /* One step further from the checkout control, so the link's 44px target
+     below keeps 8px clear of it. */
+  .viewCart {
+    margin-block-start: var(--space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .scrimOpen {
+    transition: none;
+  }
+}
+
+/*
+  44px targets for the small controls in the panel, drawn as nothing and laid
+  out as nothing: a box centred on each control that takes no room, so the
+  panel looks exactly as it did. Remove and "clear them" were 36px tall, a
+  painting's title 22px, the link to the cart page 25px.
+*/
+.remove,
+.missingAction,
+.itemLink,
+.viewCart {
+  position: relative;
+}
+
+.remove::after,
+.missingAction::after,
+.itemLink::after,
+.viewCart::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: max(100%, 2.75rem);
+  block-size: max(100%, 2.75rem);
+  translate: -50% -50%;
 }

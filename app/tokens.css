@@ -231,7 +231,9 @@
    * count use these and nothing else.
    */
   --text-nav: 1.0625rem;
-  --text-nav-count: 0.75rem;
+  /* The cart count, raised to the site's 14px floor on 29-10-2026 — it was
+     the one piece of text below it. Only the badge grows; see CartLink. */
+  --text-nav-count: 0.875rem;
 
   --weight-light: 300;
   --weight-normal: 400;
@@ -300,7 +302,14 @@
   --page-max: 80rem;
   --measure: 34rem;      /* comfortable reading width */
   --measure-list: 52rem; /* a list of items with a picture: the cart */
-  --page-gutter: var(--space-5);
+  /*
+    The gutter grows into a phone's safe area in landscape, where the notch
+    takes one side and the rounded corner the other. Both sides take the larger
+    inset so the page stays centred — a gutter that differed by side would
+    shift every centred line toward the side without the notch. 0 everywhere
+    else, which leaves this exactly --space-5.
+  */
+  --page-gutter: max(var(--space-5), env(safe-area-inset-left), env(safe-area-inset-right));
 
   /**
    * Vertical rhythm: three steps, so a page reads as a sequence of subjects
@@ -422,7 +431,15 @@
     --text-sm: 1rem;
     --text-base: 1.125rem;
     --text-md: 1.25rem;
+  }
+}
 
+/* The rhythm opens up only on a screen that is wide AND tall. A phone on its
+   side is 844 wide and 390 tall, and the tablet steps there put 208px between
+   two homepage sections — more than half of what is on screen. The text keeps
+   its width rule above: a landscape phone reads at arm's length like any other. */
+@media (min-width: 48rem) and (min-height: 31.26rem) {
+  :root {
     --rhythm-tight: var(--space-9);       /*  64 */
     --rhythm-standard: var(--space-11);   /* 104 */
     --rhythm-generous: 9rem;              /* 144 */

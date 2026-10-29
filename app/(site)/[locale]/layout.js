@@ -28,6 +28,20 @@ import styles from './layout.module.css';
  * one lives in a route group and there is no top-level app/layout.js.
  */
 
+/**
+ * The page reaches the screen's edges on a phone with a notch or a home
+ * indicator, and every fixed thing keeps clear of them itself.
+ *
+ * `viewport-fit=cover` is the opt-in that makes `env(safe-area-inset-*)` mean
+ * anything: without it the insets are 0 on an iPhone, and every rule in the
+ * site that reads them — the buy bar, the WhatsApp button, the viewer, the
+ * footer, the header and the page gutter — was doing nothing. Next writes this
+ * into the viewport meta beside its own `width=device-width, initial-scale=1`.
+ */
+export const viewport = {
+  viewportFit: 'cover',
+};
+
 /** Pre-render one shell per language at build time. */
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));

@@ -23,6 +23,14 @@
   composes: button primary from '../../../../components/ui/ButtonLink.module.css';
   gap: var(--space-3);
   inline-size: 100%;
+  /*
+    Full width on a phone, so the button's 40px side padding only ever squeezed
+    the words: at 360px "MESSAGE US ON WHATSAPP" broke and left "WhatsApp"
+    alone on a second line. The words are centred in a full-width button, so
+    narrower padding moves nothing a visitor can see.
+  */
+  padding-inline: var(--space-4);
+  white-space: nowrap;
 }
 
 .whatsappIcon {
@@ -105,5 +113,6 @@
 @media (min-width: 40rem) {
   .whatsapp {
     inline-size: auto;
+    padding-inline: var(--space-7);
   }
 }

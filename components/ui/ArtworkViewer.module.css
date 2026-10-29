@@ -222,6 +222,54 @@
  * replaces the small one, and only the painting following the finger moves —
  * which the finger asked for.
  */
+/**
+ * A phone on its side: the painting gets the height.
+ *
+ * With both bars in the flow, 844x390 left the stage 260px and a portrait was
+ * drawn 256px tall in the middle of a wide dark screen. Here the top bar is
+ * laid over the stage — it holds only the count and the close control, which
+ * land in the corners, and a fitted painting never reaches a corner on a
+ * screen this wide — and the caption bar shrinks to one line.
+ *
+ * The overlay passes taps and gestures through everywhere but its controls,
+ * so pinching near the top edge still zooms the painting rather than landing
+ * on a transparent strip.
+ */
+@media (max-height: 31.25rem) and (orientation: landscape) {
+  .top {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .top > * {
+    pointer-events: auto;
+  }
+
+  .bottom {
+    padding-block: var(--space-1) max(var(--space-2), env(safe-area-inset-bottom));
+  }
+
+  .caption {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-3);
+    white-space: nowrap;
+  }
+
+  .title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dimensions {
+    margin: 0;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .viewer {
     transition:

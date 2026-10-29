@@ -51,3 +51,63 @@
     color: var(--text-primary);
   }
 }
+
+/*
+  On a phone (29-10-2026): two short rows instead of three. The bar wrapped
+  into the label, the four destinations and sign-out on a line of its own —
+  175px of a 844px screen — with every link 25px tall. Now the label and
+  sign-out share the first row, and the four destinations are a row of equal
+  44px tabs beneath, the whole quarter of the width each one's target.
+
+  Sign-out is lifted into the first row by position rather than by taking the
+  list apart, so the nav landmark and its list keep their meaning to a screen
+  reader in every browser — `display: contents` on them does not, in Safari.
+*/
+@media (max-width: 39.999rem) {
+  .bar {
+    position: relative;
+    display: block;
+    padding: var(--space-2) var(--space-5) 0;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    padding-block: 0;
+    border: 0;
+    padding-inline: 0;
+  }
+
+  .navList {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin-block-start: var(--space-1);
+  }
+
+  .navLink {
+    justify-content: center;
+    inline-size: 100%;
+    min-block-size: 2.75rem;
+  }
+
+  .navList > li:last-child {
+    position: absolute;
+    inset-block-start: var(--space-2);
+    inset-inline-end: var(--space-5);
+  }
+
+  .navList > li:last-child .navLink {
+    inline-size: auto;
+    padding-inline: var(--space-2);
+    margin-inline-end: calc(var(--space-2) * -1);
+  }
+
+  /* The pages inside already sit in a Container, whose gutter grows into the
+     safe area; padding here as well put 48px between the screen's edge and
+     every field, and left a 244px field on a 390px phone. */
+  .main {
+    padding: var(--space-6) 0;
+  }
+}

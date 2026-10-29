@@ -6,7 +6,8 @@ import { requireAdminSession } from '@/lib/auth/admin-guard';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { formatPrice, formatDateTime } from '@/lib/format';
-import { getOrderForAdmin } from '@/lib/data/orders-repository';
+import { getOrderForAdmin, countPaintingsReleasedOnClose } from '@/lib/data/orders-repository';
+import { interpolate } from '@/lib/i18n/interpolate';
 import {
   advanceOrderStatus,
   cancelOrder,
@@ -83,6 +84,23 @@ export default async function AdminOrderPage({ params, searchParams }) {
     !order.refundDue && ['paid', 'shipped', 'delivered'].includes(order.status);
 
   const hasActions = canSettleRefund || canShip || canDeliver || canCancel || canRefund;
+
+  /*
+    What closing this order would do to its paintings, said inside each
+    confirmation. Counted by the same rules the closing applies — whether the
+    order holds them, and which of them nobody else has bought since — so the
+    sentence cannot promise a painting back that the action would leave alone.
+    All three closings go through one repository function, so one number
+    answers for each.
+  */
+  const released =
+    canSettleRefund || canCancel || canRefund ? await countPaintingsReleasedOnClose(order.id) : 0;
+  const releaseSentence =
+    released === 0
+      ? copy.releaseNone
+      : released === 1
+        ? copy.releaseOne
+        : interpolate(copy.releaseMany, { count: released });
 
   const timeline = [
     [copy.timelineCreated, order.dates.created],
@@ -245,14 +263,17 @@ export default async function AdminOrderPage({ params, searchParams }) {
         <h2 className={styles.blockTitle}>{copy.actionsTitle}</h2>
 
         {hasActions ? (
-          <>
+          <div className={styles.actionGroups}>
             <div className={styles.actions}>
               {canSettleRefund ? (
-                <form action={settleOwedRefund.bind(null, order.id)}>
-                  <button type="submit" className={styles.primary}>
-                    {copy.actionSettleRefund}
-                  </button>
-                </form>
+                <ConfirmAction
+                  label={copy.actionSettleRefund}
+                  question={copy.confirmSettleRefund}
+                  consequence={releaseSentence}
+                  confirmLabel={copy.confirmSettleRefundAction}
+                  action={settleOwedRefund.bind(null, order.id)}
+                  tone="primary"
+                />
               ) : null}
 
               {canShip ? (
@@ -275,38 +296,75 @@ export default async function AdminOrderPage({ params, searchParams }) {
                 </form>
               ) : null}
 
-              {canCancel ? (
-                <form action={cancelOrder.bind(null, order.id)}>
-                  <button type="submit" className={styles.quiet}>
-                    {copy.actionCancel}
-                  </button>
-                </form>
-              ) : null}
-
-              {canRefund ? (
-                <form action={refundOrder.bind(null, order.id)}>
-                  <button type="submit" className={styles.quiet}>
-                    {copy.actionRefund}
-                  </button>
-                </form>
-              ) : null}
             </div>
 
             {/*
-              What cancelling or refunding does to the paintings, said before she
-              presses either. They come back as drafts rather than straight onto
-              the site, and that is a decision she should not have to discover.
-              Not on a pending order: it holds no paintings, so there is nothing
-              to warn about, and the sentence would be untrue.
+              The exits, apart from the step forward: cancelling and refunding
+              close the order, and on a phone they sat level with "mark as
+              posted", one thumb's width away. Each asks before it acts — see
+              ConfirmAction below — and says what will happen to this order's
+              paintings, which is exactly what closing it would release.
             */}
-            {(canCancel || canRefund) && order.status !== 'pending' ? (
-              <p className={styles.releaseNote}>{copy.releaseNote}</p>
+            {canCancel || canRefund ? (
+              <div className={styles.exits}>
+                {canCancel ? (
+                  <ConfirmAction
+                    label={copy.actionCancel}
+                    question={copy.confirmCancel}
+                    consequence={releaseSentence}
+                    confirmLabel={copy.confirmCancelAction}
+                    action={cancelOrder.bind(null, order.id)}
+                    tone="quiet"
+                  />
+                ) : null}
+
+                {canRefund ? (
+                  <ConfirmAction
+                    label={copy.actionRefund}
+                    question={copy.confirmRefund}
+                    consequence={releaseSentence}
+                    confirmLabel={copy.confirmRefundAction}
+                    action={refundOrder.bind(null, order.id)}
+                    tone="quiet"
+                  />
+                ) : null}
+              </div>
             ) : null}
-          </>
+          </div>
         ) : (
           <p className={styles.noActions}>{copy.actionsNone}</p>
         )}
       </Container>
     </Section>
+  );
+}
+
+/**
+ * An action about money that asks before it acts.
+ *
+ * Cancelling, refunding and recording a refund paid back each close an order,
+ * and each was one press: a thumb that meant "mark as posted" could cancel the
+ * order beside it and send its paintings back to draft. So the first press
+ * only opens the question — what will happen, in this order's own terms — and
+ * the second, on a button that says yes in words, is the form post.
+ *
+ * A plain <details>, so it works with no script at all, like everything else
+ * in the admin's order pages; closing it again is pressing the same control.
+ * A server component: the state is the element's own `open`.
+ */
+function ConfirmAction({ label, question, consequence, confirmLabel, action, tone }) {
+  return (
+    <details className={styles.confirm}>
+      <summary className={tone === 'primary' ? styles.primary : styles.quiet}>{label}</summary>
+      <div className={styles.confirmBody}>
+        <p className={styles.confirmQuestion}>{question}</p>
+        <p className={styles.confirmConsequence}>{consequence}</p>
+        <form action={action}>
+          <button type="submit" className={styles.confirmButton}>
+            {confirmLabel}
+          </button>
+        </form>
+      </div>
+    </details>
   );
 }

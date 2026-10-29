@@ -38,21 +38,54 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* What .hang measures itself against: cqi and cqb below are this box. */
+  container-type: size;
 }
 
 .bare .mat {
   inset: 0;
 }
 
-.painting {
-  /* Shrink to fit the mat in both axes; never grow past the file's own size. */
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
-  /* Backstop: even if a width ever leaks in, the work still is not cropped. */
-  object-fit: contain;
+/**
+ * The painting's box, reserved at its final size from the first paint.
+ *
+ * As wide as the mat allows and as tall as the mat allows, whichever binds
+ * first, at the painting's own ratio — the same fit `max-width`/`max-height`
+ * on the image used to give, except that it is worked out from the ratio the
+ * server already knows rather than from the file once it has arrived. That
+ * ordering is the whole point: before, the image was 0x0 until it loaded and
+ * then appeared, which shifted the artwork page by 0.19 and the gallery by 0.06.
+ *
+ * `aspect-ratio` here is the painting's own (--painting-ratio, from the file's
+ * pixel dimensions), never a shared shape, so it cannot crop anything.
+ *
+ * The fill is what a visitor sees until the file arrives: a quiet sunk tone in
+ * exactly the painting's box, with its shadow, so a work is visibly hanging
+ * there and the file only ever fades in over it.
+ */
+.hang {
+  display: block;
+  inline-size: min(100cqi, calc(100cqb * var(--painting-ratio)));
+  aspect-ratio: var(--painting-ratio);
+  /*
+    The fill stops a pixel short of every edge. A painting whose box ends on a
+    fraction of a pixel blends that last row with whatever is behind it, and
+    with the fill running to the edge that row turned a shade darker on a
+    loaded painting than it had ever been — measured at 1440px. Inset, the
+    edge blends with the mat or the wall exactly as it did.
+  */
+  background: linear-gradient(var(--surface-sunk), var(--surface-sunk)) center / calc(100% - 2px)
+    calc(100% - 2px) no-repeat;
   box-shadow: var(--shadow-frame);
+}
+
+.painting {
+  display: block;
+  /* The box is already the painting's shape, so filling it is fitting it. */
+  inline-size: 100%;
+  block-size: 100%;
+  /* Backstop: even if the box ever lost its ratio, the work is not cropped. */
+  object-fit: contain;
 }
 
 /*
@@ -69,16 +102,19 @@
   no time, and nothing changes.
 */
 @media (prefers-reduced-motion: no-preference) {
-  .painting {
+  .hang {
     transition:
       transform var(--duration) var(--ease),
-      box-shadow var(--duration) var(--ease),
-      opacity var(--painting-fade, 0s) var(--ease) var(--painting-fade-delay, 0s);
+      box-shadow var(--duration) var(--ease);
+  }
+
+  .painting {
+    transition: opacity var(--painting-fade, 0s) var(--ease) var(--painting-fade-delay, 0s);
   }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  a:hover .painting {
+  a:hover .hang {
     transform: translateY(-3px);
     box-shadow: var(--shadow-frame-bare);
   }
@@ -93,7 +129,7 @@
  * This is the whole reason the bare tone is allowed to exist. Removing it would
  * leave the hero meeting the wall with nothing in between.
  */
-.bare .painting {
+.bare .hang {
   box-shadow: var(--shadow-frame-bare);
 }
 

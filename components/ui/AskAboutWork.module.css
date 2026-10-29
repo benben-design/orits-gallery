@@ -13,9 +13,27 @@
   gap: var(--space-2);
   align-self: flex-start;
   margin-block-start: var(--space-4);
+  /* Anchors the 44px hit area below. */
+  position: relative;
   font-size: var(--text-sm);
   color: var(--accent);
   text-decoration: none;
+}
+
+/*
+  A 44px target for a 25px line, drawn as nothing and laid out as nothing: an
+  absolutely-positioned box centred on the link, so the link and everything
+  around it keep their exact geometry. Growing the link itself and handing the
+  growth back as margin was tried first and moved the desktop label by a
+  fraction of a pixel, because the line is not exactly 1lh tall.
+*/
+.ask::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  block-size: 2.75rem;
+  translate: 0 -50%;
 }
 
 .words {

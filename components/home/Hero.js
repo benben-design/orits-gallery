@@ -96,7 +96,7 @@ const HERO_POSTER = '/video/hero-cherries-poster.jpg';
 export default function Hero({ locale, dictionary }) {
   return (
     <section className={styles.hero}>
-      <Container>
+      <Container className={styles.inner}>
         <div className={styles.frame}>
           {HERO_POSTER ? (
             <Image

@@ -273,7 +273,7 @@ export default async function ArtworkPage({ params }) {
         painting that otherwise fits — 64px fixed that, and 32px is where it was
         settled by eye.
       */}
-      <Section size="snug">
+      <Section size="snug" className={styles.section}>
         <Container>
           {/*
             The way back, and the only thing on this page that is navigation

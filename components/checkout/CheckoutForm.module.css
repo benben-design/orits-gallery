@@ -180,6 +180,12 @@
   font-size: var(--text-base);
   color: var(--text-primary);
   transition: border-color var(--duration) var(--ease);
+  /*
+    When a field takes focus with the keyboard up, the browser scrolls just
+    enough to show the field — and its message sits beneath it, under the
+    keyboard. This much room below the field covers a two-line message.
+  */
+  scroll-margin-block-end: 4rem;
 }
 
 /**

@@ -1,7 +1,12 @@
 .body {
   display: flex;
   flex-direction: column;
-  min-block-size: 100dvh;
+  /*
+    svh, the height with the browser bar showing, which never changes as it
+    shows and hides. With dvh a page shorter than the screen — the 404 — had
+    its footer jump 48px every time the bar moved.
+  */
+  min-block-size: 100svh;
 }
 
 /* Pushes the footer to the bottom on short pages, e.g. the stubs. */
