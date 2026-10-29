@@ -65,7 +65,6 @@
     "intro": "Every work"
   },
   "artwork": {
-    "title": "Work",
     "medium": "Medium",
     "dimensions": "Dimensions",
     "year": "Year",
@@ -109,9 +108,22 @@
     "worksHeading": "Recent work",
     "contactLink": "Get in touch with Orit"
   },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The link may have changed, or the painting is no longer on the site. You can carry on to the gallery and see all the works.",
+    "gallery": "To the gallery",
+    "home": "Home"
+  },
+  "pageError": {
+    "title": "Something went wrong",
+    "body": "This page could not load. You can try again.",
+    "retry": "Try again",
+    "home": "Home",
+    "whatsapp": "If it keeps happening, you can message Orit on WhatsApp"
+  },
   "contact": {
     "title": "Contact",
-    "lead": "You can reach Orit in any of these ways.",
+    "lead": "A question about a painting, an idea for a commission, or just a hello - Orit would love to hear from you.",
     "methods": {
       "whatsapp": "WhatsApp",
       "phone": "Phone",

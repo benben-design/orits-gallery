@@ -60,6 +60,8 @@ One glyph means one action, everywhere it appears:
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |
 | Stop / play the hero loop | `Pause` / `Play` | the homepage hero, over the footage |
+| Try again | `RotateCcw` | the public error page |
+| Call / write | `Phone` / `Mail` | the contact page's rows — beside the label, not as a button; Instagram and Facebook carry none |
 | Star for the homepage | `Star` (filled when on) | each row of the admin's works list, icon-only |
 | Message on WhatsApp | `WhatsAppIcon` (not lucide — see below) | the floating button in the corner of every public page, icon-only; and the question about one painting on its page, with words |
 

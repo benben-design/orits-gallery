@@ -49,7 +49,11 @@
  *   - an alias — `const copy = dictionary.checkout`, and destructuring;
  *   - a slice handed to another component as a prop, in any file —
  *     `labels={dictionary.admin.workForm}` makes `labels.x` in
- *     AdminWorkForm.js a read of `admin.workForm.x`.
+ *     AdminWorkForm.js a read of `admin.workForm.x`;
+ *   - a name destructured from a function of ours — `const { notFound } =
+ *     useFallback()` takes whatever `notFound` was bound to in the file that
+ *     defines `useFallback`, which is how the 404 and error pages' copy is
+ *     followed through the layout's context.
  *
  * A slice being handed on is **not** a read. The layout passes `cart` to the
  * drawer whole, and counting that would mark every cart string used; what the
@@ -363,6 +367,22 @@ while (changed) {
           const path = joinPath(slice, key);
           if (isNode(nodeAt(tree, path))) bind(file, local || key, path);
         }
+      }
+    }
+
+    // const { notFound } = useFallback(); — a slice handed back by a function
+    // of ours is whatever that name was bound to in the function's own file.
+    // The not-found and error pages get their copy from the layout this way,
+    // through a context, because Next gives neither of them props.
+    const imported = componentMaps.get(file);
+    for (const match of source.matchAll(/\b(?:const|let|var)\s*\{([^}]*)\}\s*=\s*([\w$]+)\(/g)) {
+      const origin = imported.get(match[2]);
+      if (!origin || origin === file) continue;
+      const originNames = bindings.get(origin);
+      if (!originNames) continue;
+      for (const part of match[1].split(',')) {
+        const [key, local] = part.split('=')[0].split(':').map((s) => s.trim());
+        for (const path of originNames.get(key) ?? []) bind(file, local || key, path);
       }
     }
 

@@ -6,6 +6,7 @@ import SiteFooter from '@/components/layout/SiteFooter';
 import CartProvider from '@/components/cart/CartProvider';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import QuietMotion from '@/components/layout/QuietMotion';
+import { FallbackProvider } from '@/components/layout/fallback-context';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
 import { isSearchIndexingAllowed } from '@/lib/search-indexing';
@@ -113,6 +114,9 @@ export default async function SiteLayout({ children, params }) {
     artwork: dictionary.artwork,
   };
 
+  /** Built once, for the floating button and the error page's offer to write. */
+  const whatsappLink = whatsappHref(settings.whatsappNumber, dictionary.nav.whatsappMessage);
+
   return (
     <html lang={getLocaleTag(locale)} dir={getDirection(locale)} className={fontVariables}>
       <body className={styles.body}>
@@ -128,7 +132,19 @@ export default async function SiteLayout({ children, params }) {
           </a>
           <SiteHeader locale={locale} dictionary={dictionary} />
           <main id="main" className={styles.main}>
-            {children}
+            {/*
+              What the not-found and error pages say. Neither can be handed
+              props or read the locale itself, so the layout resolves it for
+              them — see components/layout/fallback-context.js.
+            */}
+            <FallbackProvider
+              locale={locale}
+              notFound={dictionary.notFound}
+              pageError={dictionary.pageError}
+              whatsappHref={whatsappLink}
+            >
+              {children}
+            </FallbackProvider>
           </main>
           <SiteFooter
             locale={locale}
@@ -153,7 +169,7 @@ export default async function SiteLayout({ children, params }) {
             number is empty in the settings, and then nothing renders at all.
           */}
           <WhatsAppButton
-            href={whatsappHref(settings.whatsappNumber, dictionary.nav.whatsappMessage)}
+            href={whatsappLink}
             label={dictionary.nav.whatsapp}
             locale={locale}
           />

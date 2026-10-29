@@ -27,6 +27,13 @@
  * `<h1>` in prose, and a comment saying a heading is there is precisely what
  * outlives the heading.
  *
+ * **The 404 and the error page are checked too** — `not-found.js` and
+ * `error.js` are what a visitor sees as surely as any `page.js`. And a page
+ * whose only job is to call `notFound()` (the `[...missing]` catch-all) renders
+ * nothing of its own, so it is judged by the nearest `not-found.js` above it,
+ * which is what actually reaches the screen — rather than passing because it
+ * imports something with a heading it never renders.
+ *
  * What it cannot see: a heading rendered in one branch of a conditional and not
  * the other. The order page renders one of three, each with its own <h1>; this
  * check confirms the page renders a heading somewhere, not on every path.
@@ -163,10 +170,35 @@ async function collectPages(directory) {
   for (const entry of entries) {
     const full = join(directory, entry.name);
     if (entry.isDirectory()) pages.push(...((await collectPages(full)) ?? []));
-    else if (entry.name === 'page.js') pages.push(full);
+    else if (RENDERED_FILES.has(entry.name)) pages.push(full);
   }
 
   return pages;
+}
+
+/** The files Next renders as a whole page for a visitor. */
+const RENDERED_FILES = new Set(['page.js', 'not-found.js', 'error.js']);
+
+/** Writes no markup of its own and answers every request with `notFound()`. */
+function onlyCallsNotFound(source) {
+  return /\bnotFound\(\)/.test(source) && !/<[A-Za-z]/.test(source);
+}
+
+/** The `not-found.js` Next renders for a `notFound()` thrown in this file. */
+function nearestNotFound(file) {
+  for (let dir = dirname(file); dir.startsWith(PAGES_DIR); dir = dirname(dir)) {
+    const candidate = join(dir, 'not-found.js');
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+async function pageHeading(page) {
+  if (!onlyCallsNotFound(await load(page))) return headingSource(page);
+
+  const target = nearestNotFound(page);
+  const inner = target ? await headingSource(target) : null;
+  return inner ? `notFound() → ${display(target)} → ${inner}` : null;
 }
 
 const pages = await collectPages(PAGES_DIR);
@@ -185,7 +217,7 @@ if (pages === null || pages.length === 0) {
 const results = [];
 
 for (const page of pages) {
-  results.push({ page: display(page), heading: await headingSource(page) });
+  results.push({ page: display(page), heading: await pageHeading(page) });
 }
 
 results.sort((a, b) => a.page.localeCompare(b.page));

@@ -1,0 +1,40 @@
+/*
+  "Try again" is the thing to do here, so it takes the filled accent — the same
+  shape, fill and hover as ButtonLink's primary, composed rather than copied, on
+  a <button> because it re-renders the page rather than going anywhere.
+*/
+.retry {
+  composes: button primary from '../../../components/ui/ButtonLink.module.css';
+  gap: var(--space-2);
+}
+
+/*
+  An offer rather than an action: accent text, no fill, so the page keeps one
+  filled control. The underline sits on the words, never under the glyph.
+*/
+.whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 2.75rem;
+  color: var(--accent);
+  transition: color var(--duration) var(--ease);
+}
+
+.whatsappIcon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+}
+
+.whatsappLabel {
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-hairline);
+  text-underline-offset: 0.2em;
+}
+
+@media (hover: hover) {
+  .whatsapp:hover {
+    color: var(--accent-hover);
+  }
+}

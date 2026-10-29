@@ -105,7 +105,14 @@
   color: var(--text-muted);
 }
 
+/*
+  Allowed to break anywhere, because an email address has no spaces to wrap at:
+  a long one used to run into the next column, and on a phone it widened the
+  whole page — every page, since this is the footer (found 27-10-2026).
+*/
 .link {
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
   transition: color var(--duration) var(--ease);
 }
 
