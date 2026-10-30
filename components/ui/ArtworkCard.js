@@ -28,6 +28,9 @@ export default function ArtworkCard({
   sizes,
   priority = false,
   titleAs: TitleTag = 'h3',
+  /* "snug" on the wall (the gallery and the homepage); the shared box
+     everywhere else. See ArtworkFrame. */
+  frameTone = 'surface',
 }) {
   const title = work.title[locale];
   const medium = mediumLabel(work, locale, dictionary);
@@ -37,7 +40,10 @@ export default function ArtworkCard({
   return (
     /* `data-rise` is the hook for the cards' rise (components/layout/
        QuietMotion). Empty on the server, so a page with no script is whole. */
-    <article className={styles.card} data-rise="">
+    <article
+      className={frameTone === 'snug' ? `${styles.card} ${styles.onWall}` : styles.card}
+      data-rise=""
+    >
       <Link href={href} className={styles.link}>
         <ArtworkFrame
           image={mainImage}
@@ -50,6 +56,7 @@ export default function ArtworkCard({
           emptyLabel={dictionary.artwork.noImage}
           sizes={sizes}
           priority={priority}
+          tone={frameTone}
         />
         <div className={styles.caption}>
           <TitleTag className={styles.title}>{title}</TitleTag>

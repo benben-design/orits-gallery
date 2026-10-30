@@ -1,24 +1,4 @@
-/**
- * The catalogue.
- *
- * The grid is deliberately identical to the homepage's — same token, same
- * gaps — because it is the same object shown in a different place, and two
- * grids that differ slightly read as a mistake rather than as a distinction.
- */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--frame-grid-min), 1fr));
-  gap: var(--space-8) var(--space-6);
-  margin-block-start: var(--space-8);
-}
-
-.cell {
-  display: flex;
-}
-
-.cell > * {
-  inline-size: 100%;
-}
+/* The wall itself is components/ui/ArtworkWall.module.css, shared with the homepage. */
 
 .empty {
   margin-block-start: var(--space-8);

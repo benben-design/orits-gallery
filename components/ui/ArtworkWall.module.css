@@ -1,0 +1,63 @@
+/**
+ * The wall's three arrangements, and which one a screen sees. Which painting
+ * is in which column is decided in ArtworkWall.js; this file only lays the
+ * columns side by side and spaces them.
+ *
+ * Nothing here may crop: each card's board takes its painting's shape, never
+ * the other way round. See images.md.
+ */
+.wall {
+  margin-block-start: var(--space-8);
+}
+
+.arrangement {
+  display: none;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+/*
+  The gap between cards in a column is kept close to the gap between columns
+  (24px, 32px on a desktop), so the wall reads as one hang rather than as
+  separate rows; the caption already adds its own height below each painting.
+*/
+.column {
+  display: flex;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.two {
+  display: flex;
+}
+
+@media (min-width: 40rem) {
+  .two {
+    display: none;
+  }
+
+  .three {
+    display: flex;
+    gap: var(--space-5);
+  }
+}
+
+@media (min-width: 64rem) {
+  .three {
+    display: none;
+  }
+
+  .four {
+    display: flex;
+    gap: var(--space-6);
+  }
+
+  .four .column {
+    gap: var(--space-6);
+  }
+}

@@ -378,6 +378,14 @@
   --portrait-ratio: 4 / 5;
   --frame-inset: clamp(var(--space-4), 2.2vw, var(--space-7));
   --frame-grid-min: 15rem;
+  /*
+    The thin mount of a painting on the wall (the gallery and the homepage),
+    where each work hangs at its own ratio rather than inside the shared box —
+    see ArtworkFrame's "snug" tone and components/ui/ArtworkWall.module.css.
+    Still the near-white board the rule in images.md asks for, only as wide as
+    a mount on a real wall: 6px on a phone, 12px on a desktop.
+  */
+  --frame-snug-inset: clamp(0.375rem, 0.25rem + 0.6vw, 0.75rem);
 
   /* ================================================================ *
    * EDGES AND MOTION

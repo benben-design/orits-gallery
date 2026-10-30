@@ -52,13 +52,21 @@ export default function ArtworkFrame({
    * So "bare" is a described exception, not an inconsistency, and it is
    * conditional: with no mount the shadow does the separating, which is why
    * the bare tone carries --shadow-frame-bare. See images.md.
+   *
+   * "snug" is the wall's: no shared box, the painting at its own ratio on a
+   * thin board. The mount rule still holds — the board is there, only as wide
+   * as a real mount — and it is still never cropped.
    */
   tone = 'surface',
   className = '',
 }) {
+  /* "snug" takes the painting's own ratio, so with no painting it falls back
+     to the shared box rather than collapsing to a strip of mount. */
+  const snugEmpty = tone === 'snug' && !image ? styles.snugEmpty : '';
+
   return (
     <div
-      className={[styles.frame, styles[tone], className].filter(Boolean).join(' ')}
+      className={[styles.frame, styles[tone], snugEmpty, className].filter(Boolean).join(' ')}
       /* Lets the hero opt into a wider frame without a second component. */
       style={ratio ? { '--frame-ratio': ratio } : undefined}
     >
