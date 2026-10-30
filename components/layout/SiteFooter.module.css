@@ -105,7 +105,14 @@
   color: var(--text-muted);
 }
 
+/*
+  Allowed to break anywhere, because an email address has no spaces to wrap at:
+  a long one used to run into the next column, and on a phone it widened the
+  whole page — every page, since this is the footer (found 27-10-2026).
+*/
 .link {
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
   transition: color var(--duration) var(--ease);
 }
 
@@ -131,6 +138,26 @@
 @media (hover: hover) {
   .link:hover {
     color: var(--text-primary);
+  }
+}
+
+/*
+  A thumb's worth of height for every link, below the width where the footer
+  sits beside the name. The links were 19 to 25px tall with 8px between them;
+  stretching each one with padding alone would have overlapped its
+  neighbours by 17px. So the gap goes and each link is its own 44px line,
+  still plain text in the muted ink with no rule, fill or edge — an airy
+  list, not a column of buttons. From 64rem the list is exactly as it was.
+*/
+@media (max-width: 63.999rem) {
+  .list {
+    gap: 0;
+  }
+
+  .link {
+    display: flex;
+    align-items: center;
+    min-block-size: 2.75rem;
   }
 }
 

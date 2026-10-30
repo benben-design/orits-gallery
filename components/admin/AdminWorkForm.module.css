@@ -407,3 +407,28 @@
  * it, because it is part of the same sentence: the work is saved, and here is
  * how to look at it.
  */
+
+/*
+ * On a phone (29-10-2026). The work form and the settings form share this
+ * stylesheet, and on a 390px phone a field was 244px wide — the shell's
+ * padding, the page's gutter and each fieldset's 24px all stacked. The shell
+ * gave its share back; here the fieldset's padding comes down a step, so a
+ * field is about 308px. And every control that was not yet a thumb's size
+ * is: "publish" and the pickup switch are 44px lines, the folded web address
+ * opens from a 44px row.
+ */
+@media (max-width: 39.999rem) {
+  .group {
+    padding: var(--space-4);
+  }
+
+  .checkboxField {
+    min-block-size: 2.75rem;
+  }
+
+  .summary {
+    display: flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+}

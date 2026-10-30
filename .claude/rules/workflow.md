@@ -58,6 +58,17 @@ He confirms or corrects. Use whatever he confirms.
 The point is that a year of branches sorts and reads consistently. Formats drift
 the moment they are improvised per session, so they are not improvised here.
 
+## Replies are in Hebrew
+
+**Every reply to him is in Hebrew, whatever language the prompt is in** —
+including the final report at the end of a long piece of work. Briefs pasted
+from the planning session arrive in English, and the reply has slipped into
+English after one more than once; the prompt's language decides nothing.
+Technical terms may stay in English inside a Hebrew sentence.
+
+Everything written into the repository stays English, as the rest of these
+rules require: code, comments, commit messages, branch names and these files.
+
 ## Check the English on anything permanent
 
 He is not a native English speaker and misspellings slip through. Left

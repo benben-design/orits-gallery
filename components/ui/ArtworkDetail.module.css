@@ -41,8 +41,43 @@
    *
    * `svh` rather than `vh` because `vh` is the height with the browser chrome
    * hidden, which is not the height anything is actually read at.
+   *
+   * **On a phone the ceiling is what is left over, not a share** (29-10-2026).
+   * 55svh still put "add to cart" at 872–922 on a 844px screen, because the
+   * price row and its facts are 96px on their own. The fixed stack around a
+   * painting — the sticky header, the section's top gap, the breadcrumb, the
+   * gap to the label, the eyebrow, a one-line title, the price row, the gap and
+   * the button, and then the floating WhatsApp disc with 8px clear of it — is
+   * 496px, so the painting gets the rest: 348px at 390x844, measured on the
+   * tallest painting in the catalogue (0.652), which leaves the button ending
+   * at 774, above the disc. A share could not do it: 40svh still landed on the
+   * disc at 360x780. Never more than 55svh, which is what a tablet keeps, and
+   * never less than 15rem, so a short screen does not shrink it to a stamp.
+   * The rem in the calc is that stack; change one of those parts and it moves.
    */
-  --plate-block: 55svh;
+  --plate-block: max(15rem, min(55svh, calc(100svh - 31rem)));
+}
+
+/*
+  The two gaps on either side of the painting's label shrink a step on a phone,
+  as part of the same budget. From 60rem the pair sits side by side and these
+  are not involved.
+*/
+@media (max-width: 59.999rem) {
+  .work {
+    gap: var(--space-5);
+  }
+}
+
+/*
+  A phone on its side: the header no longer sticks, so the painting can have
+  most of the screen once the page is scrolled to it — there is no first
+  screen to fit a button into at 390px tall.
+*/
+@media (max-height: 31.25rem) and (max-width: 59.999rem) {
+  .work {
+    --plate-block: 75svh;
+  }
 }
 
 /**

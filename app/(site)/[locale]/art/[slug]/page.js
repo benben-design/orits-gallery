@@ -182,10 +182,11 @@ export async function generateMetadata({ params }) {
   const dictionary = await getDictionary(locale);
   const work = await getWorkBySlug(slug, locale);
 
-  // Nothing published answers to this slug. A generic title, no canonical, no
-  // alternates and no picture: the page is a 404 and says nothing about what
-  // might have been here.
-  if (!work) return { title: dictionary.artwork.title };
+  // Nothing published answers to this slug. The not-found title, no canonical,
+  // no alternates and no picture: the page is a 404 and says nothing about what
+  // might have been here — titled exactly as a made-up address is, by
+  // `[...missing]`, so a draft's URL and a typo cannot be told apart.
+  if (!work) return { title: dictionary.notFound.title };
 
   const title = work.title[locale];
 
@@ -272,7 +273,7 @@ export default async function ArtworkPage({ params }) {
         painting that otherwise fits — 64px fixed that, and 32px is where it was
         settled by eye.
       */}
-      <Section size="snug">
+      <Section size="snug" className={styles.section}>
         <Container>
           {/*
             The way back, and the only thing on this page that is navigation

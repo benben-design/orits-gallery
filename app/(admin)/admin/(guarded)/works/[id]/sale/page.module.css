@@ -144,3 +144,21 @@
     color: var(--accent-hover);
   }
 }
+
+/*
+ * A 44px target for the way back to the form, 41px tall otherwise: a centred
+ * box that takes no room, so nothing on the page moves.
+ */
+.cancel {
+  position: relative;
+}
+
+.cancel::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: max(100%, 2.75rem);
+  block-size: max(100%, 2.75rem);
+  translate: -50% -50%;
+}

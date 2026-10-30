@@ -202,6 +202,61 @@
   }
 }
 
+/*
+ * On a phone (29-10-2026): every control in a row a thumb's width from every
+ * other, and from the next row's. The row used to wrap into three lines whose
+ * controls touched — the star directly above the painting, "mark sold" against
+ * "delete" on the line beneath, 0 to 1px apart, and the next row's star 1px
+ * under that. Now it is a grid: the painting and its star share the top line,
+ * at least 16px apart; beneath them "mark sold" is a real outlined button at
+ * the start, the one thing she comes here to do at a fair, and "delete" sits
+ * quietly at the far end, the width of the row away from it. 12px between the
+ * lines, 32px between rows.
+ */
+@media (max-width: 39.999rem) {
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'open star'
+      'sale delete';
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    padding-block: var(--space-4);
+  }
+
+  .open {
+    grid-area: open;
+    padding-block: 0;
+  }
+
+  .starForm {
+    grid-area: star;
+    align-self: start;
+  }
+
+  .sale {
+    grid-area: sale;
+    justify-self: start;
+    border: var(--border-hairline) solid var(--accent);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+  }
+
+  .delete {
+    grid-area: delete;
+    justify-self: end;
+    padding-inline-end: 0;
+  }
+
+  .add {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    padding-block: 0;
+  }
+}
+
 /**
  * The picture, small and fixed.
  *

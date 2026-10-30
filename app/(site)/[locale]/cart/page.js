@@ -5,6 +5,7 @@ import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ButtonLink from '@/components/ui/ButtonLink';
 import CartLine from '@/components/cart/CartLine';
+import { CART_BAR_ATTRIBUTE } from '@/components/artwork/buyControls';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
@@ -136,7 +137,12 @@ export default async function CartPage({ params }) {
             ) : null}
 
             {total ? (
-              <div className={styles.summary}>
+              /*
+                On a phone this is fixed to the foot of the screen, the way the
+                artwork page's buy bar is, so the total and the way to pay are
+                in reach however many paintings sit above them.
+              */
+              <div className={styles.summary} {...{ [CART_BAR_ATTRIBUTE]: '' }}>
                 <p className={styles.totalRow}>
                   <span className={styles.totalLabel}>{dictionary.cart.total}</span>
                   <span className={styles.totalAmount}>

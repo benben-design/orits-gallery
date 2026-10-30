@@ -101,7 +101,23 @@ the change; never point a header word back at a reading step.
 sequence of subjects rather than one even stream: `--rhythm-tight` (48 → 64px)
 for things that belong together, `--rhythm-standard` (64 → 104px) for the
 ordinary gap, and `--rhythm-generous` (88 → 144px) before a change of subject.
-`Section` is the only thing that spends them. On the homepage the hero is one
+`Section` is the only thing that spends them. **The larger steps need a tall
+screen as well as a wide one** (29-10-2026): a phone on its side is 844 wide and
+390 tall, and gets the phone steps.
+
+**A short screen is its own case, at `max-height: 31.25rem`** — a phone on its
+side. There the header stops sticking, the hero sets its footage beside its
+line, the artwork page lets the painting take 75svh, and the full-screen view
+lays its top bar over the painting. Height, never orientation alone, so a tablet
+on its side keeps the ordinary layout.
+
+**Safe areas are live** since the public layout opted in with
+`viewport-fit=cover` (29-10-2026). `--page-gutter` already grows into a
+landscape notch, so a Container needs nothing; anything fixed or full-bleed
+that reaches a screen edge carries its own `env(safe-area-inset-*)`, as the buy
+bar, the WhatsApp button, the viewer, the footer and the header do.
+
+On the homepage the hero is one
 unit, the works grid opens after a generous gap, and the promises and story
 take standard. **A heading stands on its own** — the small labels above section
 headings were removed on 25-10-2026 as template chrome; only About keeps one,
@@ -169,10 +185,18 @@ grows from it, so the line draws in the direction the words are read. It is set
 for `[dir='ltr']` as well as `[dir='rtl']`, so an English fragment inside a
 Hebrew document does not inherit the right-hand edge.
 
-**The stacking order is four numbers, each naming its neighbours**: the sticky
-header 20, the phone's buy bar on an artwork page 25, the floating WhatsApp button
-30, and the cart drawer and skip link 100. The full-screen view needs none — it is
-in the top layer. There is no scale; a fifth layer says where it sits among these.
+**The stacking order is five numbers, each naming its neighbours**: the sticky
+header 20, the phone's buy bar on an artwork page and the cart page's total bar 25
+(the same kind of bar, never on one page together), the floating WhatsApp button
+30, the dimmed strip beside the cart drawer on a phone 99, and the cart drawer and
+skip link 100. The full-screen view needs none — it is in the top layer. There is
+no scale; another layer says where it sits among these.
+
+**On a phone the cart drawer is a panel over a locked page** (29-10-2026): below
+40rem it stops 3rem short of the far edge, the strip of page it leaves is dimmed
+(`--text-primary` at 20%) and a tap on it closes the drawer, and the page does not
+scroll behind it (`html:has([data-cart-open])`). The no-overlay rule below is the
+wide-screen rule, where the page beside the drawer stays usable.
 
 **Two placements are physical rather than logical, and they are the only
 ones.** The floating WhatsApp button takes the bottom left in both languages

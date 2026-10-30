@@ -298,15 +298,144 @@
   }
 }
 
-/** What the exits do to the paintings, said before she presses one. */
-.releaseNote {
-  margin-block-start: var(--space-4);
+/**
+ * The exits — cancel and refund — in a group of their own under the step
+ * forward, with a hairline and real distance between them, so "mark as posted"
+ * and "cancel the order" are never one thumb apart.
+ */
+/*
+  Wide, the step forward and the exits are one row of buttons, as they always
+  were: both groups hand their buttons straight to this row.
+*/
+.actionGroups {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.actionGroups > .actions,
+.actionGroups > .exits {
+  display: contents;
+}
+
+@media (max-width: 39.999rem) {
+  .actionGroups {
+    display: block;
+  }
+
+  .actionGroups > .actions,
+  .actionGroups > .exits {
+    display: flex;
+  }
+
+  .exits {
+    gap: var(--space-3);
+    margin-block-start: var(--space-6);
+    padding-block-start: var(--space-5);
+    border-block-start: var(--border-hairline) solid var(--line);
+  }
+}
+
+/**
+ * An action about money that asks first (ConfirmAction in the page). The
+ * summary is drawn as the button it replaces — the same .primary or .quiet —
+ * and opening it shows the question, what happens to the paintings, and the
+ * button that says yes. Open, it takes the whole row, so the question is never
+ * squeezed beside another control.
+ */
+.confirm[open] {
+  flex-basis: 100%;
+}
+
+.confirm > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+}
+
+.confirm > summary::-webkit-details-marker {
+  display: none;
+}
+
+.confirmBody {
+  margin-block-start: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-mat);
+}
+
+.confirmQuestion {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.confirmConsequence {
+  margin-block: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--text-muted);
 }
 
+/* The yes, in the filled accent: this is the one thing to do once she has read
+   the question. */
+.confirmButton {
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .confirmButton:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+/* On a phone every action is a full-width row, so no two sit side by side. */
+@media (max-width: 39.999rem) {
+  .actions,
+  .exits {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions > form > button,
+  .confirm > summary,
+  .confirmButton {
+    inline-size: 100%;
+  }
+}
+
 .noActions {
   font-size: var(--text-sm);
   color: var(--text-muted);
+}
+
+/*
+ * 44px targets for the way back and for each painting's title — 41px and 25px
+ * tall — drawn as nothing and laid out as nothing: a box centred on the link
+ * that takes no room, so the page looks exactly as it did on every screen.
+ */
+.back,
+.lineTitle {
+  position: relative;
+}
+
+.back::after,
+.lineTitle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: max(100%, 2.75rem);
+  block-size: max(100%, 2.75rem);
+  translate: -50% -50%;
 }

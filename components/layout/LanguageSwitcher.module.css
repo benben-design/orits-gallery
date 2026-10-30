@@ -10,6 +10,8 @@
  * small, the tap is not.
  */
 .option {
+  /* Anchors the hit area below. */
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-block-size: 2.75rem;
@@ -17,6 +19,22 @@
   font-weight: var(--weight-light);
   letter-spacing: var(--tracking-slight);
   color: var(--text-primary);
+}
+
+/*
+  At least 2.75rem wide to a thumb, however short the word: "עברית" on the
+  English site was a 41px target. A box centred on the link that takes no room,
+  so the word, its hover line and the header keep their exact geometry. ::after
+  because ::before is the divider a third language would draw.
+*/
+.option::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: max(100%, 2.75rem);
+  block-size: 100%;
+  translate: -50% -50%;
 }
 
 /* With a third language there would be two options, and a hairline between

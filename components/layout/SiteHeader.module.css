@@ -22,8 +22,49 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 20;
+  /* Clear of a notch or a status bar where the page reaches under one; 0 elsewhere. */
+  padding-block-start: env(safe-area-inset-top);
   background-color: color-mix(in srgb, var(--surface-band) 95%, transparent);
   backdrop-filter: saturate(1.1) blur(10px);
+}
+
+/*
+  A short screen — a phone on its side — cannot spare 105px of it for good. At
+  844x390 the sticky header and the artwork page's buy bar together left 217px
+  of 390 for the painting. Here the header scrolls away with the page; the
+  name, the destinations and the cart are one flick back up.
+
+  Height, not orientation: a tablet on its side is still tall enough to keep it.
+*/
+@media (max-height: 31.25rem) {
+  .header {
+    position: relative;
+  }
+}
+
+/*
+  Whatever the browser scrolls to — a field taking focus with the keyboard up,
+  a link from checkout's error summary to the field it names, a #fragment —
+  comes to rest below the sticky header rather than under it. The two heights
+  are the header's own: two rows on a phone (6.5625rem), one bar from 56rem
+  (4.5rem), plus the top inset and a little air. Nothing at rest moves; this
+  only says where a scroll stops. On a short screen the header no longer
+  sticks, so there is nothing to clear.
+*/
+:global(html) {
+  scroll-padding-block-start: calc(6.5625rem + env(safe-area-inset-top) + var(--space-4));
+}
+
+@media (min-width: 56rem) {
+  :global(html) {
+    scroll-padding-block-start: calc(4.5rem + env(safe-area-inset-top) + var(--space-4));
+  }
+}
+
+@media (max-height: 31.25rem) {
+  :global(html) {
+    scroll-padding-block-start: var(--space-4);
+  }
 }
 
 /**
@@ -41,16 +82,22 @@
   grid-template-areas:
     'lang mark cart'
     'nav nav nav';
+  grid-template-rows: minmax(3.75rem, auto) auto;
   align-items: center;
 }
 
-/* The link is the size of the mark, so it catches no clicks beside it. */
+/*
+  The link is the size of the mark, so it catches no clicks beside it — and on
+  a phone it no longer fills its row. The row keeps its 3.75rem (the grid's
+  first track); the link is a 2.75rem target centred in it, which leaves 8px
+  between it and the destinations beneath, where it used to end 1px above them.
+*/
 .mark {
   grid-area: mark;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-block-size: 3.75rem;
+  min-block-size: 2.75rem;
 }
 
 /* The image's height sets the size; its width follows the file's ratio. */
@@ -110,6 +157,7 @@
 @media (min-width: 56rem) {
   .inner {
     grid-template-areas: 'nav mark utils';
+    grid-template-rows: none;
     min-block-size: 4.5rem;
   }
 

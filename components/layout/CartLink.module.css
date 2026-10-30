@@ -70,14 +70,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: 1.125rem;
-  block-size: 1.125rem;
+  /* 1.25rem around a 14px numeral, the site's floor — it was 12px in 1.125rem.
+     Absolutely placed against the bag, so growing it moves nothing else. */
+  min-inline-size: 1.25rem;
+  block-size: 1.25rem;
   padding-inline: 0.25rem;
   border-radius: 999px;
   background-color: var(--accent);
   color: var(--text-on-accent);
   font-size: var(--text-nav-count);
-  /* Not the button's light weight: a hairline numeral at 12px on the accent
+  /* Not the button's light weight: a hairline numeral at 14px on the accent
      is the one thing in the header that would be hard to read. */
   font-weight: var(--weight-normal);
   letter-spacing: normal;

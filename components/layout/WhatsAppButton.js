@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { MESSAGE_CONTROL_ATTRIBUTE } from '@/components/artwork/buyControls';
 import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 import { localeHref } from '@/lib/i18n/config';
 import styles from './WhatsAppButton.module.css';
@@ -35,6 +37,34 @@ import styles from './WhatsAppButton.module.css';
  */
 export default function WhatsAppButton({ href, label, locale }) {
   const pathname = usePathname() ?? '';
+
+  /*
+    On a work that cannot be bought, the page's own "message Orit" button is
+    this same action, and at 390px the two met in the corner. So while that
+    button is on screen this steps out of view, and it comes back once the
+    button has scrolled away — the arrangement the buy bar already has, in
+    reverse: the observer only says where the button is, by writing
+    MESSAGE_CONTROL_ATTRIBUTE on it, and the stylesheet does the moving
+    (WhatsAppButton.module.css, `html:has(...)`), hiding with `visibility` so
+    the disc is neither focusable nor announced while it is away.
+
+    Keyed on the path, because a client navigation brings a different page —
+    with a button of its own, or none.
+  */
+  useEffect(() => {
+    const control = document.querySelector('[' + MESSAGE_CONTROL_ATTRIBUTE + ']');
+    if (!control) return undefined;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      control.setAttribute(MESSAGE_CONTROL_ATTRIBUTE, entry.isIntersecting ? 'shown' : '');
+    });
+    observer.observe(control);
+
+    return () => {
+      observer.disconnect();
+      control.setAttribute(MESSAGE_CONTROL_ATTRIBUTE, '');
+    };
+  }, [pathname]);
 
   if (!href) return null;
 

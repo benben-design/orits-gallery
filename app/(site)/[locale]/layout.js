@@ -6,6 +6,7 @@ import SiteFooter from '@/components/layout/SiteFooter';
 import CartProvider from '@/components/cart/CartProvider';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import QuietMotion from '@/components/layout/QuietMotion';
+import { FallbackProvider } from '@/components/layout/fallback-context';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
 import { isSearchIndexingAllowed } from '@/lib/search-indexing';
@@ -26,6 +27,20 @@ import styles from './layout.module.css';
  * The admin area has its own root layout under app/(admin), which is why this
  * one lives in a route group and there is no top-level app/layout.js.
  */
+
+/**
+ * The page reaches the screen's edges on a phone with a notch or a home
+ * indicator, and every fixed thing keeps clear of them itself.
+ *
+ * `viewport-fit=cover` is the opt-in that makes `env(safe-area-inset-*)` mean
+ * anything: without it the insets are 0 on an iPhone, and every rule in the
+ * site that reads them — the buy bar, the WhatsApp button, the viewer, the
+ * footer, the header and the page gutter — was doing nothing. Next writes this
+ * into the viewport meta beside its own `width=device-width, initial-scale=1`.
+ */
+export const viewport = {
+  viewportFit: 'cover',
+};
 
 /** Pre-render one shell per language at build time. */
 export function generateStaticParams() {
@@ -113,6 +128,9 @@ export default async function SiteLayout({ children, params }) {
     artwork: dictionary.artwork,
   };
 
+  /** Built once, for the floating button and the error page's offer to write. */
+  const whatsappLink = whatsappHref(settings.whatsappNumber, dictionary.nav.whatsappMessage);
+
   return (
     <html lang={getLocaleTag(locale)} dir={getDirection(locale)} className={fontVariables}>
       <body className={styles.body}>
@@ -128,7 +146,19 @@ export default async function SiteLayout({ children, params }) {
           </a>
           <SiteHeader locale={locale} dictionary={dictionary} />
           <main id="main" className={styles.main}>
-            {children}
+            {/*
+              What the not-found and error pages say. Neither can be handed
+              props or read the locale itself, so the layout resolves it for
+              them — see components/layout/fallback-context.js.
+            */}
+            <FallbackProvider
+              locale={locale}
+              notFound={dictionary.notFound}
+              pageError={dictionary.pageError}
+              whatsappHref={whatsappLink}
+            >
+              {children}
+            </FallbackProvider>
           </main>
           <SiteFooter
             locale={locale}
@@ -153,7 +183,7 @@ export default async function SiteLayout({ children, params }) {
             number is empty in the settings, and then nothing renders at all.
           */}
           <WhatsAppButton
-            href={whatsappHref(settings.whatsappNumber, dictionary.nav.whatsappMessage)}
+            href={whatsappLink}
             label={dictionary.nav.whatsapp}
             locale={locale}
           />

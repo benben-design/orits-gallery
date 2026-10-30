@@ -45,6 +45,19 @@
  * The block size is a touch target rather than a line height: on a phone this
  * row is tapped with a thumb.
  */
+/* In the phone's row of their own, each link takes some of the gap as its own
+   width, so "גלריה" is a 51px target rather than a 35px one. The gap shrinks by
+   exactly what the padding adds, so the words sit where they always did. */
+@media (max-width: 55.999rem) {
+  .list {
+    gap: calc(var(--nav-gap) - 2 * var(--space-2));
+  }
+
+  .link {
+    padding-inline: var(--space-2);
+  }
+}
+
 .link {
   display: inline-flex;
   align-items: center;

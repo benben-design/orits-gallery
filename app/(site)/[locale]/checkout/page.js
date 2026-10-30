@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -7,6 +8,7 @@ import CheckoutForm from '@/components/checkout/CheckoutForm';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
+import { formatPrice } from '@/lib/format';
 import { readCartIds } from '@/lib/cart/cart-cookie';
 import { quoteCheckout } from '@/lib/data/orders-repository';
 import { getWorksByIds } from '@/lib/data/works-repository';
@@ -104,9 +106,43 @@ export default async function CheckoutPage({ params, searchParams }) {
             </div>
           ) : (
             <>
-              <h2 className={styles.summaryTitle}>{dictionary.checkout.summaryTitle}</h2>
+              {/*
+                On a phone the order folds into one line, because the list of
+                paintings filled the first screen and the first field began at
+                1115px. A plain <details>, so it opens and closes with no script
+                at all. It counts the paintings and carries their sum — never the
+                total to pay, which depends on the delivery chosen in the form
+                below and is shown there; "2 ציורים: ₪5,250" reads as what the
+                paintings come to, not as the final figure.
 
-              <CheckoutSummary works={orderedWorks} locale={locale} dictionary={dictionary} />
+                The list itself stays one copy, beside the <details> rather than
+                inside it: the stylesheet hides it while the line is closed below
+                40rem, and from 40rem the line is not drawn and the list is as it
+                always was.
+              */}
+              <details className={styles.summaryToggle}>
+                <summary className={styles.summaryLine}>
+                  <span>
+                    {orderedWorks.length === 1
+                      ? dictionary.checkout.summaryLineOne
+                      : interpolate(dictionary.checkout.summaryLineMany, {
+                          count: orderedWorks.length,
+                        })}{' '}
+                    <bdi>{formatPrice(quote.subtotal, locale)}</bdi>
+                  </span>
+                  <ChevronDown
+                    className={styles.summaryChevron}
+                    size={18}
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </summary>
+              </details>
+              <div className={styles.summaryBody}>
+                <h2 className={styles.summaryTitle}>{dictionary.checkout.summaryTitle}</h2>
+
+                <CheckoutSummary works={orderedWorks} locale={locale} dictionary={dictionary} />
+              </div>
 
               {/*
                 Something in the cart cannot be sold. **The form is not offered at

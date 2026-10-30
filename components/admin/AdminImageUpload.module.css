@@ -263,3 +263,13 @@
 .bar::-moz-progress-bar {
   background-color: var(--accent);
 }
+
+/*
+ * On a phone the file button is a thumb's size, 44px, like every other control
+ * in the admin; it was 40.
+ */
+@media (max-width: 39.999rem) {
+  .input::file-selector-button {
+    min-block-size: 2.75rem;
+  }
+}

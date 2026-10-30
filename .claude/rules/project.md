@@ -209,7 +209,7 @@ and clearly-marked placeholder copy from the dictionary, and no logic.
 | Attaching a photograph | Built — one **main** image per work, from either admin page. On the edit page it saves on its own the moment the upload finishes; while creating a work it waits for the form, because there is no work to attach it to yet, and the panel says which is happening. The file goes browser-to-host without passing through the server, signed per upload; the server reads the real pixel dimensions back from the host rather than believing the browser. Over 10MB or 25 megapixels is refused before it is sent. Re-uploading replaces the row and leaves the old file on the host. `detail` and `in-situ` images are not built |
 | Payments | **Built, not live.** Checkout, the signed payment page, VERIFY on the return and the settlement are built and proven against a local stand-in; there is no Hyp account and the deploy has no `HYP_*` keys. deployment.md lists what only a real terminal can prove |
 
-**Seventeen client components exist, and four of them are the cart.** The tenth is the
+**Twenty client components exist, and four of them are the cart.** The tenth is the
 checkout form, which is one for the reason the admin's two forms are: a rejected
 submission has to come back with its errors *and* the typed values intact,
 without either travelling through a URL — an address lost to one bad postal
@@ -228,6 +228,10 @@ wraps the server-rendered body and holds only the dialog; the buttons that open
 it are server markup, so the frame and the label stay on the server.
 **The seventeenth is `BuyBar`**, the artwork page's buy bar on a phone — client
 because it watches the real buy controls scroll away.
+**The eighteenth to twentieth are the public 404 (`not-found.js`), the error
+page (`error.js`) and `FallbackProvider`**, which carries their words from the
+layout: Next gives neither file `params`, and an error boundary must be client
+code. See app-files.md.
 
 The other six are the header's primary navigation — client only to mark the
 current page — the language switcher, the hero's studio loop, the admin's login

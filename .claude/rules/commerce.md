@@ -527,6 +527,21 @@ whole point. The interval is a named constant in `lib/data/orders-repository.js`
 
 ### What cancelling or refunding does to the paintings
 
+**Every action that closes an order asks first** (decided 29-10-2026): cancelling,
+refunding, and recording that an owed refund was paid back. Each was one press,
+and on a phone "cancel the order" sat beside "mark as posted". Now the first
+press opens a question — a plain `<details>`, so it works with no script — and
+the second, on a button that says yes in words, is the form post. Moving an order
+forward stays one press.
+
+**The question says what will happen to this order's paintings**: that they go
+back to draft, how many, or that no painting changes. The number is
+`countPaintingsReleasedOnClose`, which applies the same two rules the closing does —
+`holdsStock` and the `RELEASABLE_WORKS` clause in `lib/data/orders-repository.js`,
+one string used by both statements — so the sentence cannot promise a painting
+back that the action would leave alone. It is a preview, not a promise; the write
+decides again.
+
 **They go back to draft, not back on sale**, and the sale channel is cleared in
 the same statement. That is deliberate: a refund should not silently re-list a
 painting on the public site the moment the money is returned. The artist may want

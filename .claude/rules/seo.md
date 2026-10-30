@@ -30,7 +30,9 @@ sees before deciding whether to open the link.
 separately from the component, so neither `notFound()` nor the cross-language
 redirect stops it. A slug that resolves to nothing — a typo, or a draft whose URL
 someone guessed — must be answered without asserting that a work by that name
-exists.
+exists. It is answered with the not-found title, `notFound.title`, which is also
+what the `[...missing]` catch-all gives any other unknown path: a draft's address,
+a made-up slug and a made-up path are the same 404 in status, body and title.
 
 ## Social previews
 

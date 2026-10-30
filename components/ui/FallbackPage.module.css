@@ -1,0 +1,45 @@
+/*
+  The page is a short message, so it is held in the middle of the first screen
+  rather than pinned under the header with the footer close behind it — a
+  footer arriving two lines after the heading reads as a page that failed to
+  finish loading, which is the one impression these pages must not give.
+*/
+.section {
+  display: grid;
+  align-content: center;
+  min-block-size: 60svh;
+}
+
+.inner {
+  text-align: center;
+}
+
+/* The page-title step the other content pages use. */
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-light);
+  margin-block-end: var(--space-5);
+}
+
+.body {
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+  max-inline-size: 34rem;
+  margin-inline: auto;
+}
+
+/* The filled control first in reading order, the quiet one after it. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4) var(--space-7);
+  margin-block-start: var(--space-7);
+}
+
+.footnote {
+  margin-block-start: var(--space-7);
+  font-size: var(--text-sm);
+}

@@ -65,7 +65,6 @@
     "intro": "Every work"
   },
   "artwork": {
-    "title": "Work",
     "medium": "Medium",
     "dimensions": "Dimensions",
     "year": "Year",
@@ -109,9 +108,22 @@
     "worksHeading": "Recent work",
     "contactLink": "Get in touch with Orit"
   },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The link may have changed, or the painting is no longer on the site. You can carry on to the gallery and see all the works.",
+    "gallery": "To the gallery",
+    "home": "Home"
+  },
+  "pageError": {
+    "title": "Something went wrong",
+    "body": "This page could not load. You can try again.",
+    "retry": "Try again",
+    "home": "Home",
+    "whatsapp": "If it keeps happening, you can message Orit on WhatsApp"
+  },
   "contact": {
     "title": "Contact",
-    "lead": "You can reach Orit in any of these ways.",
+    "lead": "A question about a painting, an idea for a commission, or just a hello - Orit would love to hear from you.",
     "methods": {
       "whatsapp": "WhatsApp",
       "phone": "Phone",
@@ -145,6 +157,8 @@
     "title": "Checkout",
     "summaryTitle": "Your order",
     "listLabel": "The paintings in this order",
+    "summaryLineOne": "1 painting:",
+    "summaryLineMany": "{count} paintings:",
     "empty": "There is nothing to pay for.",
     "deliveryLegend": "How would you like to receive the work?",
     "deliveryShipping": "Insured delivery",
@@ -401,8 +415,16 @@
       "actionCancel": "Cancel the order",
       "actionRefund": "Refund",
       "actionSettleRefund": "The refund has been made",
+      "confirmCancel": "Cancel this order?",
+      "confirmRefund": "Record a refund on this order?",
+      "confirmSettleRefund": "Record that the refund has been made?",
+      "releaseOne": "This order's painting goes back to draft and comes off the site. Republishing is done from the painting itself.",
+      "releaseMany": "This order's {count} paintings go back to draft and come off the site. Republishing is done from the painting itself.",
+      "releaseNone": "No painting changes.",
+      "confirmCancelAction": "Yes, cancel the order",
+      "confirmRefundAction": "Yes, record the refund",
+      "confirmSettleRefundAction": "Yes, the refund has been made",
       "actionsNone": "No actions are available at this stage.",
-      "releaseNote": "Cancelling or refunding returns the paintings this order sold to draft and clears their sale channel - they do not go straight back onto the site. A painting that has since sold again, here or elsewhere, is left as it is. Republishing is done from the painting itself.",
       "refundDueBanner": "Money was taken for a painting that had already sold to someone else, and the charge was not voided. Refund by hand in the Hyp console, then mark it done. The paintings on this order belong to another buyer and will not be released.",
       "workDraft": "Draft",
       "workPublished": "On the site",
