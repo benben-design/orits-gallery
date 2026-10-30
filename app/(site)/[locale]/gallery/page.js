@@ -62,7 +62,7 @@ export default async function GalleryPage({ params }) {
           <p className={styles.empty}>{dictionary.gallery.empty}</p>
         ) : (
           <ul className={styles.grid}>
-            {works.map((work) => (
+            {works.map((work, index) => (
               <li key={work.id} className={styles.cell}>
                 <ArtworkCard
                   work={work}
@@ -70,6 +70,15 @@ export default async function GalleryPage({ params }) {
                   dictionary={dictionary}
                   sizes={CARD_SIZES}
                   titleAs="h2"
+                  /*
+                    The first painting is the page's largest paint on a phone,
+                    and it was lazy-loaded: the browser waited to ask for it,
+                    and LCP was 3.9s on throttled 4G. At 390x844 it is the only
+                    painting on the first screen — the second begins at 938px —
+                    so it alone loads at once and at high priority; marking more
+                    would have them compete with it for the same bandwidth.
+                  */
+                  priority={index === 0}
                 />
               </li>
             ))}
