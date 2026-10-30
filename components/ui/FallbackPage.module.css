@@ -16,8 +16,8 @@
 
 /* The page-title step the other content pages use. */
 .title {
-  font-size: var(--text-xl);
-  font-weight: var(--weight-light);
+  font-size: var(--text-page);
+  font-weight: var(--weight-display-light);
   margin-block-end: var(--space-5);
 }
 

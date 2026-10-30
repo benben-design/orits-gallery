@@ -34,9 +34,11 @@ import styles from './ArtworkWall.module.css';
 
 /**
  * The widths a painting on the wall renders at: half the screen on a phone,
- * a third from 40rem, a quarter of the page frame from 64rem.
+ * a third from 40rem, and a quarter of the page frame from 64rem — or a third
+ * there too, on a wall capped at three columns.
  */
-const WALL_SIZES = '(max-width: 40rem) 46vw, (max-width: 64rem) 31vw, 18rem';
+const wallSizes = (maxColumns) =>
+  `(max-width: 40rem) 46vw, (max-width: 64rem) 31vw, ${maxColumns >= 4 ? '18rem' : '24rem'}`;
 
 const ARRANGEMENTS = [
   /* Caption height as a share of the column's width: about 110px under a
@@ -110,12 +112,26 @@ function arrange(works, columns, caption) {
   return lists;
 }
 
-export default function ArtworkWall({ works, locale, dictionary, titleAs, priorityFirst = false }) {
+/**
+ * `maxColumns` caps the widest arrangement: About closes on three works, and
+ * four columns there would leave one standing empty. Two on a phone and three
+ * from 40rem whatever the cap.
+ */
+export default function ArtworkWall({
+  works,
+  locale,
+  dictionary,
+  titleAs,
+  priorityFirst = false,
+  maxColumns = 4,
+}) {
+  const sizes = wallSizes(maxColumns);
+
   return (
     <div className={styles.wall}>
       {ARRANGEMENTS.map(({ columns, caption, className }) => (
         <div key={columns} className={`${styles.arrangement} ${styles[className]}`}>
-          {arrange(works, columns, caption).map((column, columnIndex) => (
+          {arrange(works, Math.min(columns, maxColumns), caption).map((column, columnIndex) => (
             <ul key={columnIndex} className={styles.column}>
               {column.map(({ work, index }) => (
                 <li key={work.id}>
@@ -123,7 +139,7 @@ export default function ArtworkWall({ works, locale, dictionary, titleAs, priori
                     work={work}
                     locale={locale}
                     dictionary={dictionary}
-                    sizes={WALL_SIZES}
+                    sizes={sizes}
                     titleAs={titleAs}
                     frameTone="snug"
                     priority={priorityFirst && index === 0}

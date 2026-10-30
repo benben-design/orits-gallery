@@ -20,13 +20,6 @@ import styles from './WorksGrid.module.css';
  * priority image on the page. See .claude/rules/images.md.
  */
 
-/**
- * The widths of the shared-box cards in "more works" on the artwork page,
- * which still uses this module's .grid through composes. The wall itself
- * sizes itself (components/ui/ArtworkWall).
- */
-export const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
-
 export default function WorksGrid({ works, locale, dictionary }) {
   if (!works?.length) {
     return (

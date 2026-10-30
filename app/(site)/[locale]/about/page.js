@@ -3,7 +3,7 @@ import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
 import SectionLabel from '@/components/ui/SectionLabel';
 import PortraitFrame from '@/components/ui/PortraitFrame';
-import ArtworkCard from '@/components/ui/ArtworkCard';
+import ArtworkWall from '@/components/ui/ArtworkWall';
 import ButtonLink from '@/components/ui/ButtonLink';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
@@ -51,11 +51,11 @@ export const revalidate = 3600;
 const WORKS_SHOWN = 3;
 
 /*
-  The photograph takes 5 of 12 columns from 60rem and 2 of 5 from 40rem; the
-  container is 80rem less its gutters at most.
+  The photograph takes 5 of 12 columns from 60rem and 2 of 5 from 40rem, and
+  about 60% of a phone's width below that; the container is 80rem less its
+  gutters at most.
 */
-const PORTRAIT_SIZES = '(min-width: 60rem) 30rem, (min-width: 40rem) 38vw, 92vw';
-const CARD_SIZES = '(min-width: 48rem) 24rem, 92vw';
+const PORTRAIT_SIZES = '(min-width: 60rem) 30rem, (min-width: 40rem) 38vw, 56vw';
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -94,20 +94,23 @@ export default async function AboutPage({ params }) {
     <>
       <Section as="div" size="tight">
         <Container>
+          {/*
+            Three parts, in the order a phone shows them and a screen reader
+            reads them: who (label and name), her face, then her words. The
+            photograph comes straight after her name in the source, not after
+            her text: moving it there with CSS alone would show it second on a
+            phone and read it last, two orders for one page. From 40rem the
+            same three parts are placed in two columns, so the desktop looks
+            as it did, with the words and the face sharing one top edge.
+          */}
           <div className={[styles.opening, portrait ? styles.withPortrait : ''].filter(Boolean).join(' ')}>
-            <div className={styles.text}>
+            <div className={styles.head}>
               {/*
                 The page's name, demoted to a label. Her name is the heading:
                 "about" is what the page is, and she is what it is about.
               */}
               <SectionLabel>{dictionary.about.title}</SectionLabel>
               <h1 className={styles.name}>{dictionary.site.artistName}</h1>
-              {lead ? <p className={styles.lead}>{lead}</p> : null}
-              {rest.map((paragraph, index) => (
-                <p key={index} className={styles.paragraph}>
-                  {paragraph}
-                </p>
-              ))}
             </div>
 
             {/*
@@ -124,6 +127,17 @@ export default async function AboutPage({ params }) {
                 priority
               />
             ) : null}
+
+            {lead ? (
+              <div className={styles.body}>
+                <p className={styles.lead}>{lead}</p>
+                {rest.map((paragraph, index) => (
+                  <p key={index} className={styles.paragraph}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            ) : null}
           </div>
         </Container>
       </Section>
@@ -132,19 +146,15 @@ export default async function AboutPage({ params }) {
         <Container>
           {works.length > 0 ? (
             <>
-              <SectionHeading align="center">{dictionary.about.worksHeading}</SectionHeading>
-              <ul className={styles.works}>
-                {works.map((work) => (
-                  <li key={work.id} className={styles.work}>
-                    <ArtworkCard
-                      work={work}
-                      locale={locale}
-                      dictionary={dictionary}
-                      sizes={CARD_SIZES}
-                    />
-                  </li>
-                ))}
-              </ul>
+              {/*
+                At the start, like the homepage's heading over the same wall,
+                so the page reads down one edge from her name to her paintings
+                rather than switching to a centred axis halfway. The works hang
+                on the wall the gallery uses, capped at three columns because
+                there are three.
+              */}
+              <SectionHeading>{dictionary.about.worksHeading}</SectionHeading>
+              <ArtworkWall works={works} locale={locale} dictionary={dictionary} maxColumns={3} />
             </>
           ) : null}
 

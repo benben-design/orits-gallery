@@ -25,8 +25,6 @@
 .summaryTitle {
   margin-block-start: var(--space-6);
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 

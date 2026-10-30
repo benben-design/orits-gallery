@@ -37,7 +37,7 @@ h3,
 h4 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-display-regular);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-slight);
 }

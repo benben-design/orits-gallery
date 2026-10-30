@@ -12,8 +12,6 @@
 /* Keeps a dummy figure from ever reading as a real one. */
 .marker {
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 

@@ -137,7 +137,7 @@
 
 .title {
   font-size: var(--text-md);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-display-regular);
   color: var(--text-primary);
 }
 
@@ -223,7 +223,7 @@
 
 .itemTitle {
   font-size: var(--text-base);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-display-regular);
   color: var(--text-primary);
 }
 
@@ -318,8 +318,6 @@
 
 .totalLabel {
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -345,8 +343,6 @@
   background-color: var(--accent);
   color: var(--text-on-accent);
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   transition: background-color var(--duration) var(--ease);
 }
 

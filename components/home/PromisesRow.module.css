@@ -27,14 +27,18 @@
 .title {
   font-family: var(--font-display);
   font-size: var(--text-md);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-display-regular);
   line-height: var(--leading-tight);
   color: var(--text-primary);
 }
 
+/* Short text, so no line may end on one word: "האמנית." sat alone under the
+   first promise. Pretty wrapping is kept to short text like this and the card
+   captions; a long paragraph is left to the browser's ordinary wrap. */
 .body {
   font-size: var(--text-sm);
   color: var(--text-muted);
+  text-wrap: pretty;
 }
 
 @media (min-width: 40rem) {

@@ -16,8 +16,6 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   white-space: nowrap;
   padding-block: var(--space-1);
   padding-inline: var(--space-2);
