@@ -1,7 +1,7 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
-import ArtworkCard from '@/components/ui/ArtworkCard';
+import ArtworkWall from '@/components/ui/ArtworkWall';
 import ButtonLink from '@/components/ui/ButtonLink';
 import { localeHref } from '@/lib/i18n/config';
 import styles from './WorksGrid.module.css';
@@ -10,11 +10,10 @@ import styles from './WorksGrid.module.css';
  * Homepage section 2 — the starred works (or the twelve most recent), each with title, price and status, and a
  * way through to the full gallery.
  *
- * The grid is uniform: every cell is the same fixed frame, so the nine
- * portraits, five near-squares and two landscapes in the collection all sit in
- * identical boxes and every row lines up. The paintings themselves are scaled
- * to fit inside those boxes rather than filling them, so none is cropped. That
- * rule lives in components/ui/ArtworkFrame.
+ * The works hang on the wall the gallery uses (components/ui/ArtworkWall):
+ * each painting at its own ratio, the full width of its column, on a thin
+ * board, so a wide landscape is no longer the smallest thing on the page.
+ * Nothing is cropped; that rule lives in components/ui/ArtworkFrame.
  *
  * Nothing here is marked `priority`: the grid starts well below the fold, and
  * eager-loading it would compete with the hero for LCP. The hero is the only
@@ -22,10 +21,9 @@ import styles from './WorksGrid.module.css';
  */
 
 /**
- * Widths the grid actually renders at, so the browser can pick a sensible
- * source. Sized for the sharp replacement scans, not for the low-resolution
- * files currently in public/paintings. Exported for the artwork page's "more
- * works", whose cards are no larger than these.
+ * The widths of the shared-box cards in "more works" on the artwork page,
+ * which still uses this module's .grid through composes. The wall itself
+ * sizes itself (components/ui/ArtworkWall).
  */
 export const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
 
@@ -49,18 +47,7 @@ export default function WorksGrid({ works, locale, dictionary }) {
           {dictionary.home.works.heading}
         </SectionHeading>
 
-        <ul className={styles.grid}>
-          {works.map((work) => (
-            <li key={work.id} className={styles.cell}>
-              <ArtworkCard
-                work={work}
-                locale={locale}
-                dictionary={dictionary}
-                sizes={CARD_SIZES}
-              />
-            </li>
-          ))}
-        </ul>
+        <ArtworkWall works={works} locale={locale} dictionary={dictionary} />
 
         <div className={styles.actions}>
           <ButtonLink href={localeHref(locale, '/gallery')}>

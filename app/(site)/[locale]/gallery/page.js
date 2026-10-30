@@ -1,7 +1,7 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
-import ArtworkCard from '@/components/ui/ArtworkCard';
+import ArtworkWall from '@/components/ui/ArtworkWall';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { getGalleryWorks } from '@/lib/data/works-repository';
 import styles from './page.module.css';
@@ -36,9 +36,6 @@ import styles from './page.module.css';
  */
 export const revalidate = 3600;
 
-/** Widths this grid actually renders at, matching the homepage's. */
-const CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
-
 export async function generateMetadata({ params }) {
   const { locale } = await params;
   const dictionary = await getDictionary(locale);
@@ -51,7 +48,15 @@ export default async function GalleryPage({ params }) {
   const [dictionary, works] = await Promise.all([getDictionary(locale), getGalleryWorks()]);
 
   return (
-    <Section>
+    /*
+      The About page's tight gap above, so the heading sits where hers does,
+      and none of its own below: the footer already
+      keeps a standard step above itself on every page, and the wall ends
+      level now with nothing after it, so a gap of the section's own on top of
+      that left an empty band under the last captions — 168px at 1440. The
+      homepage fills the same place with its link to the gallery. 30-10-2026.
+    */
+    <Section size="flush" before="tight">
       <Container>
         {/* The page's <h1>, so each card's title is an <h2> beneath it. */}
         <SectionHeading as="h1" intro={dictionary.gallery.intro}>
@@ -61,28 +66,19 @@ export default async function GalleryPage({ params }) {
         {works.length === 0 ? (
           <p className={styles.empty}>{dictionary.gallery.empty}</p>
         ) : (
-          <ul className={styles.grid}>
-            {works.map((work, index) => (
-              <li key={work.id} className={styles.cell}>
-                <ArtworkCard
-                  work={work}
-                  locale={locale}
-                  dictionary={dictionary}
-                  sizes={CARD_SIZES}
-                  titleAs="h2"
-                  /*
-                    The first painting is the page's largest paint on a phone,
-                    and it was lazy-loaded: the browser waited to ask for it,
-                    and LCP was 3.9s on throttled 4G. At 390x844 it is the only
-                    painting on the first screen — the second begins at 938px —
-                    so it alone loads at once and at high priority; marking more
-                    would have them compete with it for the same bandwidth.
-                  */
-                  priority={index === 0}
-                />
-              </li>
-            ))}
-          </ul>
+          /*
+            The first painting is the page's largest paint on a phone,
+            and it was lazy-loaded: LCP was 3.9s on throttled 4G. It alone
+            loads at once and at high priority — marking more would have
+            them compete for the same bandwidth.
+          */
+          <ArtworkWall
+            works={works}
+            locale={locale}
+            dictionary={dictionary}
+            titleAs="h2"
+            priorityFirst
+          />
         )}
       </Container>
     </Section>

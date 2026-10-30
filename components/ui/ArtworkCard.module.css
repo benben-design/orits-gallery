@@ -1,6 +1,9 @@
 .card {
   display: flex;
   flex-direction: column;
+  /* The caption answers to the card's own width, not the screen's: a card
+     in a phone's two-column wall is narrow on any phone. */
+  container-type: inline-size;
 }
 
 /*
@@ -100,6 +103,48 @@
   flex-wrap: wrap;
   font-size: var(--text-sm);
   color: var(--text-muted);
+}
+
+/* On the wall the caption sits a step closer to its painting: the board is
+   only a thin mount there, so a 16px gap read as the caption drifting off. */
+.onWall .link {
+  gap: var(--space-3);
+}
+
+/*
+  A narrow card — one of two columns on a phone, about 160px — has no room
+  for medium and size on one line. Wrapped, they left the hairline hanging at
+  the end of the first line and a full gap between the two. So below 14rem
+  they stack as two plain lines with no hairline, the title steps down to the
+  body size, and the caption closes up.
+*/
+@container (max-width: 14rem) {
+  .link {
+    gap: var(--space-3);
+  }
+
+  .caption {
+    gap: 0;
+  }
+
+  .title {
+    font-size: var(--text-base);
+    margin-block-end: var(--space-1);
+  }
+
+  .spec {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .spec .separator {
+    display: none;
+  }
+
+  .meta {
+    margin-block-start: var(--space-1);
+  }
 }
 
 /* A hairline tick between price and status, rather than a bullet or a pipe. */

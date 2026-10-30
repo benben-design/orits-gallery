@@ -121,6 +121,69 @@
 }
 
 /**
+ * The snug tone: the work at its own ratio on a thin board — the wall's
+ * gallery and homepage (components/ui/ArtworkWall.module.css), modelled on
+ * how a painter's own site hangs mixed formats in columns.
+ *
+ * No shared box here, so nothing to centre in and nothing to reserve but the
+ * painting's own shape: the mat comes back into flow as padding, and the
+ * painting fills its width — which, at its own ratio, is fitting it. The
+ * board carries the shadow rather than the painting, because a shadow inside
+ * a 6px mount reads as a mistake.
+ *
+ * Without an image there is no ratio to take, so an empty snug frame keeps
+ * the shared box (the `.snugEmpty` class, set by the component).
+ */
+.snug {
+  aspect-ratio: auto;
+  background-color: var(--surface-mat);
+  box-shadow: var(--shadow-frame);
+}
+
+.snug .mat {
+  position: static;
+  padding: var(--frame-snug-inset);
+  container-type: normal;
+}
+
+.snug .hang {
+  inline-size: 100%;
+  box-shadow: none;
+}
+
+.snugEmpty {
+  aspect-ratio: var(--frame-ratio);
+}
+
+.snugEmpty .mat {
+  position: absolute;
+  inset: var(--frame-snug-inset);
+  padding: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .snug {
+    transition:
+      transform var(--duration) var(--ease),
+      box-shadow var(--duration) var(--ease);
+  }
+}
+
+/* On the wall the whole board lifts, not the painting off it: there is no
+   ground inside a 6px mount for the painting to rise from. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  a:hover .snug {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-frame-bare);
+  }
+
+  a:hover .snug .hang {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/**
  * A bare work has no mount, so its shadow is the only thing separating it from
  * the warm wall. It therefore carries a deeper one than a mounted work — still
  * subtle, still a canvas hanging rather than a card floating, but enough that

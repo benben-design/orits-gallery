@@ -45,6 +45,30 @@ at different heights and the grid goes ragged — measured at 340px to 402px tal
 across one twelve-card grid before it was fixed. This is the bug this rule exists
 to prevent, and it does not look obviously wrong until you measure it.
 
+## The wall: the gallery and the homepage (decided 30-10-2026)
+
+**The two grids a visitor browses no longer use the fixed box.** Every work in
+the shared 4:5 box was smaller than its card — a landscape filled 31% of it at
+1440px — so the gallery and the homepage now hang each painting **at its own
+ratio, the full width of its column**, in columns that run down the wall
+independently (`components/ui/ArtworkWall.js`): two on a phone, three
+from 40rem, four from 64rem. It is the layout the artist's teacher uses on her
+own site, chosen because it answers mixed formats directly.
+
+- **Still never cropped**: the board takes the painting's shape, never the
+  reverse, and the painting fills its width at its own ratio.
+- **Still mounted**: ArtworkFrame's `snug` tone is a thin near-white board
+  (`--frame-snug-inset`, 6–12px) carrying the frame shadow, so the rule below —
+  a small painting never meets the wall without separation — still holds.
+- **Rows do not align, on purpose.** The rule that cards must be equal so rows
+  line up applies to the shared box, which "more works", About and the cart
+  still use.
+- **The columns are filled on the server, by the paintings' known ratios**,
+  shortest column first and then levelled, so the bottom edge is nearly flat
+  and the newest works hang along the top. CSS columns left the columns up to
+  500px apart and were replaced the same day. No script moves a card after it
+  is drawn.
+
 ## The mount, and the one work that goes without
 
 The rule is **not** "every painting has a mount". It is:
