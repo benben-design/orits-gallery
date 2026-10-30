@@ -91,8 +91,8 @@ and 18px from 48rem; **nothing a visitor reads is below 14px**, which is what
 `--text-xs` now is — the floor, not a size for fine print. The steps moved
 together (`--text-sm` 15/16, `--text-md` 19/20, `--text-lg` up a step) because
 raising body text alone left card titles smaller than the paragraphs under
-them. `--text-xl` did not move: it is page titles and the hero line. Section
-headings take **`--text-section`**, which reaches 40px. **The header holds its
+them. `--text-xl` is the admin's page titles now. Section
+headings take **`--text-section`** (22 to 34px), and **a public page's own heading takes `--text-page`** (28 to 44px), a clear step above it at every width (30-10-2026; the page heading had been the smaller of the two). The artwork page caps its title at 26px while the painting stacks above it, so a long title stays on one line at 360px. Her name on About, `--text-2xl`, stays the largest type on the site, and the admin keeps `--text-xl`. **The header holds its
 own sizes**, `--text-nav` and `--text-nav-count`, at what they were — it was
 tuned word by word against the brush name and verified pixel-identical after
 the change; never point a header word back at a reading step.
@@ -257,3 +257,30 @@ loads no font for it. Keep it that way: setting any other text in a brush or
 script face is a third typeface, and the rule above still applies to it.
 
 Loaded once, through Next's font handling. Not imported ad hoc in a component.
+
+**Hebrew sets the display face one weight heavier, and its running text
+tighter (30-10-2026).** Frank Ruhl's Hebrew draws markedly lighter than its
+Latin at the same weight (measured: Hebrew at 500 matches Latin at 400), so
+every display-face rule asks for `--weight-display-light` or
+`--weight-display-regular`, never a raw weight, and `:lang(he)` in
+`app/tokens.css` steps them to 400 and 500. Hebrew body text sets at 1.55
+rather than 1.65 (`--leading-normal`), because it has almost no ascenders or
+descenders. Both are keyed on language, not direction, so the English line
+inside the Hebrew hero keeps the Latin settings, and `:lang(en)` restates
+them. English is unchanged. **The artwork page's phone stack is 7px shorter in
+Hebrew** for the same reason (`--plate-stack` in `ArtworkDetail.module.css`),
+which is what keeps "add to cart" 8px above the WhatsApp disc in both
+languages. A new display-face rule takes one of the two tokens, or it will be
+light in Hebrew.
+
+**No spaced capitals anywhere on the public site (30-10-2026).** Labels,
+buttons, badges and totals are sentence case and untracked in English, the way
+the navigation already was: Hebrew has no capitals, so tracked caps made English
+alone speak in a second voice, and read as a template. The strings in `en.json`
+are written in sentence case; do not reach for `text-transform` to change that.
+
+**Long prose takes `--measure-prose` (29rem), short text wraps pretty.** The
+artwork description and the homepage story hold to about 60–65 characters a
+line, counted line by line, in both languages. Short text — the promises, card
+captions — sets `text-wrap: pretty` so no line ends on one word, and card titles
+`balance`; a long paragraph keeps the browser's ordinary wrap.

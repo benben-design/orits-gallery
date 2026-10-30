@@ -74,11 +74,17 @@
   flex-direction: column;
   gap: var(--space-1);
   text-align: start;
+  /* Short text: no title or detail line may end on one word, at any width. */
+  text-wrap: pretty;
 }
 
 .title {
+  /* Balanced, not merely pretty: pretty left "Tuscany" alone under "A Bottle
+     of Wine in" on a narrow card, because the word was not short enough for
+     its rule. A title of a few words reads best in even lines. */
+  text-wrap: balance;
   font-size: var(--text-md);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-display-regular);
   color: var(--text-primary);
 }
 
@@ -132,18 +138,22 @@
     margin-block-end: var(--space-1);
   }
 
+  /* The details a step under the title (14 against 17), in both languages,
+     so title, details and price read as three things rather than one list. */
   .spec {
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
+    font-size: var(--text-xs);
   }
 
   .spec .separator {
     display: none;
   }
 
+  /* A small gap above the price, so it stands apart from medium and size. */
   .meta {
-    margin-block-start: var(--space-1);
+    margin-block-start: var(--space-2);
   }
 }
 

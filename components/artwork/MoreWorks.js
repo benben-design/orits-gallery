@@ -1,9 +1,8 @@
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
-import ArtworkCard from '@/components/ui/ArtworkCard';
+import ArtworkWall from '@/components/ui/ArtworkWall';
 import ButtonLink from '@/components/ui/ButtonLink';
-import { CARD_SIZES } from '@/components/home/WorksGrid';
 import { localeHref } from '@/lib/i18n/config';
 import styles from './MoreWorks.module.css';
 
@@ -22,8 +21,11 @@ import styles from './MoreWorks.module.css';
  * current work never. This only draws what it is handed, and draws nothing when
  * that is empty.
  *
- * The cards are the grid's own, and so is the grid's rhythm — and their rise as
- * they scroll in (components/layout/QuietMotion). The titles are `h3`s under this
+ * **The works hang on the wall** (components/ui/ArtworkWall, 30-10-2026) —
+ * the gallery's and the homepage's, so a painting reads the same here as there:
+ * its own ratio on a thin board, two columns on a phone, three from 40rem, four
+ * from 64rem. They rise as they scroll in like every card (components/layout/
+ * QuietMotion). The titles are `h3`s under this
  * section's `h2`, which sits under the work's `h1`.
  *
  * **The way on is the whole gallery.** It used to be the rest of the work's own
@@ -46,13 +48,7 @@ export default function MoreWorks({ works, locale, dictionary }) {
       <Container>
         <SectionHeading>{copy.moreWorksHeading}</SectionHeading>
 
-        <ul className={styles.grid}>
-          {works.map((work) => (
-            <li key={work.id} className={styles.cell}>
-              <ArtworkCard work={work} locale={locale} dictionary={dictionary} sizes={CARD_SIZES} />
-            </li>
-          ))}
-        </ul>
+        <ArtworkWall works={works} locale={locale} dictionary={dictionary} />
 
         <div className={styles.actions}>
           <ButtonLink href={localeHref(locale, '/gallery')}>{dictionary.home.works.viewAll}</ButtonLink>

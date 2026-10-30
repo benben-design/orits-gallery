@@ -4,11 +4,27 @@
 
 .opening {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-6);
 }
 
-.text {
+.head,
+.body {
   max-inline-size: var(--measure);
+}
+
+/*
+  With no photograph the opening is a single column of her words, and at the
+  start of a wide page it read as a layout missing its second column. Centred
+  on the page instead, the measure is a column of text by choice — an essay,
+  not half of a pair. Centring was chosen over widening: her words are prose,
+  and --measure is already as wide as prose reads well. The text itself stays
+  aligned to the start. On a phone the measure is wider than the screen, so
+  nothing moves there.
+*/
+.opening:not(.withPortrait) .head,
+.opening:not(.withPortrait) .body {
+  inline-size: 100%;
+  margin-inline: auto;
 }
 
 /*
@@ -20,7 +36,7 @@
 .name {
   margin-block-start: var(--space-3);
   font-size: var(--text-2xl);
-  font-weight: var(--weight-light);
+  font-weight: var(--weight-display-light);
   line-height: var(--leading-tight);
   letter-spacing: inherit;
 }
@@ -31,8 +47,9 @@
   heading, which is how a good paragraph gets whispered.
 */
 .lead {
-  margin-block-start: var(--space-6);
   font-family: var(--font-display);
+  /* Regular in Latin, medium in Hebrew — see --weight-display-regular. */
+  font-weight: var(--weight-display-regular);
   font-size: var(--text-lg);
   line-height: var(--leading-snug);
   white-space: pre-line;
@@ -50,29 +67,18 @@
   white-space: pre-line;
 }
 
-/* On a phone the photograph must not fill a whole screen on its own. */
+/*
+  On a phone her face comes straight after her name, at about 60% of the width
+  and at the start edge the text hangs from: large enough to be her, small
+  enough that her first words still reach the first screen.
+*/
 .portrait {
-  inline-size: 100%;
-  max-inline-size: 22rem;
+  inline-size: 60%;
 }
 
 /* ------------------------------------------------------------------ *
  * The close: three paintings and the way on.
  * ------------------------------------------------------------------ */
-
-.works {
-  display: grid;
-  gap: var(--space-8);
-  margin-block-start: var(--space-8);
-}
-
-.work {
-  display: flex;
-}
-
-.work > * {
-  inline-size: 100%;
-}
 
 .actions {
   display: flex;
@@ -93,25 +99,35 @@
  * ------------------------------------------------------------------ */
 
 /*
-  Text and photograph side by side, the text centred on the photograph: her
-  three paragraphs run close to a 4:5 portrait's height, and centring absorbs
-  whatever difference her next edit makes.
+  Text and photograph side by side, sharing one top edge. Her name sits in the
+  first row and her words in the second, and the photograph spans both; the
+  second row takes any height the photograph has over the text, so the gap
+  between her name and her first words never grows. They used to be centred on
+  each other, which in English — the longer text — left the photograph starting
+  about 100px below the words.
 */
 @media (min-width: 40rem) {
   .withPortrait {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    align-items: center;
+    grid-template-rows: auto 1fr;
+    column-gap: var(--space-8);
+    align-items: start;
+  }
+
+  .withPortrait .head {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .withPortrait .body {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .withPortrait .portrait {
-    max-inline-size: none;
-  }
-}
-
-@media (min-width: 48rem) {
-  .works {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-8) var(--space-6);
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    inline-size: 100%;
   }
 }
 
@@ -125,7 +141,8 @@
     column-gap: var(--space-6);
   }
 
-  .withPortrait .text {
+  .withPortrait .head,
+  .withPortrait .body {
     grid-column: 1 / 7;
   }
 

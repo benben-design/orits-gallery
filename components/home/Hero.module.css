@@ -88,8 +88,8 @@
  */
 .positioning {
   font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-light);
+  font-size: var(--text-page);
+  font-weight: var(--weight-display-light);
   line-height: var(--leading-snug);
   letter-spacing: inherit;
   color: var(--text-primary);

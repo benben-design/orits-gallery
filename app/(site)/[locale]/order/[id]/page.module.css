@@ -2,7 +2,7 @@
  * The order page.
  *
  * The cart and checkout language carried one step further: a document column,
- * hairlines rather than boxes, one uppercase muted label per block, and the
+ * hairlines rather than boxes, one small muted label per block, and the
  * total in the display face because it is still the number the page adds up to.
  *
  * Nothing here is coloured by outcome. There is one accent and it belongs to
@@ -52,8 +52,6 @@
 .blockTitle {
   margin-block-start: var(--space-7);
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -73,8 +71,6 @@
 }
 
 .referenceLabel {
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -133,8 +129,6 @@
 
 .totalLabel {
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 

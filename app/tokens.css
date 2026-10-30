@@ -207,9 +207,8 @@
    *
    * Every step moved together on purpose: raising --text-base alone would
    * have left card titles and cart lines (--text-md) smaller than the
-   * paragraphs beneath them. --text-xl did not move, because it is the page
-   * titles and the hero line; section headings have their own step,
-   * --text-section, which is the one that reaches 40px.
+   * paragraphs beneath them. Page titles and section headings have their own
+   * steps below, --text-page and --text-section.
    *
    * Line length is unaffected in the way that matters: --measure is in rem,
    * so a bigger face sets fewer characters per line — about 65 at 18px,
@@ -220,7 +219,17 @@
   --text-base: 1.0625rem;
   --text-md: 1.1875rem;
   --text-lg: clamp(1.25rem, 1.05rem + 0.75vw, 1.625rem);
-  --text-section: clamp(1.5rem, 1rem + 2.2vw, 2.5rem);
+  /*
+    A public page's own heading, and the section headings inside it
+    (30-10-2026). The page heading was the smaller of the two — 36px under
+    40px section headings on a desktop, 24.2 against 24.6 on a phone — so the
+    page read upside down. Now the page step is a clear step above the section
+    step at every width: 28 over 22 on a phone, 44 over 34 on a desktop, about
+    1.27 apart throughout. Her name on About (--text-2xl, 32 to 60) stays the
+    largest type on the site. The admin keeps --text-xl for its own titles.
+  */
+  --text-page: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  --text-section: clamp(1.375rem, 1rem + 1.6vw, 2.125rem);
   --text-xl: clamp(1.5rem, 1.1rem + 1.7vw, 2.25rem);
   --text-2xl: clamp(2rem, 1.2rem + 3.4vw, 3.75rem);
 
@@ -238,6 +247,19 @@
   --weight-light: 300;
   --weight-normal: 400;
   --weight-medium: 500;
+
+  /*
+    The display face's two working weights, kept apart from the three above
+    because Hebrew sets them differently (see :lang(he) at the end of this
+    file). Frank Ruhl's Hebrew draws markedly lighter than its Latin at the
+    same weight — measured at 100px, the Hebrew stem is 16 against the Latin 22
+    at 300 and 19 against 24 at 400; Hebrew at 500 matches Latin at 400. So
+    every heading, title and lead in the display face asks for one of these,
+    and Hebrew takes one step heavier. Assistant is not affected: its Hebrew and
+    Latin weigh alike, and the header's light navigation stays light.
+  */
+  --weight-display-light: var(--weight-light);
+  --weight-display-regular: var(--weight-normal);
 
   --leading-tight: 1.18;
   --leading-snug: 1.35;
@@ -301,6 +323,12 @@
    * ================================================================ */
   --page-max: 80rem;
   --measure: 34rem;      /* comfortable reading width */
+  /* Long running prose at 18px — the artwork description and the homepage
+     story, held to about 60–65 characters a line (counted line by line) where
+     --measure ran to 70–75 on a desktop (30-10-2026). One width serves both
+     languages: Hebrew, unpointed, sets slightly more characters per line than
+     English at the same width, and 29rem lands both in range. */
+  --measure-prose: 29rem;
   --measure-list: 52rem; /* a list of items with a picture: the cart */
   /*
     The gutter grows into a phone's safe area in landscape, where the notch
@@ -469,4 +497,29 @@
    admin's preview — does not inherit the right-hand edge. */
 [dir='ltr'] {
   --origin-inline-start: left;
+}
+
+/**
+ * Hebrew's own type settings (30-10-2026), by language rather than direction,
+ * so a Latin run inside a Hebrew page — the homepage's English positioning
+ * line, marked lang="en" — keeps the Latin settings, and :lang(en) restates
+ * them for exactly that case. English pages are untouched.
+ *
+ * - The display face one weight heavier: light headings become regular,
+ *   regular titles and the About lead become medium.
+ * - Running text at 1.55 rather than 1.65. Hebrew has almost no ascenders or
+ *   descenders, and Assistant's Hebrew stands 14% taller than its Latin
+ *   x-height, so the Latin leading left Hebrew paragraphs reading as
+ *   separate lines.
+ */
+:lang(he) {
+  --weight-display-light: var(--weight-normal);
+  --weight-display-regular: var(--weight-medium);
+  --leading-normal: 1.55;
+}
+
+:lang(en) {
+  --weight-display-light: var(--weight-light);
+  --weight-display-regular: var(--weight-normal);
+  --leading-normal: 1.65;
 }

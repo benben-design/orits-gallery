@@ -1,33 +1,5 @@
-/**
- * The homepage grid's cells and rhythm, borrowed rather than copied, so the
- * same painting reads the same here and there.
- *
- * The one difference is the column count. The homepage fills as many columns
- * as fit, which is right for twelve; for four it leaves a lone card on a row
- * of its own at some widths (three and one at 64rem). So the count is stated:
- * one on a phone, two from 40rem, four from 64rem — four always fills its rows.
- */
-.grid {
-  composes: grid from '../home/WorksGrid.module.css';
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.cell {
-  composes: cell from '../home/WorksGrid.module.css';
-}
-
+/* The works hang on the wall (components/ui/ArtworkWall); only the way on to
+   the gallery is styled here, borrowed from the homepage's. */
 .actions {
   composes: actions from '../home/WorksGrid.module.css';
-}
-
-@media (min-width: 40rem) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 64rem) {
-  .grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }

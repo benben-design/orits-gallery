@@ -41,8 +41,6 @@
   border: var(--border-hairline) solid transparent;
   border-radius: var(--radius);
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   transition: background-color var(--duration) var(--ease),
     border-color var(--duration) var(--ease);
 }

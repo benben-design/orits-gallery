@@ -54,8 +54,14 @@
    * disc at 360x780. Never more than 55svh, which is what a tablet keeps, and
    * never less than 15rem, so a short screen does not shrink it to a stamp.
    * The rem in the calc is that stack; change one of those parts and it moves.
+   * It moved on 30-10-2026, by the 2px the title grew when page headings were
+   * raised above section headings (24.2px to 26px here): 31rem became 31.125rem.
+   * And it is shorter in Hebrew by 7px, because Hebrew running text sets at
+   * 1.55 rather than 1.65 (tokens.css, :lang(he)); without this the button
+   * stood 15px above the disc in Hebrew and 8 in English.
    */
-  --plate-block: max(15rem, min(55svh, calc(100svh - 31rem)));
+  --plate-stack: 31.125rem;
+  --plate-block: max(15rem, min(55svh, calc(100svh - var(--plate-stack))));
 }
 
 /*
@@ -131,23 +137,39 @@
 /**
  * The category, as the eyebrow a wall label carries.
  *
- * Tracked and upper-cased, which are Latin devices — `--tracking-wide` is
- * zeroed for RTL in the token file, and upper-casing does nothing to Hebrew, so
- * the Hebrew reads as an ordinary small caption and the English as an eyebrow.
+ * In sentence case and untracked, in both languages (30-10-2026). It was
+ * tracked capitals in English, which Hebrew cannot have, so the two languages
+ * spoke in different voices and the English read as a template.
  */
 .eyebrow {
   font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .title {
   margin-block-start: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-light);
+  font-size: var(--text-page);
+  font-weight: var(--weight-display-light);
   line-height: var(--leading-tight);
   color: var(--text-primary);
+}
+
+/*
+  While the painting stacks above its label, the title is capped at 26px —
+  still clearly above a section heading (22px) — rather than the page step's
+  28. At 28 "Autumn Tree by the Water" wrapped to two lines at 360px and the
+  button landed under the WhatsApp disc; the stack above assumes one line, and
+  every title in the catalogue fits one line at 26 on a 360px phone — once
+  the English heading tracking is dropped here, which is what pushed "Pink
+  Flowers in a Blue Vase" a pixel past the line. Hebrew carries none anyway,
+  and a display title at this size needs no air let into it (About's name
+  drops it for the same reason).
+*/
+@media (max-width: 59.999rem) {
+  .title {
+    font-size: min(var(--text-page), 1.625rem);
+    letter-spacing: 0;
+  }
 }
 
 /**
@@ -237,7 +259,7 @@
   the label column's narrower width — this is prose, the one long read here.
 */
 .about {
-  max-inline-size: var(--measure);
+  max-inline-size: var(--measure-prose);
   margin-block-start: var(--space-8);
   padding-block-start: var(--space-6);
   border-block-start: var(--border-hairline) solid var(--line);
@@ -248,8 +270,6 @@
   font-family: var(--font-body);
   font-size: var(--text-xs);
   font-weight: var(--weight-normal);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -468,4 +488,9 @@
     flex: 0 1 26rem;
     min-inline-size: 20rem;
   }
+}
+
+/* The Hebrew stack, 7px shorter — see --plate-stack above. */
+.work:lang(he) {
+  --plate-stack: 30.6875rem;
 }

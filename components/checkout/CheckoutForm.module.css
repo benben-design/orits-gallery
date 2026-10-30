@@ -2,7 +2,7 @@
  * The checkout form.
  *
  * The cart's language continued rather than a new one: a document column, no
- * panels, hairlines instead of boxes, one uppercase muted label per section, and
+ * panels, hairlines instead of boxes, one small muted label per section, and
  * exactly one filled accent control on the page — the button that takes the
  * money. The totals block is the cart's `.summary` treatment, because it is the
  * same moment in the same journey and a buyer should recognise it.
@@ -50,8 +50,6 @@
 .legend {
   margin-block-end: var(--space-3);
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -342,8 +340,6 @@
 
 .totalLabel {
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -374,8 +370,6 @@
   background-color: var(--accent);
   color: var(--text-on-accent);
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
   cursor: pointer;
   transition: background-color var(--duration) var(--ease);
 }
