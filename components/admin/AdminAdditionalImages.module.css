@@ -1,0 +1,153 @@
+/**
+ * The additional-images panel, directly below the main image.
+ *
+ * The same panel, heading and message treatment as the main image, composed
+ * rather than copied, so the two read as one "images" area with a lighter
+ * second part. Light by construction: what is drawn is what exists, plus one
+ * small tile to add another.
+ */
+.panel {
+  composes: panel from './AdminImageUpload.module.css';
+  margin-block-start: var(--space-4);
+}
+
+.dragging {
+  composes: dragging from './AdminImageUpload.module.css';
+}
+
+.heading {
+  composes: heading from './AdminImageUpload.module.css';
+}
+
+.hint {
+  composes: hint from './AdminImageUpload.module.css';
+  margin-block-start: var(--space-2);
+}
+
+/*
+  The images in the order she added them, then the tile. A wrapping row of
+  fixed-width items, so three thumbnails and a tile fit one line from about
+  400px and fold onto two on the narrowest phone without anything shrinking.
+*/
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: var(--space-4);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  inline-size: 6rem;
+}
+
+/* ArtworkFrame's shared 4:5 box, so the tile beside the thumbnails is the same shape. */
+.thumbnail {
+  inline-size: 100%;
+}
+
+/*
+  Removing is quiet: muted words with the bin beneath each thumbnail, never on
+  the photograph, at a thumb's height. Nothing is deleted until she saves.
+*/
+.remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-block-size: 2.75rem;
+  padding-inline: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .remove:not(:disabled):hover {
+    color: var(--accent);
+  }
+}
+
+.remove:disabled {
+  cursor: progress;
+}
+
+/*
+  The way to add one: a dashed tile the shape of a thumbnail. Dashed because
+  that is what this project already uses for "something goes here"; the edge
+  is --line-strong, because --line at one pixel is invisible on the mat.
+*/
+.add {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  inline-size: 100%;
+  aspect-ratio: 4 / 5;
+  padding: var(--space-2);
+  border: var(--border-hairline) dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .add:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+/* The input is hidden, so the tile carries its focus ring. */
+.add:has(.fileInput:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.add:has(.fileInput:disabled) {
+  cursor: progress;
+}
+
+.addText {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+/* Out of sight, still in the tab order and named by the label around it. */
+.fileInput {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.bar {
+  composes: bar from './AdminImageUpload.module.css';
+}
+
+.error {
+  composes: error from './AdminImageUpload.module.css';
+  margin-block-start: var(--space-4);
+}
+
+.visuallyHidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

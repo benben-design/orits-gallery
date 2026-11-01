@@ -70,9 +70,6 @@
     "year": "Year",
     "imageAlt": "{title} - painting by {artist}",
     "noImage": "No image yet",
-    "imageAltDetail": "{title} - a close-up of the brushwork, a painting by {artist}",
-    "imageAltInSitu": "{title} - the painting hanging on a wall, by {artist}",
-    "moreImages": "More views of this work",
     "shareDescription": "{title} - an original painting by {artist}.",
     "addToCart": "Add to cart",
     "breadcrumb": "Breadcrumb",
@@ -101,7 +98,11 @@
     "aboutWork": "About the work",
     "units": {
       "cm": "cm"
-    }
+    },
+    "imageAltAdditional": "{title} - another view of the painting, by {artist}",
+    "imageAltPosition": "{title} - image {current} of {total}",
+    "galleryShow": "Show image {current} of {total}",
+    "galleryLabel": "Images of this work"
   },
   "about": {
     "title": "About",
@@ -578,7 +579,9 @@
         "imageRequiredToPublish": "A work cannot be published without a photograph — on the site it would appear as an empty frame. Attach one at the top of this page, then tick publish and save.",
         "imageRequiredToPublishNew": "A work cannot be published without a photograph — on the site it would appear as an empty frame. Attach one above and save, or save without ticking publish. The work has not been saved yet.",
         "imageNotConfirmed": "The photograph uploaded, but it could not be confirmed with the image service — so the work was not saved. Upload it again and save.",
-        "notFound": "That work was not found. It may have been deleted."
+        "notFound": "That work was not found. It may have been deleted.",
+        "tooManyAdditionalImages": "A work can have up to 3 additional images. Remove one and save again.",
+        "additionalImageNotConfirmed": "One of the additional images was not found at the image service. Remove it, upload it again and save."
       },
       "save": "Save changes",
       "publishedLabel": "Shown on the site",
@@ -596,7 +599,19 @@
         "noSource": "There is no Hebrew text to translate.",
         "blocked": "A translation is waiting for your approval, so this cannot be saved yet:",
         "listSeparator": ", "
-      }
+      },
+      "additionalImages": {
+        "legend": "Additional images (optional, up to 3)",
+        "hint": "A close-up, say, or the painting hanging on a wall. Saved with the rest of the form when you press save.",
+        "add": "Add an image",
+        "remove": "Remove",
+        "removeLabel": "Remove additional image {number}",
+        "uploading": "{percent}%",
+        "added": "Image added. It will be saved with the form.",
+        "removed": "Image removed. The change will be saved with the form.",
+        "full": "That is the most, 3 additional images. To add another, remove one first."
+      },
+      "unsavedChanges": "You have unsaved changes. Leave this page without saving them?"
     }
   },
   "medium": {

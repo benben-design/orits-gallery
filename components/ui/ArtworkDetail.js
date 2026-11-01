@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import ArtworkFrame from './ArtworkFrame';
 import StatusBadge from './StatusBadge';
 import Price from './Price';
@@ -6,6 +7,7 @@ import AddToCart from '@/components/cart/AddToCart';
 import ArtworkViewer from './ArtworkViewer';
 import { VIEW_INDEX_ATTRIBUTE } from './viewTrigger';
 import ArtworkAssurances from './ArtworkAssurances';
+import ArtworkGallery from './ArtworkGallery';
 import AskAboutWork from './AskAboutWork';
 import { getStatusPresentation, isBuyable } from './statusPresentation';
 import { mediumLabel } from './mediumLabel';
@@ -137,8 +139,8 @@ function mainImageSizes(ratio) {
   return `(max-width: 60rem) 92vw, ${Math.ceil(PLATE_BLOCK_REM * ratio)}rem`;
 }
 
-/** The supporting images, which sit two or three to a row. */
-const SUPPORTING_IMAGE_SIZES = '(max-width: 40rem) 44vw, (max-width: 60rem) 30vw, 16rem';
+/** The gallery's thumbnails: 3rem on a phone, 3.5rem from 40rem. */
+const THUMB_SIZES = '(max-width: 40rem) 3rem, 3.5rem';
 
 /**
  * The shape the frame falls back to when there is no photograph yet.
@@ -151,20 +153,15 @@ const SUPPORTING_IMAGE_SIZES = '(max-width: 40rem) 44vw, (max-width: 60rem) 30vw
 const FALLBACK_RATIO = 0.8;
 
 /**
- * The alt template each image role uses.
+ * Alt text, derived from the work because per-image alt text — `alt_he` /
+ * `alt_en` on `work_images` — is not returned by the repository yet.
  *
- * A detail shot and a view in a room are not the same picture as the painting,
- * and giving all three the same alt text reads the title three times to a
- * screen reader while saying nothing about what changed. Per-image alt text
- * does exist in the database — `alt_he` / `alt_en` on `work_images` — but the
- * repository does not return it yet, so this is the fallback images.md
- * describes: derive it from the work, per language.
+ * The main image is the painting and says so, as it always has. Any other
+ * image says which work it belongs to and where it falls in the set — "2 of 3",
+ * in each language — because the admin does not record whether a photograph is
+ * a close-up or the painting on a wall, and an alt text guessing at that would
+ * be a description nobody checked.
  */
-const ALT_TEMPLATE_BY_TYPE = {
-  main: 'imageAlt',
-  detail: 'imageAltDetail',
-  'in-situ': 'imageAltInSitu',
-};
 
 /**
  * The button laid over a frame that opens it full screen.
@@ -201,11 +198,10 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
   const description = work.description[locale];
   const medium = mediumLabel(work, locale, dictionary);
 
-  const altFor = (image) =>
-    interpolate(dictionary.artwork[ALT_TEMPLATE_BY_TYPE[image?.type] ?? 'imageAlt'], {
-      title,
-      artist: dictionary.site.artistName,
-    });
+  const altFor = (image, position, total) =>
+    position === 0
+      ? interpolate(dictionary.artwork.imageAlt, { title, artist: dictionary.site.artistName })
+      : interpolate(dictionary.artwork.imageAltPosition, { title, current: position + 1, total });
 
   /*
     A work legitimately has no photograph: she creates the record in the admin
@@ -224,22 +220,18 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
     mainImage?.width && mainImage?.height ? mainImage.width / mainImage.height : FALLBACK_RATIO;
 
   /*
-    The close-up of the brushwork and the view in a room. No row carries either
-    today — only `main` exists — so this is built for the shape rather than for
-    the data, which is what stops it needing a redesign when they arrive.
+    The set: the main image, then the others in the order she added them. One
+    list for the page's gallery and the full-screen view, so position N is the
+    same image in both and the index each button carries means one thing.
   */
-  const supporting = work.images.filter((image) => image !== mainImage);
+  const images = mainImage ? [mainImage, ...work.images.filter((image) => image !== mainImage)] : [];
+  const hasGallery = images.length > 1;
 
-  /*
-    What the full-screen view pages through: the main image, then the
-    supporting ones in the order they are shown here. Its position in this
-    list is the index each button carries.
-  */
-  const viewerImages = (mainImage ? [mainImage, ...supporting] : []).map((image) => ({
+  const viewerImages = images.map((image, position) => ({
     src: image.src,
     width: image.width,
     height: image.height,
-    alt: altFor(image),
+    alt: altFor(image, position, images.length),
   }));
   const viewLabel = interpolate(dictionary.artwork.viewOpen, { title });
   /* The description's heading id, unique per work so two bodies could share a page. */
@@ -281,20 +273,66 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
         label, by the column on a phone — and the component only says what
         shape the work is.
       */}
-      <article className={styles.work} style={{ '--work-ratio': workRatio }}>
-        <div className={styles.plate}>
-          <ArtworkFrame
-            image={mainImage}
-            alt={altFor(mainImage)}
-            emptyLabel={dictionary.artwork.noImage}
-            sizes={mainImageSizes(workRatio)}
-            /* The largest thing on the page, and the LCP element. */
-            priority
-            tone="bare"
-            className={styles.mainFrame}
+      <article
+        className={[styles.work, hasGallery ? styles.withGallery : ''].filter(Boolean).join(' ')}
+        style={{ '--work-ratio': workRatio }}
+      >
+        {hasGallery ? (
+          /*
+            More than one image: the same plate, turned into a stage that keeps
+            the main painting's footprint, with a catalogue strip beneath it.
+            Every image is server markup handed in; see ArtworkGallery.
+          */
+          <ArtworkGallery
+            className={styles.plate}
+            locale={locale}
+            copy={{
+              galleryLabel: dictionary.artwork.galleryLabel,
+              galleryShow: dictionary.artwork.galleryShow,
+              viewPrevious: dictionary.artwork.viewPrevious,
+              viewNext: dictionary.artwork.viewNext,
+              viewPosition: dictionary.artwork.viewPosition,
+            }}
+            slides={images.map((image, position) => (
+              <Fragment key={image.id}>
+                <ArtworkFrame
+                  image={image}
+                  alt={altFor(image, position, images.length)}
+                  sizes={mainImageSizes(workRatio)}
+                  /*
+                    The main image keeps its priority as the LCP element; the
+                    others load lazily, and not at all until first shown.
+                  */
+                  priority={position === 0}
+                  tone="bare"
+                  className={styles.mainFrame}
+                />
+                <ViewTrigger index={position} label={viewLabel} />
+              </Fragment>
+            ))}
+            thumbs={images.map((image) => (
+              /*
+                No alt of its own: the button over it is named "show image 2
+                of 3", and an alt here would read the title a second time.
+              */
+              <ArtworkFrame key={image.id} image={image} alt="" sizes={THUMB_SIZES} />
+            ))}
           />
-          {mainImage ? <ViewTrigger index={0} label={viewLabel} /> : null}
-        </div>
+        ) : (
+          <div className={styles.plate}>
+            <ArtworkFrame
+              image={mainImage}
+              alt={altFor(mainImage, 0, 1)}
+              emptyLabel={dictionary.artwork.noImage}
+              sizes={mainImageSizes(workRatio)}
+              /* The largest thing on the page, and the LCP element. */
+              priority
+              tone="bare"
+              className={styles.mainFrame}
+            />
+            {mainImage ? <ViewTrigger index={0} label={viewLabel} /> : null}
+          </div>
+        )}
 
         <div className={styles.label}>
           {/*
@@ -462,25 +500,6 @@ export default function ArtworkDetail({ work, locale, dictionary, settings = nul
         </section>
       ) : null}
 
-      {supporting.length > 0 ? (
-        <ul className={styles.supporting} aria-label={dictionary.artwork.moreImages}>
-          {supporting.map((image, position) => (
-            <li key={image.id} className={styles.supportingItem}>
-              {/*
-                Mounted, not bare. These are small and several, which is the case
-                the mount exists for — warm on warm, each needing its own edge.
-                The bare tone above is for the one large work.
-              */}
-              <ArtworkFrame
-                image={image}
-                alt={altFor(image)}
-                sizes={SUPPORTING_IMAGE_SIZES}
-              />
-              <ViewTrigger index={position + 1} label={viewLabel} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
     </ArtworkViewer>
   );
 }

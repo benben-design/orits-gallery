@@ -55,7 +55,7 @@ One glyph means one action, everywhere it appears:
 | Remove a work | `Trash2` | the drawer, the cart line, the missing-works control |
 | Close a panel | `X` | the drawer and the full-screen view, icon-only |
 | View a painting full screen | `Maximize2` | the artwork page, beneath the frame on hover and focus |
-| Previous / next image | `ChevronLeft` / `ChevronRight` | the full-screen view, icon-only — swapped in Hebrew, because they point the way the reading goes |
+| Previous / next image | `ChevronLeft` / `ChevronRight` | the full-screen view and the work page's gallery strip, icon-only — swapped in Hebrew, because they point the way the reading goes |
 | Sign in / out | `LogIn` / `LogOut` | the admin |
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |

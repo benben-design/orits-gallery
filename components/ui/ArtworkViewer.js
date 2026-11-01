@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { fullViewLoader } from '@/lib/image-loader';
 import { getDirection, getLocaleTag } from '@/lib/i18n/config';
 import { interpolate } from '@/lib/i18n/interpolate';
-import { VIEW_INDEX_ATTRIBUTE } from './viewTrigger';
+import { VIEW_CLOSED_EVENT, VIEW_INDEX_ATTRIBUTE } from './viewTrigger';
 import { lockPageScroll } from './lockPageScroll';
 import styles from './ArtworkViewer.module.css';
 
@@ -187,6 +187,14 @@ export default function ArtworkViewer({ images, title, dimensions, locale, copy,
     unlockRef.current?.();
     unlockRef.current = null;
     if (canvasRef.current) canvasRef.current.style.transform = '';
+    /*
+      Said from the button that opened the view, so it reaches the gallery
+      holding it: that gallery turns to the image the visitor ended on. See
+      ArtworkGallery.
+    */
+    openerRef.current?.dispatchEvent(
+      new CustomEvent(VIEW_CLOSED_EVENT, { bubbles: true, detail: { index } })
+    );
     /*
       Browsers now restore focus on their own when a modal dialog closes; this
       is said anyway, because the requirement is that focus lands on the
