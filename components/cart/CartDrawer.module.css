@@ -467,3 +467,13 @@
   block-size: max(100%, 2.75rem);
   translate: -50% -50%;
 }
+
+/**
+ * The line under the total in contact mode — that a purchase is arranged with
+ * the artist, said before the button rather than discovered inside the dialog.
+ */
+.purchaseNote {
+  margin-block: calc(var(--space-2) * -1) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

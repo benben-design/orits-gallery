@@ -5,6 +5,7 @@ import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ButtonLink from '@/components/ui/ButtonLink';
 import CartLine from '@/components/cart/CartLine';
+import PurchaseButton from '@/components/cart/PurchaseButton';
 import { CART_BAR_ATTRIBUTE } from '@/components/artwork/buyControls';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
@@ -15,6 +16,7 @@ import { readCartIds } from '@/lib/cart/cart-cookie';
 import { cartTotal } from '@/lib/cart/cart-contents';
 import { removeMissingFromCart } from '@/lib/cart/actions';
 import { getWorksByIds } from '@/lib/data/works-repository';
+import { isOnlinePaymentEnabled } from '@/lib/sales-mode';
 import styles from './page.module.css';
 
 /**
@@ -77,7 +79,17 @@ export default async function CartPage({ params }) {
   const missingCount = ids.length - held.length;
 
   /* Only what can actually be bought counts towards the total. */
-  const total = cartTotal(held.filter((work) => isBuyable(work.status)));
+  const buyable = held.filter((work) => isBuyable(work.status));
+  const total = cartTotal(buyable);
+
+  /*
+    In contact mode (lib/sales-mode.js) the purchase is arranged with the
+    artist: the control opens the purchase dialog on exactly the works the
+    total counts. It is handed only the fields the dialog and the WhatsApp
+    message read, rather than every image and description in the cart.
+  */
+  const purchaseByContact = !isOnlinePaymentEnabled();
+  const purchaseWorks = buyable.map(({ id, title, slug, price }) => ({ id, title, slug, price }));
 
   return (
     <Section>
@@ -150,23 +162,41 @@ export default async function CartPage({ params }) {
                   </span>
                 </p>
 
-                {/*
-                  The checkout control, **a real link now that the checkout
-                  exists**. It was a deliberately inert `<button>` with a "not open
-                  yet" line beneath it, because a link to a stub page would have
-                  asserted that a checkout existed and was broken. Both the
-                  `aria-disabled` and that line are gone together with the reason
-                  for them.
+                {purchaseByContact ? (
+                  <PurchaseButton
+                    works={purchaseWorks}
+                    label={dictionary.cart.purchase}
+                    className={styles.checkout}
+                  />
+                ) : (
+                  /*
+                    The checkout control, **a real link now that the checkout
+                    exists**. It was a deliberately inert `<button>` with a "not open
+                    yet" line beneath it, because a link to a stub page would have
+                    asserted that a checkout existed and was broken. Both the
+                    `aria-disabled` and that line are gone together with the reason
+                    for them.
 
-                  This page still works with no JavaScript at all, and so does this
-                  link — which is the property that made `/cart` worth keeping when
-                  the drawer became the primary cart.
-                */}
-                <Link href={localeHref(locale, '/checkout')} className={styles.checkout}>
-                  <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
-                  <span>{dictionary.cart.checkout}</span>
-                </Link>
+                    This page still works with no JavaScript at all, and so does this
+                    link — which is the property that made `/cart` worth keeping when
+                    the drawer became the primary cart.
+                  */
+                  <Link href={localeHref(locale, '/checkout')} className={styles.checkout}>
+                    <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+                    <span>{dictionary.cart.checkout}</span>
+                  </Link>
+                )}
               </div>
+            ) : null}
+
+            {/*
+              Outside the summary rather than inside it, because on a phone the
+              summary is a bar of one fixed height at the foot of the screen;
+              here the line sits under the total and its button from 40rem, and
+              at the end of the list above the bar on a phone.
+            */}
+            {total && purchaseByContact ? (
+              <p className={styles.purchaseNote}>{dictionary.cart.purchaseNote}</p>
             ) : null}
           </div>
         )}

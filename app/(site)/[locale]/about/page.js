@@ -1,3 +1,4 @@
+import { Mail, Phone } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -5,11 +6,12 @@ import SectionLabel from '@/components/ui/SectionLabel';
 import PortraitFrame from '@/components/ui/PortraitFrame';
 import ArtworkWall from '@/components/ui/ArtworkWall';
 import ButtonLink from '@/components/ui/ButtonLink';
+import SocialLinks from '@/components/ui/SocialLinks';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { localeHref } from '@/lib/i18n/config';
 import { getSiteSettings } from '@/lib/data/settings-repository';
 import { getRecentWorks } from '@/lib/data/works-repository';
-import { contactMethods } from '@/lib/contact';
+import { contactMethods, displayPhone, mailtoHref, telHref } from '@/lib/contact';
 import styles from './page.module.css';
 
 /**
@@ -24,7 +26,11 @@ import styles from './page.module.css';
  *      text follows it at reading size, beside her photograph. Nothing in it
  *      is ours — which paragraph leads is simply which one she wrote first,
  *      so reordering her text in the admin is how she changes it.
- *   3. **Three of her paintings and the way on** — to all of them, and to her.
+ *   3. **Her story ends on how to reach her** — phone, email, her Instagram
+ *      and Facebook, signed off under a short rule the way a letter ends,
+ *      rather than as a block of fields. Each is a site setting; an empty one
+ *      is simply absent, and with none there is no sign-off.
+ *   4. **Three of her paintings and the way on** — to all of them, and to her.
  *      A page about a painter used to end with no painting on it and nowhere
  *      to go.
  *
@@ -90,6 +96,10 @@ export default async function AboutPage({ params }) {
   const { portrait } = settings;
   const canContact = contactMethods(settings).length > 0;
 
+  const phoneHref = telHref(settings.phone);
+  const emailHref = mailtoHref(settings.email);
+  const hasSignOff = Boolean(phoneHref || emailHref || settings.instagramUrl || settings.facebookUrl);
+
   return (
     <>
       <Section as="div" size="tight">
@@ -128,14 +138,54 @@ export default async function AboutPage({ params }) {
               />
             ) : null}
 
-            {lead ? (
+            {lead || hasSignOff ? (
               <div className={styles.body}>
-                <p className={styles.lead}>{lead}</p>
+                {lead ? <p className={styles.lead}>{lead}</p> : null}
                 {rest.map((paragraph, index) => (
                   <p key={index} className={styles.paragraph}>
                     {paragraph}
                   </p>
                 ))}
+
+                {/*
+                  The sign-off. An <address> because that is what it is: the
+                  ways to reach the person the page is about. Its label is in
+                  the display face, a quiet echo of her name above, so it reads
+                  as the close of her words rather than a form appended to them.
+                  The number shows in its local form and dials the
+                  international one; each value is its own left-to-right run.
+                */}
+                {hasSignOff ? (
+                  <address className={styles.signOff}>
+                    <p className={styles.signOffLabel}>{dictionary.about.signOff}</p>
+                    {phoneHref || emailHref ? (
+                      <ul className={styles.signOffLinks}>
+                        {phoneHref ? (
+                          <li>
+                            <a href={phoneHref} className={styles.signOffLink}>
+                              <Phone size={18} strokeWidth={1.5} aria-hidden="true" className={styles.signOffIcon} />
+                              <span dir="ltr">{displayPhone(settings.phone)}</span>
+                            </a>
+                          </li>
+                        ) : null}
+                        {emailHref ? (
+                          <li>
+                            <a href={emailHref} className={styles.signOffLink}>
+                              <Mail size={18} strokeWidth={1.5} aria-hidden="true" className={styles.signOffIcon} />
+                              <span dir="ltr">{settings.email}</span>
+                            </a>
+                          </li>
+                        ) : null}
+                      </ul>
+                    ) : null}
+                    <SocialLinks
+                      instagramUrl={settings.instagramUrl}
+                      facebookUrl={settings.facebookUrl}
+                      labels={dictionary.contact.social}
+                      className={styles.signOffSocial}
+                    />
+                  </address>
+                ) : null}
               </div>
             ) : null}
           </div>

@@ -280,8 +280,43 @@ shots, wrong crops, screenshots — and publishing straight from one to a public
 shop will eventually publish something wrong. The automation feeds her inbox,
 not the website.
 
+## Purchase by contact — the default (01-11-2026)
+
+**The site starts as an experiment, so a purchase is arranged personally with
+the artist rather than paid for online.** `SALES_MODE` (`lib/sales-mode.js`)
+has two values, `contact` and `online`, and it is contact unless it is exactly
+`online`. It is an explicit setting, never inferred from whether payment keys
+exist.
+
+In contact mode:
+
+- **The checkout is unreachable on the server**, not only hidden: the checkout
+  page redirects to the cart before reading anything, and `submitCheckout`
+  refuses in its first statement — before the throttle, the order row or Hyp.
+- **The cart, adding to it and the drawer are unchanged.** What changes is
+  their purchase control: "לרכישה" / "Purchase" in the drawer and on `/cart`,
+  with a line under the total saying a purchase is arranged with the artist,
+  and "buy now" on an artwork page. Each opens `PurchaseDialog` instead of
+  navigating.
+- **The dialog lists only what the total counts.** A painting that sold while
+  it sat in the cart is neither shown nor named in the message — she must never
+  be asked for a painting that is gone — and with nothing buyable there is no
+  purchase control at all. "Buy now" shows its one painting and leaves the cart
+  untouched, as its link did.
+- **WhatsApp first and the only filled accent**, opening with a message in the
+  visitor's language naming every painting with a link to its page and the
+  total (`lib/cart/purchase-message.js`); phone and email follow when set.
+  Instagram and Facebook are deliberately left out: the dialog is for buying.
+- **Nothing is recorded.** No order, no reservation, no status change: marking
+  the painting sold once she has agreed a sale is hers, from the works list,
+  exactly as for a sale at a fair. The double-sale mitigations above still
+  stand, because the cart still re-reads every work.
+
+In online mode none of this appears and everything below is what happens.
+
 ## The three checkout controls are real now
 
+**In online mode** (see above).
 **They were inert for months and they are not any more.** The drawer's checkout
 button, `/cart`'s, and "buy now" on the artwork page are all ordinary links into
 `/[locale]/checkout`. The `aria-disabled` attributes and the shared

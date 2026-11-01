@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
@@ -16,6 +17,7 @@ import { getSiteSettings } from '@/lib/data/settings-repository';
 import { whatsappHref } from '@/lib/contact';
 import { submitCheckout } from '@/lib/checkout/actions';
 import { isHypConfigured, isTestTerminal } from '@/lib/payments/hyp';
+import { isOnlinePaymentEnabled } from '@/lib/sales-mode';
 import styles from './page.module.css';
 
 /**
@@ -57,6 +59,16 @@ export async function generateMetadata({ params }) {
 
 export default async function CheckoutPage({ params, searchParams }) {
   const { locale } = await params;
+
+  /*
+    In contact mode there is no checkout at all, and this is the server half of
+    that rather than a hidden button: the page is gone before the cart is read,
+    anything is priced or a form exists to post. The cart is where every way in
+    lands, because its purchase control is what a buyer needs instead. See
+    lib/sales-mode.js. `submitCheckout` refuses in the same way, on its own.
+  */
+  if (!isOnlinePaymentEnabled()) redirect(localeHref(locale, '/cart'));
+
   const { work: quickBuyId } = await searchParams;
   const dictionary = await getDictionary(locale);
 

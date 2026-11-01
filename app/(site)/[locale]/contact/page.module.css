@@ -110,6 +110,21 @@
   }
 }
 
+/*
+  Where to follow her, after where to reach her. Its own small label rather than
+  another row: two glyphs at the end of a hairline list would read as a row
+  that lost its words.
+*/
+.follow {
+  margin-block-start: var(--space-8);
+}
+
+.followLabel {
+  margin-block-end: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
 @media (min-width: 40rem) {
   .whatsapp {
     inline-size: auto;

@@ -21,7 +21,7 @@
   },
   "home": {
     "hero": {
-      "positioning": "Paintings that bring light into a home",
+      "positioning": "Art that tells a story",
       "posterAlt": "אורית בר שי מציירת בסטודיו - מכחול טעון בצבע שמן נוגע בבד",
       "pauseMotion": "עצירת הסרטון",
       "playMotion": "הפעלת הסרטון",
@@ -106,7 +106,8 @@
   "about": {
     "title": "אודות",
     "worksHeading": "עבודות אחרונות",
-    "contactLink": "ליצירת קשר עם אורית"
+    "contactLink": "ליצירת קשר עם אורית",
+    "signOff": "לשיחה עם אורית"
   },
   "notFound": {
     "title": "העמוד לא נמצא",
@@ -127,9 +128,12 @@
     "methods": {
       "whatsapp": "וואטסאפ",
       "phone": "טלפון",
-      "email": "דוא״ל",
-      "instagram": "אינסטגרם",
-      "facebook": "פייסבוק"
+      "email": "דוא״ל"
+    },
+    "follow": "עקבו אחרי אורית",
+    "social": {
+      "instagram": "אורית באינסטגרם (נפתח בכרטיסייה חדשה)",
+      "facebook": "אורית בפייסבוק (נפתח בכרטיסייה חדשה)"
     }
   },
   "cart": {
@@ -151,7 +155,17 @@
     "close": "סגירה",
     "loading": "רגע…",
     "viewCart": "לעמוד העגלה",
-    "checkout": "לתשלום"
+    "checkout": "לתשלום",
+    "purchase": "לרכישה",
+    "purchaseNote": "הרכישה מתבצעת בתיאום אישי עם האמנית",
+    "purchaseLead": "אורית תשמח לדבר איתך ישירות",
+    "purchaseListLabel": "היצירות לרכישה",
+    "purchaseWhatsapp": "שיחה עם אורית בוואטסאפ",
+    "purchasePhone": "טלפון",
+    "purchaseEmail": "דוא״ל",
+    "purchaseMessageIntro": "היי אורית, אשמח לרכוש:",
+    "purchaseMessageLine": "{title}\n{url}",
+    "purchaseMessageTotal": "סך הכול: {total}"
   },
   "checkout": {
     "title": "תשלום",
@@ -467,7 +481,7 @@
         "hints": {
           "about": "הטקסט נשמר בשתי השפות יחד. אפשר גם למחוק את שניהם, ואז עמוד האודות יישאר בלי טקסט.",
           "whatsappNumber": "אפשר לכתוב את המספר כרגיל, למשל 052-4321817.",
-          "social": "הכתובת המלאה של העמוד, כפי שהיא מופיעה בשורת הכתובת של הדפדפן.",
+          "social": "שם המשתמש, למשל ‎@gitahome‎, או הכתובת המלאה של העמוד כפי שהיא מופיעה בשורת הכתובת של הדפדפן.",
           "shippingFee": "מחיר אחיד לכל מקום בישראל. 0 פירושו משלוח חינם. שינוי המחיר לא משנה הזמנות שכבר בוצעו.",
           "selfPickupOffered": "כשהאפשרות כבויה, קונים יוכלו לבחור רק משלוח. הזמנות שכבר בוצעו לא משתנות."
         },

@@ -10,6 +10,7 @@ import { FallbackProvider } from '@/components/layout/fallback-context';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { siteUrl } from '@/lib/site-url';
 import { isSearchIndexingAllowed } from '@/lib/search-indexing';
+import { isOnlinePaymentEnabled } from '@/lib/sales-mode';
 import { whatsappHref } from '@/lib/contact';
 import { getSiteSettings } from '@/lib/data/settings-repository';
 import { locales, isLocale, getDirection, getLocaleTag } from '@/lib/i18n/config';
@@ -139,8 +140,24 @@ export default async function SiteLayout({ children, params }) {
           already rendered on the server and passes straight through, which is
           what keeps the homepage and every artwork page statically generated —
           a client component hosting server components, not converting them.
+
+          In contact mode (lib/sales-mode.js) it also renders the purchase
+          dialog, so it is handed the three ways of reaching the artist a
+          purchase needs and the site's address for the message's links. The
+          mode is read here at build time for the prerendered pages, which is
+          why changing it needs a deploy.
         */}
-        <CartProvider dictionary={cartDictionary} locale={locale}>
+        <CartProvider
+          dictionary={cartDictionary}
+          locale={locale}
+          purchaseByContact={!isOnlinePaymentEnabled()}
+          contact={{
+            whatsappNumber: settings.whatsappNumber,
+            phone: settings.phone,
+            email: settings.email,
+          }}
+          siteOrigin={siteUrl()}
+        >
           <a className="skipLink" href="#main">
             {dictionary.site.skipToContent}
           </a>

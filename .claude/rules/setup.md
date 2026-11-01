@@ -272,6 +272,17 @@ at all — the payment-page signature and the return URLs live in the Hyp consol
 at the terminal level, and the signature must not be switched on until the
 verification code is built and tested. See api.md.
 
+**`SALES_MODE` decides whether any of that is used** (01-11-2026), read by
+`lib/sales-mode.js`. It is `contact` unless it is exactly `online`, and
+**unset is contact mode** — the default the site launches in: the cart's
+purchase control and "buy now" open a dialog with the artist's WhatsApp, phone
+and email, the checkout page redirects to the cart, and `submitCheckout`
+refuses before anything is written or Hyp is asked. **It is never inferred from
+the `HYP_*` keys** — keys present answer "could we sign a payment page", not
+"should we", and test keys in an environment must not open a checkout. To work
+on the checkout locally, set `SALES_MODE=online` in `.env.local`. Read at build
+time by the prerendered pages, so on Netlify a change needs a redeploy.
+
 Add a key to the example in the same change that starts reading it, and keep a
 real terminal's credentials in `.env.local` and the Netlify site and nowhere
 else.

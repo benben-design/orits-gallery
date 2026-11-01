@@ -21,7 +21,7 @@
   },
   "home": {
     "hero": {
-      "positioning": "Paintings that bring light into a home",
+      "positioning": "Art that tells a story",
       "posterAlt": "Orit Bar Shai painting in her studio - a loaded brush meeting wet oil paint on canvas",
       "pauseMotion": "Stop the video",
       "playMotion": "Play the video",
@@ -106,7 +106,8 @@
   "about": {
     "title": "About",
     "worksHeading": "Recent work",
-    "contactLink": "Get in touch with Orit"
+    "contactLink": "Get in touch with Orit",
+    "signOff": "Talk with Orit"
   },
   "notFound": {
     "title": "Page not found",
@@ -127,9 +128,12 @@
     "methods": {
       "whatsapp": "WhatsApp",
       "phone": "Phone",
-      "email": "Email",
-      "instagram": "Instagram",
-      "facebook": "Facebook"
+      "email": "Email"
+    },
+    "follow": "Follow Orit",
+    "social": {
+      "instagram": "Orit on Instagram (opens in a new tab)",
+      "facebook": "Orit on Facebook (opens in a new tab)"
     }
   },
   "cart": {
@@ -151,7 +155,17 @@
     "close": "Close",
     "loading": "One moment…",
     "viewCart": "Open the cart page",
-    "checkout": "Checkout"
+    "checkout": "Checkout",
+    "purchase": "Purchase",
+    "purchaseNote": "Purchases are arranged personally with the artist",
+    "purchaseLead": "Orit would be happy to talk with you directly",
+    "purchaseListLabel": "Paintings to purchase",
+    "purchaseWhatsapp": "Message Orit on WhatsApp",
+    "purchasePhone": "Phone",
+    "purchaseEmail": "Email",
+    "purchaseMessageIntro": "Hi Orit, I would like to purchase:",
+    "purchaseMessageLine": "{title}\n{url}",
+    "purchaseMessageTotal": "Total: {total}"
   },
   "checkout": {
     "title": "Checkout",
@@ -467,7 +481,7 @@
         "hints": {
           "about": "Saved in both languages together. Clearing both leaves the About page without text.",
           "whatsappNumber": "Write the number as you normally would, for example 052-4321817.",
-          "social": "The full address of the page, as it appears in the browser address bar.",
+          "social": "The username, for example @gitahome, or the full address of the page as it appears in the browser address bar.",
           "shippingFee": "One flat rate anywhere in Israel. 0 means free shipping. Changing it does not change orders already placed.",
           "selfPickupOffered": "When this is off, buyers can only choose shipping. Orders already placed do not change."
         },

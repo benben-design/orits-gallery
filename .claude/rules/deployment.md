@@ -253,6 +253,17 @@ console: the payment-page **signature** setting and the success and failure
 ordering trap — switching it on before our verification code is built and tested
 makes every test transaction fail with nothing to explain why. See api.md.
 
+**`SALES_MODE` is the switch between the two ways of selling** (01-11-2026),
+read by `lib/sales-mode.js`, and it is **unset on the Netlify site**: the site
+launches selling by contact. A buyer's purchase control opens a dialog with the
+artist's WhatsApp, phone and email; the checkout page redirects to the cart and
+the checkout action refuses on the server, so no order row is written and Hyp
+is never called. Online payment needs `SALES_MODE=online` exactly — and **the
+`HYP_*` keys alone never turn it on**, which is the point: a terminal's keys
+can be set and tested on a deploy without the checkout opening. Like
+`ALLOW_SEARCH_INDEXING` it is read at build time by every prerendered page, so
+changing it does nothing until the next deploy.
+
 ## The client address, measured on 29-09-2026
 
 Both rate limits — sign-in and checkout — key on the client address, and which
@@ -589,6 +600,11 @@ Beyond a green build, these are launch blockers and are easy to forget:
 - **Search indexing switched on** — `ALLOW_SEARCH_INDEXING=true` and a
   redeploy, as above. Until then the site cannot be found, which is right
   before launch and a silent failure after it.
+- **`SALES_MODE`, decided on purpose.** Unset is purchase by contact, which is
+  how the site launches. The day it takes payment online: every Hyp item below
+  done first, then `SALES_MODE=online` for production only, and a redeploy —
+  never the other way round, since online mode with no terminal shows buyers a
+  checkout that says buying is not open.
 
 - **Real photography — mostly done, not finished.** Fifteen of the sixteen now
   serve the artist's own originals from the image host rather than the

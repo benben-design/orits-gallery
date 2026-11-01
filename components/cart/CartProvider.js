@@ -3,8 +3,9 @@
 import { useCallback, useRef, useState, useTransition, useSyncExternalStore } from 'react';
 import { CartContext } from './cart-context';
 import CartDrawer from './CartDrawer';
+import PurchaseDialog from './PurchaseDialog';
 import { readCartContents, addWorkToCart, removeWorkFromCart, removeMissingFromCart } from '@/lib/cart/actions';
-import { parseCart, readCookieValue, CART_COOKIE_NAME } from '@/lib/cart/cart-contents';
+import { parseCart, readCookieValue, cartTotal, CART_COOKIE_NAME } from '@/lib/cart/cart-contents';
 
 /**
  * Holds the cart's open/closed state and its contents, and renders the drawer.
@@ -34,8 +35,19 @@ import { parseCart, readCookieValue, CART_COOKIE_NAME } from '@/lib/cart/cart-co
  * drawer. `/cart` is still built and still works with no script at all; the
  * drawer links to it.
  */
-export default function CartProvider({ dictionary, locale, children }) {
+export default function CartProvider({
+  dictionary,
+  locale,
+  purchaseByContact,
+  contact,
+  siteOrigin,
+  children,
+}) {
   const [open, setOpen] = useState(false);
+  /** What the purchase dialog is showing: `{ works, total }`, or null when shut. */
+  const [purchase, setPurchase] = useState(null);
+  /** What to focus when the purchase dialog closes — the control that opened it. */
+  const purchaseOpenerRef = useRef(null);
   const [contents, setContents] = useState(null);
   const [notice, setNotice] = useState(null);
   const [pending, startTransition] = useTransition();
@@ -119,6 +131,24 @@ export default function CartProvider({ dictionary, locale, children }) {
     });
   }, []);
 
+  /**
+   * Opens the purchase dialog on these works — the buyable ones in the cart,
+   * or the one painting "buy now" stands beside. The caller passes only works
+   * that can be bought; the total is added up here, through the same
+   * `cartTotal` the cart uses, so the dialog cannot disagree with it.
+   */
+  const openPurchase = useCallback((works, returnFocusTo = null) => {
+    if (works.length === 0) return;
+    purchaseOpenerRef.current = returnFocusTo;
+    setPurchase({ works, total: cartTotal(works) });
+  }, []);
+
+  const closePurchase = useCallback(() => {
+    setPurchase(null);
+    purchaseOpenerRef.current?.focus?.();
+    purchaseOpenerRef.current = null;
+  }, []);
+
   const value = {
     open,
     count,
@@ -130,12 +160,25 @@ export default function CartProvider({ dictionary, locale, children }) {
     addWork,
     removeWork,
     clearMissing,
+    /** True while the site sells by contact; see lib/sales-mode.js. */
+    purchaseByContact,
+    openPurchase,
   };
 
   return (
     <CartContext.Provider value={value}>
       {children}
       <CartDrawer dictionary={dictionary} locale={locale} />
+      {purchaseByContact ? (
+        <PurchaseDialog
+          purchase={purchase}
+          contact={contact}
+          siteOrigin={siteOrigin}
+          dictionary={dictionary}
+          locale={locale}
+          onClose={closePurchase}
+        />
+      ) : null}
     </CartContext.Provider>
   );
 }

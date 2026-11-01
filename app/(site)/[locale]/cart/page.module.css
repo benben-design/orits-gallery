@@ -232,3 +232,15 @@
     padding-block-end: calc(var(--buy-bar-height) + env(safe-area-inset-bottom));
   }
 }
+
+/**
+ * Contact mode's line under the total: that a purchase is arranged with the
+ * artist. Centred under the full-width button on a wide screen; on a phone it
+ * closes the list, above the fixed bar.
+ */
+.purchaseNote {
+  margin-block-start: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
