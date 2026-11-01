@@ -2,6 +2,7 @@ import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import AdminWorkForm, { FORM_ID } from '@/components/admin/AdminWorkForm';
 import AdminImageUpload from '@/components/admin/AdminImageUpload';
+import AdminAdditionalImages from '@/components/admin/AdminAdditionalImages';
 import { interpolate } from '@/lib/i18n/interpolate';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
@@ -80,6 +81,7 @@ export default async function AdminNewWorkPage() {
           translationAvailable={isTranslationConfigured()}
           imagePanel={
             isImageHostConfigured() ? (
+            <>
               <AdminImageUpload
                 labels={dictionary.admin.workForm.image}
                 /*
@@ -106,6 +108,22 @@ export default async function AdminNewWorkPage() {
                 maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
                 allowedFormats={ALLOWED_UPLOAD_FORMATS}
               />
+              <AdminAdditionalImages
+                labels={dictionary.admin.workForm.additionalImages}
+                uploadLabels={dictionary.admin.workForm.image}
+                alt={interpolate(dictionary.artwork.imageAltAdditional, {
+                  title: dictionary.admin.newWork.title,
+                  artist: dictionary.site.artistName,
+                })}
+                signAction={signMainImageUpload}
+                formId={FORM_ID}
+                maxBytes={MAX_UPLOAD_BYTES}
+                maxPixels={MAX_UPLOAD_PIXELS}
+                maxMegabytes={MAX_UPLOAD_MEGABYTES}
+                maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+                allowedFormats={ALLOWED_UPLOAD_FORMATS}
+              />
+            </>
             ) : null
           }
           labels={dictionary.admin.workForm}

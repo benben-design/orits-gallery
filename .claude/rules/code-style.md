@@ -51,17 +51,18 @@ One glyph means one action, everywhere it appears:
 | Action | Icon | Where |
 |---|---|---|
 | Add to cart | `ShoppingBag` | the artwork page, and the header's cart |
-| Buy now / checkout | `CreditCard` | the artwork page, the drawer, `/cart` |
+| Buy now / checkout / purchase | `CreditCard` | the artwork page, the drawer, `/cart` — the same glyph whether it leads to checkout or, in contact mode, opens the purchase dialog |
 | Remove a work | `Trash2` | the drawer, the cart line, the missing-works control |
 | Close a panel | `X` | the drawer and the full-screen view, icon-only |
 | View a painting full screen | `Maximize2` | the artwork page, beneath the frame on hover and focus |
-| Previous / next image | `ChevronLeft` / `ChevronRight` | the full-screen view, icon-only — swapped in Hebrew, because they point the way the reading goes |
+| Previous / next image | `ChevronLeft` / `ChevronRight` | the full-screen view and the work page's gallery strip, icon-only — swapped in Hebrew, because they point the way the reading goes |
 | Sign in / out | `LogIn` / `LogOut` | the admin |
 | Save | `Save` | the work form |
 | Translate / approve | `Languages` / `Check` | the work form |
 | Stop / play the hero loop | `Pause` / `Play` | the homepage hero, over the footage |
 | Try again | `RotateCcw` | the public error page |
-| Call / write | `Phone` / `Mail` | the contact page's rows — beside the label, not as a button; Instagram and Facebook carry none |
+| Call / write | `Phone` / `Mail` | the contact page's rows and the About sign-off — beside the words, not as a button |
+| Her Instagram / Facebook | `InstagramIcon` / `FacebookIcon` (not lucide — see below) | `SocialLinks`, on the contact page and the About sign-off, icon-only, opening in a new tab |
 | Star for the homepage | `Star` (filled when on) | each row of the admin's works list, icon-only |
 | Message on WhatsApp | `WhatsAppIcon` (not lucide — see below) | the floating button in the corner of every public page, icon-only; and the question about one painting on its page, with words |
 
@@ -71,7 +72,8 @@ every brand mark in its 1.0 release, so there is no WhatsApp to import.
 because Tabler draws the way lucide does — a 24px grid, round caps, a stroke —
 so at `strokeWidth={1.5}` it reads as one set with the cart's bag. It used to sit beside that bag in the header; it is the floating contact button's glyph now, at 26px — larger than anything else here because it is the whole of that control rather than a mark beside a label. Take the
 next brand mark from the same place, and draw it in ink: a brand's own colour
-in the chrome is a second accent.
+in the chrome is a second accent. **Instagram and Facebook were the next two**
+(01-11-2026) — `InstagramIcon` and `FacebookIcon`, from Tabler, in ink.
 
 **The play triangle does not flip in Hebrew.** i18n.md names it among the icons
 that carry no direction — unlike a "back" chevron — so the control mirrors to

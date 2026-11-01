@@ -1,0 +1,39 @@
+/*
+  Two quiet squares, never a fill: the accent stays the page's one filled
+  control. A hairline gives each a defined edge against the wall — without one
+  a bare glyph reads as decoration rather than as something to press — and the
+  4px corner is the site's ceiling. 44px each, a thumb's width, and 12px apart.
+*/
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: var(--border-hairline) solid var(--line-strong);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  transition: color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.icon {
+  inline-size: 1.375rem;
+  block-size: 1.375rem;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}

@@ -1,0 +1,191 @@
+/**
+ * The work's images on its own page: a stage and a catalogue strip.
+ *
+ * The gallery's width is the plate's — the caller passes ArtworkDetail's
+ * `.plate` as its class — and the stage takes the main painting's shape from
+ * `--work-ratio`, so its footprint is the one the page had before there was
+ * more than one image. Every slide fills that box, and the frame inside fits
+ * its own image into it.
+ */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stage {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: var(--work-ratio);
+  /* Vertical scrolling and pinching stay the browser's; a sideways swipe is ours. */
+  touch-action: pan-y pinch-zoom;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+  `hidden` is display: none, which is also what keeps a lazy image from loading
+  before it is chosen. Stated, because a class setting display would win.
+*/
+.slide[hidden] {
+  display: none;
+}
+
+/*
+  The one movement: the image arriving fades in over a quarter of a second.
+  Nothing slides — a catalogue turns a page, it does not scroll a reel.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .slide:not([hidden]) {
+    animation: arrive var(--duration-slow) var(--ease);
+  }
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * The strip: previous, the thumbnails, "2 of 3", next.
+ * ------------------------------------------------------------------ */
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  /*
+    Its own width, centred under the stage, and allowed to be wider than it: a
+    portrait on a phone has a stage about 165px wide, and four controls and
+    three thumbnails do not fit in that. The strip overhangs the painting
+    evenly rather than squeezing; there is gutter and gap enough on each side.
+  */
+  inline-size: max-content;
+  align-self: center;
+}
+
+/* Quiet: muted chevrons on no ground, the size of a thumb. */
+.step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  transition: color var(--duration) var(--ease);
+}
+
+@media (hover: hover) {
+  .step:hover {
+    color: var(--text-primary);
+  }
+}
+
+.thumbs {
+  display: flex;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  Each thumbnail is the grid's mounted card in miniature — the shared 4:5 box,
+  the painting fitted inside — so a portrait and a landscape sit side by side
+  at one height. 3rem on a phone, a little larger once there is room.
+*/
+.thumb {
+  position: relative;
+  inline-size: 3rem;
+  padding-block-end: var(--space-1);
+  /*
+    A thin board rather than the card's mat: the mat is sized for a card in
+    the grid, and at 3rem it left a dot of painting in a white square.
+  */
+  --frame-inset: var(--space-1);
+}
+
+/*
+  The current one is marked the way the navigation marks the page you are on:
+  a hairline in the accent beneath it. Never a dimmed thumbnail beside a bright
+  one — dimming a painting changes its colour.
+*/
+.thumb::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  border-block-end: var(--border-hairline) solid transparent;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.thumb:has([aria-current='true'])::after {
+  border-color: var(--accent);
+}
+
+@media (hover: hover) {
+  .thumb:has(.thumbButton:hover:not([aria-current='true']))::after {
+    border-color: var(--line-strong);
+  }
+}
+
+.thumbButton {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.thumbButton[aria-current='true'] {
+  cursor: default;
+}
+
+/*
+  "2 of 3", after the thumbnails, in figures that do not jump. On a phone it is
+  read but not drawn: the marked thumbnail already says which one is showing,
+  and the strip has to fit 312px. From 40rem it is shown.
+*/
+.position {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (min-width: 40rem) {
+  .strip {
+    gap: var(--space-2);
+  }
+
+  .thumb {
+    inline-size: 3.5rem;
+  }
+
+  .position {
+    position: static;
+    inline-size: auto;
+    block-size: auto;
+    overflow: visible;
+    clip-path: none;
+    /*
+      A fixed width: "1 of 3" and "2 of 3" are not the same width in these
+      faces, tabular figures or not, and the centred strip moved a pixel with
+      every change.
+    */
+    inline-size: 4.5rem;
+    text-align: center;
+  }
+}

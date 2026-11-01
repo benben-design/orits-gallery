@@ -47,6 +47,7 @@ import styles from './AddToCart.module.css';
 export default function AddToCart({ work, dictionary, locale }) {
   const cart = useOptionalCart();
   const buttonRef = useRef(null);
+  const buyNowRef = useRef(null);
 
   if (!cart) return null;
   if (!work.publishedAt) return null;
@@ -98,14 +99,32 @@ export default function AddToCart({ work, dictionary, locale }) {
         accent per view, and it belongs to "add to cart" above. See
         AddToCart.module.css.
       */}
-      <Link
-        href={localeHref(locale, `/checkout?work=${work.id}`)}
-        className={styles.buyNow}
-      >
-        {/* The same glyph the cart's checkout carries — one action, one symbol. */}
-        <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
-        <span>{dictionary.artwork.buyNow}</span>
-      </Link>
+      {cart.purchaseByContact ? (
+        /*
+          In contact mode (lib/sales-mode.js) "buy now" opens the purchase
+          dialog on this one painting, at its own price, and leaves the cart
+          exactly as it was — the same promise the link below makes. The
+          dialog's WhatsApp message names this painting alone.
+        */
+        <button
+          ref={buyNowRef}
+          type="button"
+          className={styles.buyNow}
+          onClick={() => cart.openPurchase([work], buyNowRef.current)}
+        >
+          <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+          <span>{dictionary.artwork.buyNow}</span>
+        </button>
+      ) : (
+        <Link
+          href={localeHref(locale, `/checkout?work=${work.id}`)}
+          className={styles.buyNow}
+        >
+          {/* The same glyph the cart's checkout carries — one action, one symbol. */}
+          <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+          <span>{dictionary.artwork.buyNow}</span>
+        </Link>
+      )}
     </div>
   );
 }

@@ -234,6 +234,8 @@ dropped. Two writes cannot promise they both happened; one transaction can.
 Both inserts go through the same `insertMainImage` helper, which takes a client
 rather than the pool for exactly that reason.
 
+**`createWork` and `updateWork` also write the additional images** (01-11-2026), up to three, in the same transaction as the work — delete-then-insert, because migration 016 gives each position a unique slot. Kept images are re-inserted from their own stored row, new ones from the host's read-back; nothing from a browser. `updateWork` is a transaction now for that reason.
+
 **`setMainImage` is the other one that writes `work_images`**, and the only write
 here that needs a transaction. `work_images_one_main` is a partial unique index,
 so the new row cannot be inserted before the old one is deleted; doing the two

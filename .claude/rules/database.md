@@ -3,7 +3,7 @@
 PostgreSQL, and **there are two databases now.** Development runs against a
 **local Postgres**, created by hand in pgAdmin and called `art_studio`.
 Production is a **Neon project named "Orit's gallery"** — region US East
-(Ohio), PostgreSQL 18 — carrying migrations 001 through 015 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026) and both admin
+(Ohio), PostgreSQL 18 — carrying migrations 001 through 016 (016 since 01-11-2026, 011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026) and both admin
 accounts as of 12-09-2026.
 
 The schema is plain SQL in `database/migrations/`, and **the application reads
@@ -129,9 +129,13 @@ recent.
 | `created_at` | |
 
 - **At most one `main` image per work**, enforced by `work_images_one_main`.
-  `detail` and `in-situ` may repeat freely — that is the point of having them.
-- **`position` is not unique.** Two images may share one. Ambiguous ordering is
-  not corrupt ordering, and reads settle it by ordering on `position` then `id`.
+- **At most three others, of any type, since migration 016** (01-11-2026). A
+  fourth type, `additional`, is what the admin writes beside the main image.
+  Every image that is not `main` sits in position 1, 2 or 3
+  (`work_images_extra_position`) and no two share a position within a work
+  (`work_images_extra_slot`), so three slots are the limit with no trigger.
+  The main image stays at position 0, and for it `position` is still not
+  unique — reads settle ties by `position` then `id`.
 - `image_ref` is named neither `path` nor `url` nor `public_id` on purpose, so
   that the move to image hosting is a change of value and not a migration.
 - **`pixel_width`/`pixel_height` are not the same quantity as `works.width_cm`

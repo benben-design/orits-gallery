@@ -41,6 +41,7 @@ import {
 } from '@/lib/data/works-repository';
 import {
   validateWorkInput,
+  readAdditionalImageEntries,
   IMAGE_PUBLIC_ID_FIELD,
   MANUAL_SALE_CHANNELS,
 } from '@/lib/data/work-input';
@@ -165,6 +166,68 @@ function savedPath(outcome) {
 }
 
 /**
+ * The work's images beside the main one, as the form left them, each one
+ * confirmed before anything is written.
+ *
+ * Every entry is a claim from the browser — see `ADDITIONAL_IMAGES_FIELD` — and
+ * is turned into something storable by the server alone:
+ *
+ *   - **an image the work already has** is looked up among *this* work's rows
+ *     (`work` is read from the database, never posted), and its stored
+ *     reference and dimensions are what is kept;
+ *   - **a new upload** is read back from the host under our own credentials,
+ *     exactly as the main image is, so the width, height and address are the
+ *     host's and the dimensions are never typed or reported.
+ *
+ * Nothing optional about the panel blocks a save: no entries is a valid
+ * answer. What does stop the save is an entry that cannot be confirmed — the
+ * alternative is a photograph she watched upload quietly not being there, and
+ * the sentence tells her to remove it and save again.
+ *
+ * Not exported: a `'use server'` module may only export async functions.
+ *
+ * @param {FormData} formData
+ * @param {object|null} work - The work being saved, or null when creating.
+ * @returns {Promise<{ok: true, images: {ref: string, width: number, height: number}[] | undefined} |
+ *                   {ok: false, error: string}>} `images` is undefined when the
+ *   panel was not on the page, which leaves the stored ones untouched.
+ */
+async function resolveAdditionalImages(formData, work) {
+  const read = readAdditionalImageEntries(
+    (name) => formData.getAll(name),
+    (name) => formData.has(name)
+  );
+
+  if (!read.ok) return read;
+  if (read.entries === null) return { ok: true, images: undefined };
+
+  const stored = new Map(
+    (work?.images ?? [])
+      .filter((image) => image.type !== 'main')
+      .map((image) => [image.id, { ref: image.src, width: image.width, height: image.height }])
+  );
+
+  const images = await Promise.all(
+    read.entries.map(async (entry) => {
+      if (entry.kind === 'existing') return stored.get(entry.value) ?? null;
+
+      const asset = await readUploadedImage(entry.value);
+      if (!asset.ok) {
+        console.error('[admin] an additional image could not be confirmed', asset.error);
+        return null;
+      }
+      return asset.image;
+    })
+  );
+
+  if (images.some((image) => image === null)) {
+    return { ok: false, error: 'additionalImageNotConfirmed' };
+  }
+
+  return { ok: true, images };
+}
+
+/**
  * Creates a painting.
  *
  * **This verifies the session itself, and that is not belt-and-braces.** The
@@ -224,6 +287,12 @@ export async function createWork(previousState, formData) {
     image = asset.image;
   }
 
+  const additional = await resolveAdditionalImages(formData, null);
+
+  if (!additional.ok) {
+    return { status: 'error', errors: { form: additional.error }, values: submitted };
+  }
+
   /**
    * A painting cannot be published without a photograph.
    *
@@ -249,7 +318,7 @@ export async function createWork(previousState, formData) {
   try {
     // One transaction: the work and its photograph land together, or neither
     // does. See createWork in the repository.
-    created = await createWorkRecord(validated.value, image);
+    created = await createWorkRecord(validated.value, image, additional.images ?? []);
   } catch (error) {
     if (error instanceof DuplicateSlugError) {
       return {
@@ -359,10 +428,16 @@ export async function updateWork(workId, previousState, formData) {
     }
   }
 
+  const additional = await resolveAdditionalImages(formData, existing);
+
+  if (!additional.ok) {
+    return { status: 'error', errors: { form: additional.error }, values: submitted };
+  }
+
   let saved;
 
   try {
-    saved = await updateWorkRecord(workId, validated.value);
+    saved = await updateWorkRecord(workId, validated.value, additional.images);
   } catch (error) {
     if (error instanceof DuplicateSlugError) {
       return {

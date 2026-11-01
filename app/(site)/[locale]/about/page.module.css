@@ -68,6 +68,74 @@
 }
 
 /*
+  The sign-off: how to reach her, as the last lines of her story. A short rule
+  above it, the width of a pen stroke rather than of the column, marks the end
+  of her words the way a dash does before a signature; a full-width hairline
+  would have read as the start of another section.
+*/
+.signOff {
+  margin-block-start: var(--space-8);
+  font-style: normal;
+}
+
+.signOff::before {
+  content: '';
+  display: block;
+  inline-size: var(--space-8);
+  border-block-start: var(--border-hairline) solid var(--line-strong);
+  margin-block-end: var(--space-5);
+}
+
+/* The display face, as her name is set — her close, not a form's heading. */
+.signOffLabel {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display-regular);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+}
+
+.signOffLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-6);
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+
+/* A 44px line each, so a thumb gets the number without the address beside it. */
+.signOffLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 2.75rem;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-hairline);
+  text-decoration-color: transparent;
+  text-underline-offset: 0.2em;
+  transition: color var(--duration) var(--ease),
+    text-decoration-color var(--duration) var(--ease);
+}
+
+.signOffIcon {
+  flex: none;
+  color: var(--text-muted);
+}
+
+@media (hover: hover) {
+  .signOffLink:hover {
+    color: var(--accent-hover);
+    text-decoration-color: currentColor;
+  }
+}
+
+.signOffSocial {
+  margin-block-start: var(--space-3);
+}
+
+/*
   On a phone her face comes straight after her name, at about 60% of the width
   and at the start edge the text hangs from: large enough to be her, small
   enough that her first words still reach the first screen.

@@ -267,8 +267,14 @@ The model carries an ordered image collection with three types:
 - `in-situ` — the painting hanging on a wall, for scale. A buyer cannot translate
   "50×70 cm" into a mental picture; this is a real conversion driver.
 
-Only `main` exists today. Build the artwork page so the others slot in without
-a redesign.
+**Up to three more can be attached now** (01-11-2026), as the type
+`additional` — the admin does not ask whether a photograph is a close-up or the
+painting on a wall, so `detail` and `in-situ` stay unused. The artwork page and
+its full-screen view browse them with the main image, in the order she added
+them — on the page through `ArtworkGallery`, a stage that keeps the main
+painting's footprint and fits every image inside it uncropped — and nothing
+else changes: the grid, the cards and the share image are the
+main image only.
 
 The database enforces the part that matters: **at most one `main` image per
 work**, because it is the grid card, the top of the artwork page and the Open
@@ -503,8 +509,15 @@ pointing at it — and it turns the undo for a mistaken upload into a support
 call. At thirty paintings the abandoned originals are not a storage problem
 worth buying that risk to solve.
 
-Only the **main** image can be attached this way. `detail` and `in-situ` slot
-into the same table and the same page without a redesign, and are not built.
+**Up to three additional images go through the same flow** (01-11-2026,
+`components/admin/AdminAdditionalImages.js`), on both admin pages, below the
+main image. Same signature, same folder, same checks before sending — the two
+panels share `components/admin/image-upload.js` — and the server reads each new
+upload back from the host before writing, as for the main image. **Unlike the
+main image on the edit page, they are always saved with the form**: adding and
+removing are an arrangement she confirms by saving. Order is the order she added
+them. Their alt text is derived from the title (`artwork.imageAltAdditional`),
+like the main image's. The database refuses a fourth — migration 016.
 
 **The artist's portrait goes through the same panel**, on `/admin/settings`,
 and is held to the same upload rules: signed, and read back from the host rather

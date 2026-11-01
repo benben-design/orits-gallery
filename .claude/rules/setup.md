@@ -272,6 +272,17 @@ at all — the payment-page signature and the return URLs live in the Hyp consol
 at the terminal level, and the signature must not be switched on until the
 verification code is built and tested. See api.md.
 
+**`SALES_MODE` decides whether any of that is used** (01-11-2026), read by
+`lib/sales-mode.js`. It is `contact` unless it is exactly `online`, and
+**unset is contact mode** — the default the site launches in: the cart's
+purchase control and "buy now" open a dialog with the artist's WhatsApp, phone
+and email, the checkout page redirects to the cart, and `submitCheckout`
+refuses before anything is written or Hyp is asked. **It is never inferred from
+the `HYP_*` keys** — keys present answer "could we sign a payment page", not
+"should we", and test keys in an environment must not open a checkout. To work
+on the checkout locally, set `SALES_MODE=online` in `.env.local`. Read at build
+time by the prerendered pages, so on Netlify a change needs a redeploy.
+
 Add a key to the example in the same change that starts reading it, and keep a
 real terminal's credentials in `.env.local` and the Netlify site and nowhere
 else.
@@ -283,7 +294,7 @@ deployment. Never commit real credentials.
 
 A **local Postgres**, created by hand in pgAdmin, called `art_studio` — and
 since 12-09-2026 a **Neon project for production** as well: "Orit's gallery",
-US East (Ohio), PostgreSQL 18, carrying 001 through 015 (011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026) and both admin
+US East (Ohio), PostgreSQL 18, carrying 001 through 016 (016 since 01-11-2026, 011 and 012 since 28-09-2026, 013 since 29-09-2026, 014 since 30-09-2026, 015 since 26-10-2026) and both admin
 accounts.
 
 Development stays on the local one. **The Neon connection string is not in

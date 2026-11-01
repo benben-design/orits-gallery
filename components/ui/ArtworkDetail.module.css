@@ -61,7 +61,33 @@
    * stood 15px above the disc in Hebrew and 8 in English.
    */
   --plate-stack: 31.125rem;
-  --plate-block: max(15rem, min(55svh, calc(100svh - var(--plate-stack))));
+  --plate-block: max(
+    calc(15rem - var(--gallery-block)),
+    min(55svh, calc(100svh - var(--plate-stack) - var(--gallery-block)))
+  );
+
+  /*
+    The gallery's strip under the stage, when a work has more than one image:
+    nothing otherwise. It comes out of the painting's height budget rather than
+    being added below it, so "add to cart" ends where it did — above the
+    WhatsApp disc on a phone, on the first screen of a laptop. The 15rem floor
+    above is the painting and its strip together, for the same reason: at
+    360x780 a floor on the painting alone put the button 26px under the disc. Its value is the
+    strip's own height plus the gap above it; see ArtworkGallery.module.css.
+  */
+  --gallery-block: 0rem;
+}
+
+/* A 3rem thumbnail at 4:5 is 3.75rem, plus its 0.25rem mark, plus the 0.75rem gap. */
+.withGallery {
+  --gallery-block: 4.75rem;
+}
+
+@media (min-width: 40rem) {
+  /* The thumbnails grow to 3.5rem: 4.375rem, the mark and the gap. */
+  .withGallery {
+    --gallery-block: 5.375rem;
+  }
 }
 
 /*
@@ -392,25 +418,6 @@
   }
 }
 
-/**
- * The brushwork close-up and the view in a room, when they exist.
- *
- * `auto-fill` rather than `auto-fit` on purpose: with two images, auto-fit
- * would stretch them across the whole page and they would compete with the
- * painting above. Empty tracks keep them the size of what they are — supporting
- * views, read after the work itself.
- */
-.supporting {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: var(--space-5);
-  margin-block-start: var(--space-9);
-}
-
-/* Each one opens full screen too, so each carries its own covering button. */
-.supportingItem {
-  position: relative;
-}
 
 /**
  * Side by side once there is room for both.
@@ -464,7 +471,7 @@
       leaves the work clear of the fold rather than resting on it, so the whole
       page is legible without scrolling. On a laptop this second bound bites.
     */
-    --plate-block: min(40rem, calc(100svh - 14rem));
+    --plate-block: min(40rem, calc(100svh - 14rem - var(--gallery-block)));
     /*
       The painting and its buy box are the whole first screen, like one work
       hung on a wall, and "about the work" always begins below it. Without

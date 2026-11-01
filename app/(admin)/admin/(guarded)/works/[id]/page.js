@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
-import AdminWorkForm from '@/components/admin/AdminWorkForm';
+import AdminWorkForm, { FORM_ID } from '@/components/admin/AdminWorkForm';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { adminLocale } from '@/lib/i18n/config';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
@@ -16,6 +16,7 @@ import {
   ALLOWED_UPLOAD_FORMATS,
 } from '@/lib/image-host';
 import AdminImageUpload from '@/components/admin/AdminImageUpload';
+import AdminAdditionalImages from '@/components/admin/AdminAdditionalImages';
 import { interpolate } from '@/lib/i18n/interpolate';
 import {
   updateWork,
@@ -130,31 +131,53 @@ export default async function AdminEditWorkPage({ params }) {
           translationAvailable={isTranslationConfigured()}
           imagePanel={
             isImageHostConfigured() ? (
-              <AdminImageUpload
-                labels={dictionary.admin.workForm.image}
-                /*
-                  The same alt text every other surface derives, because
-                  work_images.alt_he / alt_en are not read yet and absent means
-                  "derive it from the title". See images.md.
-                */
-                alt={interpolate(dictionary.artwork.imageAlt, {
-                  title: work.title[adminLocale],
-                  artist: dictionary.site.artistName,
-                })}
-                initialImage={mainImage}
-                signAction={signMainImageUpload}
-                saveAction={saveMainImage.bind(null, work.id)}
-                /*
-                  Numbers rather than an import: lib/image-host.js reads
-                  node:crypto, so a client component cannot import it. Same
-                  reason the closed sets below are passed rather than imported.
-                */
-                maxBytes={MAX_UPLOAD_BYTES}
-                maxPixels={MAX_UPLOAD_PIXELS}
-                maxMegabytes={MAX_UPLOAD_MEGABYTES}
-                maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
-                allowedFormats={ALLOWED_UPLOAD_FORMATS}
-              />
+              <>
+                <AdminImageUpload
+                  labels={dictionary.admin.workForm.image}
+                  /*
+                    The same alt text every other surface derives, because
+                    work_images.alt_he / alt_en are not read yet and absent means
+                    "derive it from the title". See images.md.
+                  */
+                  alt={interpolate(dictionary.artwork.imageAlt, {
+                    title: work.title[adminLocale],
+                    artist: dictionary.site.artistName,
+                  })}
+                  initialImage={mainImage}
+                  signAction={signMainImageUpload}
+                  saveAction={saveMainImage.bind(null, work.id)}
+                  /*
+                    Numbers rather than an import: lib/image-host.js reads
+                    node:crypto, so a client component cannot import it. Same
+                    reason the closed sets below are passed rather than imported.
+                  */
+                  maxBytes={MAX_UPLOAD_BYTES}
+                  maxPixels={MAX_UPLOAD_PIXELS}
+                  maxMegabytes={MAX_UPLOAD_MEGABYTES}
+                  maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+                  allowedFormats={ALLOWED_UPLOAD_FORMATS}
+                />
+                {/*
+                  Saved with the form, not on upload like the main image above:
+                  adding and removing are an arrangement she confirms by saving.
+                */}
+                <AdminAdditionalImages
+                  labels={dictionary.admin.workForm.additionalImages}
+                  uploadLabels={dictionary.admin.workForm.image}
+                  alt={interpolate(dictionary.artwork.imageAltAdditional, {
+                    title: work.title[adminLocale],
+                    artist: dictionary.site.artistName,
+                  })}
+                  initialImages={work.images.filter((image) => image.type !== 'main')}
+                  signAction={signMainImageUpload}
+                  formId={FORM_ID}
+                  maxBytes={MAX_UPLOAD_BYTES}
+                  maxPixels={MAX_UPLOAD_PIXELS}
+                  maxMegabytes={MAX_UPLOAD_MEGABYTES}
+                  maxMegapixels={MAX_UPLOAD_MEGAPIXELS}
+                  allowedFormats={ALLOWED_UPLOAD_FORMATS}
+                />
+              </>
             ) : null
           }
           labels={dictionary.admin.workForm}

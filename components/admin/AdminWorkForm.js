@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useRef, useState } from 'react';
+import { useUnsavedChangesWarning } from './unsaved-changes';
 import { Save } from 'lucide-react';
 import {
   FieldError,
@@ -100,6 +101,13 @@ export default function AdminWorkForm({
   const [state, formAction, isPending] = useActionState(action, {
     status: 'idle',
   });
+
+  /*
+    Leaving with unsaved changes asks first — the fields, the price, the status
+    and the photographs the panels above put into this form alike. See
+    ./unsaved-changes.js.
+  */
+  useUnsavedChangesWarning(FORM_ID, labels.unsavedChanges);
 
   const errors = state.errors ?? {};
 

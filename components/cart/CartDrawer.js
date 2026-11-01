@@ -65,7 +65,17 @@ const DRAG_FLICK_VELOCITY = 0.5;
  *     short of either springs back.
  */
 export default function CartDrawer({ dictionary, locale }) {
-  const { open, contents, notice, pending, closeCart, removeWork, clearMissing } = useCart();
+  const {
+    open,
+    contents,
+    notice,
+    pending,
+    closeCart,
+    removeWork,
+    clearMissing,
+    purchaseByContact,
+    openPurchase,
+  } = useCart();
   const closeRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -409,24 +419,53 @@ export default function CartDrawer({ dictionary, locale }) {
             </p>
           ) : null}
 
-          {/*
-            The checkout control, and **a real link now that there is a checkout**.
-            It was an inert `<button>` carrying `aria-disabled` for as long as there
-            was nowhere to go; it looks exactly the same, because it always looked
-            the way it would when it worked.
+          {purchaseByContact ? (
+            /*
+              In contact mode (lib/sales-mode.js) the purchase is arranged with
+              the artist, so the control opens the purchase dialog over the
+              drawer instead of leading to a checkout that does not exist. Only
+              when something can be bought: the dialog lists, and the message
+              names, exactly what the total counts. The drawer stays open behind
+              it, and closing the dialog puts focus back on this button.
+            */
+            total ? (
+              <>
+                <p className={styles.purchaseNote}>{dictionary.cart.purchaseNote}</p>
+                <button
+                  type="button"
+                  className={styles.checkout}
+                  onClick={(event) =>
+                    openPurchase(
+                      works.filter((work) => isBuyable(work.status)),
+                      event.currentTarget
+                    )
+                  }
+                >
+                  <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+                  <span>{dictionary.cart.purchase}</span>
+                </button>
+              </>
+            ) : null
+          ) : (
+            /*
+              The checkout control, and **a real link now that there is a checkout**.
+              It was an inert `<button>` carrying `aria-disabled` for as long as there
+              was nowhere to go; it looks exactly the same, because it always looked
+              the way it would when it worked.
 
-            It closes the drawer on the way, like the link below it: this is a
-            navigation, and a panel left hanging open over the page somebody has just
-            navigated to is the drawer forgetting what it is for.
-          */}
-          <Link
-            href={localeHref(locale, '/checkout')}
-            className={styles.checkout}
-            onClick={closeCart}
-          >
-            <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
-            <span>{dictionary.cart.checkout}</span>
-          </Link>
+              It closes the drawer on the way, like the link below it: this is a
+              navigation, and a panel left hanging open over the page somebody has just
+              navigated to is the drawer forgetting what it is for.
+            */
+            <Link
+              href={localeHref(locale, '/checkout')}
+              className={styles.checkout}
+              onClick={closeCart}
+            >
+              <CreditCard size={18} strokeWidth={1.5} aria-hidden="true" />
+              <span>{dictionary.cart.checkout}</span>
+            </Link>
+          )}
 
           <Link href={localeHref(locale, '/cart')} className={styles.viewCart} onClick={closeCart}>
             {dictionary.cart.viewCart}
