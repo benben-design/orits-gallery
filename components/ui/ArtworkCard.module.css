@@ -83,8 +83,8 @@
      of Wine in" on a narrow card, because the word was not short enough for
      its rule. A title of a few words reads best in even lines. */
   text-wrap: balance;
-  font-size: var(--text-md);
-  font-weight: var(--weight-display-regular);
+  font-size: var(--text-title);
+  font-weight: var(--weight-title);
   color: var(--text-primary);
 }
 
@@ -98,7 +98,7 @@
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  font-size: var(--text-sm);
+  font-size: var(--text-detail);
   color: var(--text-muted);
 }
 
@@ -107,7 +107,7 @@
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  font-size: var(--text-sm);
+  font-size: var(--text-detail);
   color: var(--text-muted);
 }
 
@@ -121,8 +121,10 @@
   A narrow card — one of two columns on a phone, about 160px — has no room
   for medium and size on one line. Wrapped, they left the hairline hanging at
   the end of the first line and a full gap between the two. So below 14rem
-  they stack as two plain lines with no hairline, the title steps down to the
-  body size, and the caption closes up.
+  they stack as two plain lines with no hairline and the caption closes up.
+  The sizes stay the card scale's (--text-title over --text-detail, 03-11-2026):
+  the narrow card is the phone's ordinary card, and it is what that scale was
+  set for.
 */
 @container (max-width: 14rem) {
   .link {
@@ -134,17 +136,13 @@
   }
 
   .title {
-    font-size: var(--text-base);
     margin-block-end: var(--space-1);
   }
 
-  /* The details a step under the title (14 against 17), in both languages,
-     so title, details and price read as three things rather than one list. */
   .spec {
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    font-size: var(--text-xs);
   }
 
   .spec .separator {

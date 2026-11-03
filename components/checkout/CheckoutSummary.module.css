@@ -46,7 +46,7 @@
 
 .title {
   font-size: var(--text-md);
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-title);
   color: var(--text-primary);
 }
 

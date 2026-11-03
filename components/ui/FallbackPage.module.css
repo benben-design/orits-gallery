@@ -17,7 +17,7 @@
 /* The page-title step the other content pages use. */
 .title {
   font-size: var(--text-page);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-heading);
   margin-block-end: var(--space-5);
 }
 

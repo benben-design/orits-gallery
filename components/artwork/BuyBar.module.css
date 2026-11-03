@@ -83,7 +83,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-family: var(--font-display);
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-title);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
 }

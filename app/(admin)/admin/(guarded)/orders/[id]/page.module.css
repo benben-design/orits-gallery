@@ -207,7 +207,7 @@
 .totalAmount {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: var(--weight-light);
+  font-weight: var(--weight-title);
   color: var(--text-primary);
 }
 

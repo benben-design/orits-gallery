@@ -63,13 +63,13 @@
 
 /*
   The one line under the name, in the display face: it is the studio speaking,
-  not a caption, and the serif is what tells the two apart.
+  not a caption, and the change of face is what tells the two apart.
 */
 .tagline {
   max-inline-size: 24rem;
   font-family: var(--font-display);
   font-size: var(--text-md);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-title);
   line-height: var(--leading-snug);
   color: var(--text-primary);
 }
@@ -98,7 +98,7 @@
 .columnTitle {
   font-family: var(--font-display);
   font-size: var(--text-sm);
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-heading);
   line-height: var(--leading-snug);
   color: var(--text-primary);
 }
