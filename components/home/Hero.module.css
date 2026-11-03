@@ -73,11 +73,12 @@
 }
 
 /**
- * The positioning line, at --text-hero: 34px on a 375px phone and 56 on a
- * desktop, in the display face at the heading weight (03-11-2026). It is the
- * only sentence on the first screen and carries the page's whole verbal
- * argument. **It must stay on one line on a phone**, and 34 is what leaves room
- * for that at 375 — see --text-hero in app/tokens.css.
+ * The positioning line, at --text-hero: 30px on a 375px phone and 48 on a
+ * desktop, in the display face's light weight (--weight-hero, 03-11-2026 —
+ * 600 read as too loud). It is the only sentence on the first screen and
+ * carries the page's whole verbal argument, so it stays a clear step above the
+ * section heading beneath it at every width. **It must stay on one line on a
+ * phone** — see --text-hero in app/tokens.css.
  *
  * It is the page's <h1>, and `letter-spacing: inherit` is what keeps that a
  * change of meaning rather than of looks. globals.css tracks every heading by
@@ -88,7 +89,7 @@
 .positioning {
   font-family: var(--font-display);
   font-size: var(--text-hero);
-  font-weight: var(--weight-heading);
+  font-weight: var(--weight-hero);
   line-height: var(--leading-snug);
   letter-spacing: inherit;
   color: var(--text-primary);

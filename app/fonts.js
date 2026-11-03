@@ -14,10 +14,10 @@ import { Heebo, Assistant } from 'next/font/google';
  *               Hebrew takes no heavier step, where Frank Ruhl's needed one.
  *   Assistant — sans, body and UI. Neutral and quiet in both scripts.
  *
- * **Only the weights the site sets are loaded**: Heebo at 400 (painting titles
- * and running text in the display face) and 600 (headings), see
- * --weight-title and --weight-heading in app/tokens.css. A third weight is a
- * third set of files on every first visit; add one only with a rule that uses
+ * **Only the weights the site sets are loaded**: Heebo at 300 (the homepage's
+ * hero line, and nothing else), 400 (painting titles and running text in the
+ * display face) and 600 (headings), see --weight-hero, --weight-title and
+ * --weight-heading in app/tokens.css. Add a weight only with a rule that uses
  * it.
  *
  * next/font self-hosts these at build time, so there is no request to a third
@@ -38,7 +38,7 @@ import { Heebo, Assistant } from 'next/font/google';
 
 const display = Heebo({
   subsets: ['latin', 'hebrew'],
-  weight: ['400', '600'],
+  weight: ['300', '400', '600'],
   variable: '--font-display-loaded',
   display: 'swap',
   preload: false,

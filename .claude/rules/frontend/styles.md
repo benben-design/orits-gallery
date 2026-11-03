@@ -131,6 +131,18 @@ they come into view, scrolling either way — the mat and the painting on it ris
 piece, a beat apart along each row in reading order (`--duration-rise`,
 starting from `--rise-from-opacity` so nothing is ever blank); and on a device that
 hovers a card's painting lifts 3px with its shadow deepening to the bare one.
+**On the wall the hovered board also takes a contour** (03-11-2026, the
+artist's reference): 1.5px of a soft warm brown flush against its outer edge —
+`--contour-color`, mixed from `--text-muted` and `--line-on-band` (about
+`#998780`), lighter than the ink at her request and chosen on the wall against
+the ink, the muted ink and the clay alone —
+fading in with the lift — `--contour-width` / `--contour-color`, drawn in
+`ArtworkFrame.module.css` as a spread shadow on the board's `::after`, so it
+takes no room and nothing on the wall moves (measured: zero pixels on every
+card, portrait, square and landscape, both languages). Not a border: Chrome
+rounds a border down to whole device pixels and left a gap at a 1.25 scale.
+Pointer devices only; keyboard focus shows it too, inside the accent focus
+ring, which stays. Not motion, so reduced motion shows it with no fade.
 Sections used to rise in and paintings to fade in as they loaded; both were
 removed because, with the spacing, they made the scroll feel empty. Both moves
 live behind `prefers-reduced-motion: no-preference`, and the rise is switched on by
@@ -265,12 +277,13 @@ replaced Frank Ruhl Libre, which the artist found old-fashioned; it went onto
 the site before her final word, and the comparison at `/admin/dev` stays up
 until she confirms it. **The display face is never preloaded** — preloading it
 put its files ahead of the first painting on a phone (30-10-2026) — and **only
-the weights the site sets are loaded**: 400 and 600, which Google serves as one
-variable file per subset.
+the weights the site sets are loaded**: 300, 400 and 600, which Google serves as one
+variable file per subset — adding 300 for the hero added no file.
 
 **Two display weights, by role, and no Hebrew step.** Every display-face rule
-asks for `--weight-heading` (600) or `--weight-title` (400), never a raw
-weight. Heading is the role, not the tag: the hero line, page and section
+asks for `--weight-hero` (300), `--weight-heading` (600) or `--weight-title`
+(400), never a raw weight. The hero line alone is light: at 600 it read as too
+loud. Heading is the role, not the tag: page and section
 headings, her name on About, a footer column, a promise, a dialog's heading.
 Title is a painting's title anywhere, and any running text in the display face —
 the About lead, the footer's line, a total, the full-screen caption. Frank
@@ -283,7 +296,7 @@ step is gone. Measure the next face the same way before assuming either.
 
 | Token | Phone | From 48rem | Weight | Used by |
 |---|---|---|---|---|
-| `--text-hero` | 34px at 375 | up to 56 | heading | the homepage's positioning line — **one line at 375 in both languages** |
+| `--text-hero` | 30px at 375 | up to 48 | hero (300) | the homepage's positioning line — **one line at 375 in both languages**, and always above `--text-section` |
 | `--text-page` | 28 | 28 | heading | a page's own heading; the artwork title from 60rem |
 | `--text-section` | 24 | 24 | heading | a heading inside a page; **the artwork title below 60rem** |
 | `--text-title` | 18 | 20 | title | a painting's title on a card — the wall, gallery, homepage, "more works" |

@@ -223,10 +223,11 @@
     The public headings' scale (03-11-2026, with Heebo), and the artist's
     call: quieter headings than before, so the paintings carry the page.
 
-    --text-hero      the homepage's positioning line: 34px at 375 and 56 from
-                     about 1024. 36 was the most the phone could take — the
-                     line is 318px at 36 against 327 of room at 375 — and
-                     English tracking adds about ten more.
+    --text-hero      the homepage's positioning line: 30px at 375 and 48 from
+                     about 1024, in light (--weight-hero) since 03-11-2026,
+                     when 34-56 at 600 read as too loud. Always a clear step
+                     above --text-section, 30 over 24 at its smallest. One
+                     line at 375 in both languages.
     --text-page      a page's own heading, the artwork page's title included:
                      28px at every width.
     --text-section   a heading inside a page: 24px at every width, the step
@@ -238,7 +239,7 @@
     Her name on About (--text-2xl, 32 to 60) stays the largest type on the
     site. The admin keeps --text-xl for its own titles.
   */
-  --text-hero: clamp(2.125rem, 1.25rem + 3.75vw, 3.5rem);
+  --text-hero: clamp(1.875rem, 1.225rem + 2.7735vw, 3rem);
   --text-page: 1.75rem;
   --text-section: 1.5rem;
   --text-title: 1.125rem;
@@ -263,18 +264,20 @@
   --weight-semibold: 600;
 
   /*
-    The display face's two weights, by role (03-11-2026). Every heading —
-    the hero line, a page or section heading, her name on About, a footer
+    The display face's weights, by role (03-11-2026). The hero line alone is
+    --weight-hero, light: at 48px a heavy weight shouted. Every other heading —
+    a page or section heading, her name on About, a footer
     column, a promise, a dialog's heading — is --weight-heading. A painting's
     title and any running text set in the display face (the About lead, the
-    footer's line, a total) is --weight-title. These are the only two weights
-    of Heebo that app/fonts.js loads; a rule asking for any other gets a
-    synthesised one.
+    footer's line, a total) is --weight-title. These three are the only
+    weights of Heebo that app/fonts.js loads; a rule asking for any other gets
+    a synthesised one.
 
     There is no Hebrew step any more. Frank Ruhl's Hebrew drew a weight
     lighter than its Latin, so Hebrew used to take one weight heavier; Heebo
     was measured before that was carried over, and its two scripts match.
   */
+  --weight-hero: var(--weight-light);
   --weight-heading: var(--weight-semibold);
   --weight-title: var(--weight-normal);
 
@@ -431,6 +434,19 @@
     a mount on a real wall: 6px on a phone, 12px on a desktop.
   */
   --frame-snug-inset: clamp(0.375rem, 0.25rem + 0.6vw, 0.75rem);
+  /*
+    The contour a work on the wall takes when it is pointed at or focused
+    (03-11-2026, the artist's reference): a thin line flush against the
+    board's outer edge. Not the accent — it says "this one", not "press
+    here", and the focus ring already carries the accent. A soft warm brown
+    rather than the primary ink, which read as too hard a line around a
+    painting: halfway between the muted ink and the header's clay line, so
+    it is mixed from the palette rather than added to it (about #998780;
+    compared on the wall against the ink, the muted ink alone and the clay
+    alone, which nearly vanished). See the snug tone in ArtworkFrame.module.css.
+  */
+  --contour-width: 1.5px;
+  --contour-color: color-mix(in srgb, var(--text-muted), var(--line-on-band));
 
   /* ================================================================ *
    * EDGES AND MOTION
