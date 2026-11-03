@@ -183,6 +183,47 @@
   }
 }
 
+/*
+  The contour (03-11-2026): a thin line in the primary ink, flush against the
+  board's outer edge, when a work on the wall is pointed at or focused — the
+  artist's reference. It is the board's own ::after, absolutely placed, so it
+  takes no room and nothing on the wall moves by a pixel; and being the
+  board's, it rises with the board's lift. It fades in with the lift where
+  motion is welcome and simply appears where it is not, because a line is not
+  motion. Pointer devices only: a tap has no "pointed at". Keyboard focus shows
+  it too, inside the accent focus ring, which stays — the ring is the stronger
+  signal and the one that says "this is a link".
+
+  A spread shadow from the board's own edge, not a border: Chrome rounds a
+  border down to whole device pixels, so at a 1.25 screen scale a 1.5px border
+  drew 0.8px and, placed 1.5px out, left a gap between it and the board. A
+  spread is neither rounded nor offset — it starts at the edge by construction.
+*/
+.snug::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 0 var(--contour-width) var(--contour-color);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .snug::after {
+    transition: opacity var(--duration) var(--ease);
+  }
+}
+
+@media (hover: hover) {
+  a:hover .snug::after {
+    opacity: 1;
+  }
+}
+
+a:focus-visible .snug::after {
+  opacity: 1;
+}
+
 /**
  * A bare work has no mount, so its shadow is the only thing separating it from
  * the warm wall. It therefore carries a deeper one than a mounted work — still

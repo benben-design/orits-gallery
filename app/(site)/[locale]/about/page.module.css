@@ -36,7 +36,7 @@
 .name {
   margin-block-start: var(--space-3);
   font-size: var(--text-2xl);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-heading);
   line-height: var(--leading-tight);
   letter-spacing: inherit;
 }
@@ -48,8 +48,7 @@
 */
 .lead {
   font-family: var(--font-display);
-  /* Regular in Latin, medium in Hebrew — see --weight-display-regular. */
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-title);
   font-size: var(--text-lg);
   line-height: var(--leading-snug);
   white-space: pre-line;
@@ -89,7 +88,7 @@
 /* The display face, as her name is set — her close, not a form's heading. */
 .signOffLabel {
   font-family: var(--font-display);
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-heading);
   font-size: var(--text-md);
   line-height: var(--leading-snug);
 }

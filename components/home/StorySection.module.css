@@ -16,7 +16,7 @@
 /* The label sits close to its heading, closer than the column's own gap. */
 .heading {
   font-size: var(--text-section);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-heading);
 }
 
 .body {

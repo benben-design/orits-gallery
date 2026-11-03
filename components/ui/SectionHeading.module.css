@@ -18,13 +18,13 @@
 
 .heading {
   font-size: var(--text-section);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-heading);
 }
 
 /* A page title: the step every public page's <h1> uses, above every section heading. */
 .pageTitle {
   font-size: var(--text-page);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-heading);
 }
 
 .intro {

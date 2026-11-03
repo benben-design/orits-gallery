@@ -56,11 +56,14 @@
    * The rem in the calc is that stack; change one of those parts and it moves.
    * It moved on 30-10-2026, by the 2px the title grew when page headings were
    * raised above section headings (24.2px to 26px here): 31rem became 31.125rem.
-   * And it is shorter in Hebrew by 7px, because Hebrew running text sets at
-   * 1.55 rather than 1.65 (tokens.css, :lang(he)); without this the button
-   * stood 15px above the disc in Hebrew and 8 in English.
+   * It moved again on 03-11-2026, with Heebo and a 24px title on a phone: the
+   * button stood 10px above the disc in English and 11 in Hebrew, so 31rem
+   * here and 30.5rem in Hebrew put it back at 8 — measured at 360x780,
+   * 390x844 and 414x896 on every buyable work, in both languages.
+   * It is shorter in Hebrew, by 8px now, because Hebrew running text sets at
+   * 1.55 rather than 1.65 (tokens.css, :lang(he)).
    */
-  --plate-stack: 31.125rem;
+  --plate-stack: 31rem;
   --plate-block: max(
     calc(15rem - var(--gallery-block)),
     min(55svh, calc(100svh - var(--plate-stack) - var(--gallery-block)))
@@ -175,25 +178,26 @@
 .title {
   margin-block-start: var(--space-2);
   font-size: var(--text-page);
-  font-weight: var(--weight-display-light);
+  font-weight: var(--weight-heading);
   line-height: var(--leading-tight);
   color: var(--text-primary);
 }
 
 /*
-  While the painting stacks above its label, the title is capped at 26px —
-  still clearly above a section heading (22px) — rather than the page step's
-  28. At 28 "Autumn Tree by the Water" wrapped to two lines at 360px and the
-  button landed under the WhatsApp disc; the stack above assumes one line, and
-  every title in the catalogue fits one line at 26 on a 360px phone — once
-  the English heading tracking is dropped here, which is what pushed "Pink
-  Flowers in a Blue Vase" a pixel past the line. Hebrew carries none anyway,
-  and a display title at this size needs no air let into it (About's name
-  drops it for the same reason).
+  The title is a page heading (03-11-2026): --text-page, 28px, at the heading
+  weight — not the card scale, which is for the wall. **On a phone it is 24px**
+  (--text-section, the bottom of the heading range) for one reason: the phone
+  stack below assumes the title is one line, and at 28 five long titles took
+  two at 360px and put "add to cart" 28px under the WhatsApp disc. Every title
+  in the catalogue was measured at 24 on a 360px phone; the longest that fits
+  is recorded in .claude/rules/frontend/styles.md, so a new title can be
+  checked against it. The English heading tracking is dropped here for the
+  same reason: a pixel of air per letter is what pushes a long title onto a
+  second line.
 */
 @media (max-width: 59.999rem) {
   .title {
-    font-size: min(var(--text-page), 1.625rem);
+    font-size: var(--text-section);
     letter-spacing: 0;
   }
 }
@@ -497,7 +501,7 @@
   }
 }
 
-/* The Hebrew stack, 7px shorter — see --plate-stack above. */
+/* The Hebrew stack, 8px shorter — see --plate-stack above. */
 .work:lang(he) {
-  --plate-stack: 30.6875rem;
+  --plate-stack: 30.5rem;
 }

@@ -368,12 +368,14 @@ renders it properly.
   saturated, so the surfaces are warm neutrals. A single deep-terracotta accent
   carries interaction only — it is drawn from the same family as the work
   rather than invented against it, and it never appears as ornament.
-- **Typography is decided: Frank Ruhl Libre for display, Assistant for body.**
-  Chosen because the two scripts carry matched optical weight — the test a
-  Latin-only shortlist never runs, and the one that matters when most visitors
-  read Hebrew. The header's brush name is not a third face: it is Comforter
-  Brush outlined into an SVG, an interim until the artist's own signature
-  replaces it.
+- **Typography: Heebo for display, Assistant for body** (03-11-2026). Heebo
+  replaced Frank Ruhl Libre, which the artist found old-fashioned, and is
+  pending her confirmation on the comparison at `/admin/dev`. Both carry
+  Hebrew and Latin at matched optical weight — the test a Latin-only shortlist
+  never runs, and the one that matters when most visitors read Hebrew; Heebo's
+  was measured stem for stem before Frank Ruhl's Hebrew weight step was
+  dropped. The header's brush name is not a third face: it is Comforter Brush
+  outlined into an SVG, an interim until the artist's own signature replaces it.
 - **The current photographs are low-resolution stand-ins** (capped at 1600px by
   WhatsApp compression, two of them far smaller). They are fine for development.
   Replacing them with proper photography is a **launch blocker**. Do not design

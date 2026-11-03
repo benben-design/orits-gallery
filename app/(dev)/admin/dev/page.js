@@ -3,8 +3,9 @@ import ArtworkCard from '@/components/ui/ArtworkCard';
 import ButtonLink from '@/components/ui/ButtonLink';
 import { getDictionary } from '@/lib/i18n/dictionaries';
 import { defaultLocale } from '@/lib/i18n/config';
-import { WORK_STATUSES } from '@/lib/data/works-repository';
+import { WORK_STATUSES, getGalleryWorks } from '@/lib/data/works-repository';
 import { requireAdminSession } from '@/lib/auth/admin-guard';
+import { candidateFontVariables } from './font-candidates';
 import styles from './page.module.css';
 
 /**
@@ -14,7 +15,9 @@ import styles from './page.module.css';
  * used on, the spacing and radius scales, the interactive states, and the real
  * artwork component across every orientation and every status. It needs no
  * database and no real content, so it stays reviewable however little of the
- * site is built.
+ * site is built — with one temporary exception, the heading-font comparison
+ * (03-11-2026), which reads one published work through the cached gallery
+ * read so the artist judges each face on a real painting's card.
  *
  * Two deliberate departures from the project rules, both because this page is
  * tooling rather than product:
@@ -147,6 +150,36 @@ const STATUS_WORKS = WORK_STATUSES.map((status) =>
 
 const GRID_SIZES = '(max-width: 40rem) 92vw, (max-width: 64rem) 44vw, 22rem';
 
+/* ------------------------------------------------------------------ *
+ * TEMPORARY — heading-font comparison (03-11-2026). The artist is
+ * choosing a modern face to replace Frank Ruhl Libre. Heebo went onto the
+ * site on 03-11-2026; this stays until she confirms it. Each column swaps
+ * --font-display for its candidate and nothing else, so the body text
+ * under each card is the site's own Assistant, as it would be. Remove
+ * this block, the section below and font-candidates.js once she picks.
+ * ------------------------------------------------------------------ */
+const FONT_CANDIDATES = [
+  {
+    key: 'frank',
+    name: 'Frank Ruhl Libre',
+    note: 'The previous font, at the weights the site used to set it',
+  },
+  { key: 'heebo', name: 'Heebo', note: 'The site’s font now — headings 600, card title 400' },
+  { key: 'rubik', name: 'Rubik', note: 'Headings 600, card title 400' },
+  {
+    key: 'assistant',
+    name: 'Assistant only',
+    note: 'No separate display face — headings in the body font, 600 / 400',
+  },
+];
+
+const FONT_SPECIMEN_LOCALES = [
+  { locale: 'he', dir: 'rtl' },
+  { locale: 'en', dir: 'ltr' },
+];
+
+const FONT_CARD_SIZES = '(max-width: 40rem) 92vw, (max-width: 80rem) 44vw, 18rem';
+
 export default async function DesignSystemPage() {
   /*
     Signed in only. Under /admin for the reason the admin api routes are: the
@@ -156,7 +189,17 @@ export default async function DesignSystemPage() {
   await requireAdminSession('/admin/dev');
 
   const locale = defaultLocale;
-  const dictionary = await getDictionary(locale);
+  const [dictionary, englishDictionary, galleryWorks] = await Promise.all([
+    getDictionary(locale),
+    getDictionary('en'),
+    /* The one painting-data read on this page, and temporary with the font
+       comparison: the public, cached gallery read, so it costs no query of
+       its own. A work with a medium is preferred so the card shows all three
+       details lines. */
+    getGalleryWorks(),
+  ]);
+  const dictionaries = { he: dictionary, en: englishDictionary };
+  const fontSampleWork = galleryWorks.find((work) => work.medium) ?? galleryWorks[0];
 
   return (
     <main className={styles.page}>
@@ -169,6 +212,60 @@ export default async function DesignSystemPage() {
           Hebrew and right-to-left, because that is the default and the harder case.
         </p>
       </header>
+
+      {/* ---- TEMPORARY: heading-font comparison ------------------- */}
+      <section className={`${styles.section} ${candidateFontVariables}`}>
+        <h2 className={styles.h2}>Heading font candidates</h2>
+        <p className={styles.note}>
+          Temporary, for choosing a modern heading face. Each column changes the heading
+          font only; the details under each painting stay in the site&apos;s body font. The
+          sizes are the same in every column: the hero line at 56px, a section heading at
+          28px, a card title at 20px and its details at 18px.
+        </p>
+        <div className={styles.fontColumns}>
+          {FONT_CANDIDATES.map((candidate) => (
+            <div
+              key={candidate.key}
+              className={`${styles.fontColumn} ${styles[`font_${candidate.key}`]}`}
+            >
+              <h3 className={styles.fontName}>{candidate.name}</h3>
+              <p className={styles.fontNote}>{candidate.note}</p>
+              {FONT_SPECIMEN_LOCALES.map(({ locale: specimenLocale, dir }) => {
+                const copy = dictionaries[specimenLocale];
+                return (
+                  <div
+                    key={specimenLocale}
+                    className={`${styles.specimen} ${styles.fontSpecimen}`}
+                    dir={dir}
+                    lang={specimenLocale}
+                  >
+                    {/* The hero line is English on both sites, as on the homepage. */}
+                    <p className={styles.fontHero} lang="en">
+                      {copy.home.hero.positioning}
+                    </p>
+                    {specimenLocale === 'he' ? (
+                      <p className={styles.fontHero}>{copy.site.artistName}</p>
+                    ) : null}
+                    <p className={styles.fontSection}>{copy.home.works.heading}</p>
+                    {fontSampleWork ? (
+                      <div className={styles.fontCard}>
+                        <ArtworkCard
+                          work={fontSampleWork}
+                          locale={specimenLocale}
+                          dictionary={copy}
+                          sizes={FONT_CARD_SIZES}
+                          titleAs="h4"
+                          frameTone="snug"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ---- Colour ------------------------------------------------ */}
       <section className={styles.section}>

@@ -334,3 +334,126 @@
   color: var(--text-muted);
   text-align: start;
 }
+
+/* ---- TEMPORARY: heading-font comparison (03-11-2026) --------------- *
+ * Remove with the section in page.js and font-candidates.js once the
+ * artist has chosen. The sizes are the brief's fixed pixel values,
+ * written in rem (56/28/20/18px) so every column is measured alike at
+ * every width rather than following the site's fluid steps; and 600 is
+ * a literal because no weight token goes that high yet — the winner's
+ * weights become tokens when it moves into app/fonts.js.
+ * ------------------------------------------------------------------- */
+.fontColumns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8) var(--space-5);
+}
+
+@media (min-width: 40rem) {
+  .fontColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 80rem) {
+  .fontColumns {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.fontColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+
+.fontName {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.fontNote {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Each column swaps the display face and nothing else. The candidates
+   share the brief's weights; Frank Ruhl keeps the weights the site used to
+   set it at, one step heavier in Hebrew, as its Hebrew drew lighter. */
+.font_frank {
+  --font-display: var(--font-candidate-frank), Georgia, serif;
+}
+
+.font_frank .fontHero,
+.font_frank .fontSection {
+  font-weight: var(--weight-light);
+}
+
+.font_frank .fontHero:lang(he),
+.font_frank .fontSection:lang(he) {
+  font-weight: var(--weight-normal);
+}
+
+.font_frank .fontCard h4 {
+  font-weight: var(--weight-normal);
+}
+
+.font_frank .fontCard h4:lang(he) {
+  font-weight: var(--weight-medium);
+}
+
+.font_heebo {
+  --font-display: var(--font-candidate-heebo), var(--font-fallback-sans);
+}
+
+.font_rubik {
+  --font-display: var(--font-candidate-rubik), var(--font-fallback-sans);
+}
+
+.font_assistant {
+  --font-display: var(--font-candidate-assistant), var(--font-fallback-sans);
+}
+
+.fontSpecimen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.fontHero,
+.fontSection {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.fontHero {
+  font-size: 3.5rem;
+}
+
+.fontSection {
+  font-size: 1.75rem;
+}
+
+.fontCard {
+  margin-block-start: var(--space-3);
+}
+
+.fontCard h4 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: var(--weight-normal);
+}
+
+.fontCard p {
+  font-size: 1.125rem;
+  font-weight: var(--weight-normal);
+}

@@ -175,9 +175,10 @@
   /* ================================================================ *
    * TYPOGRAPHY — DECIDED
    *
-   *   Frank Ruhl Libre — display and headings. A serif drawn as a Hebrew
-   *                      family first, with Latin designed alongside it.
-   *   Assistant        — body and UI. Quiet and neutral in both scripts.
+   *   Heebo     — display: headings and painting titles. A modern sans
+   *               (03-11-2026), replacing Frank Ruhl Libre, which read as
+   *               traditional. Its Hebrew and Latin weigh the same.
+   *   Assistant — body and UI. Quiet and neutral in both scripts.
    *
    * Chosen because a bilingual site needs one thing a Latin-only shortlist
    * never tests for: the two scripts must carry the same optical weight. A
@@ -191,11 +192,10 @@
    * two tokens below, never imported into a component. A system stack sits
    * behind each so the page still renders correctly if a face fails to load.
    * ================================================================ */
-  --font-fallback-serif: Georgia, 'Times New Roman', 'Noto Serif Hebrew', serif;
   --font-fallback-sans: system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, 'Noto Sans Hebrew', sans-serif;
 
-  --font-display: var(--font-display-loaded), var(--font-fallback-serif);
+  --font-display: var(--font-display-loaded), var(--font-fallback-sans);
   --font-body: var(--font-body-loaded), var(--font-fallback-sans);
 
   /**
@@ -220,16 +220,30 @@
   --text-md: 1.1875rem;
   --text-lg: clamp(1.25rem, 1.05rem + 0.75vw, 1.625rem);
   /*
-    A public page's own heading, and the section headings inside it
-    (30-10-2026). The page heading was the smaller of the two — 36px under
-    40px section headings on a desktop, 24.2 against 24.6 on a phone — so the
-    page read upside down. Now the page step is a clear step above the section
-    step at every width: 28 over 22 on a phone, 44 over 34 on a desktop, about
-    1.27 apart throughout. Her name on About (--text-2xl, 32 to 60) stays the
-    largest type on the site. The admin keeps --text-xl for its own titles.
+    The public headings' scale (03-11-2026, with Heebo), and the artist's
+    call: quieter headings than before, so the paintings carry the page.
+
+    --text-hero      the homepage's positioning line: 30px at 375 and 48 from
+                     about 1024, in light (--weight-hero) since 03-11-2026,
+                     when 34-56 at 600 read as too loud. Always a clear step
+                     above --text-section, 30 over 24 at its smallest. One
+                     line at 375 in both languages.
+    --text-page      a page's own heading, the artwork page's title included:
+                     28px at every width.
+    --text-section   a heading inside a page: 24px at every width, the step
+                     below the page heading.
+    --text-title     a painting's title on a card (the wall, the gallery, the
+                     homepage, "more works"): 18px, 20 from 48rem.
+    --text-detail    a card's medium, size and price: 16px, 18 from 48rem.
+
+    Her name on About (--text-2xl, 32 to 60) stays the largest type on the
+    site. The admin keeps --text-xl for its own titles.
   */
-  --text-page: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
-  --text-section: clamp(1.375rem, 1rem + 1.6vw, 2.125rem);
+  --text-hero: clamp(1.875rem, 1.225rem + 2.7735vw, 3rem);
+  --text-page: 1.75rem;
+  --text-section: 1.5rem;
+  --text-title: 1.125rem;
+  --text-detail: 1rem;
   --text-xl: clamp(1.5rem, 1.1rem + 1.7vw, 2.25rem);
   --text-2xl: clamp(2rem, 1.2rem + 3.4vw, 3.75rem);
 
@@ -247,19 +261,25 @@
   --weight-light: 300;
   --weight-normal: 400;
   --weight-medium: 500;
+  --weight-semibold: 600;
 
   /*
-    The display face's two working weights, kept apart from the three above
-    because Hebrew sets them differently (see :lang(he) at the end of this
-    file). Frank Ruhl's Hebrew draws markedly lighter than its Latin at the
-    same weight — measured at 100px, the Hebrew stem is 16 against the Latin 22
-    at 300 and 19 against 24 at 400; Hebrew at 500 matches Latin at 400. So
-    every heading, title and lead in the display face asks for one of these,
-    and Hebrew takes one step heavier. Assistant is not affected: its Hebrew and
-    Latin weigh alike, and the header's light navigation stays light.
+    The display face's weights, by role (03-11-2026). The hero line alone is
+    --weight-hero, light: at 48px a heavy weight shouted. Every other heading —
+    a page or section heading, her name on About, a footer
+    column, a promise, a dialog's heading — is --weight-heading. A painting's
+    title and any running text set in the display face (the About lead, the
+    footer's line, a total) is --weight-title. These three are the only
+    weights of Heebo that app/fonts.js loads; a rule asking for any other gets
+    a synthesised one.
+
+    There is no Hebrew step any more. Frank Ruhl's Hebrew drew a weight
+    lighter than its Latin, so Hebrew used to take one weight heavier; Heebo
+    was measured before that was carried over, and its two scripts match.
   */
-  --weight-display-light: var(--weight-light);
-  --weight-display-regular: var(--weight-normal);
+  --weight-hero: var(--weight-light);
+  --weight-heading: var(--weight-semibold);
+  --weight-title: var(--weight-normal);
 
   --leading-tight: 1.18;
   --leading-snug: 1.35;
@@ -414,6 +434,19 @@
     a mount on a real wall: 6px on a phone, 12px on a desktop.
   */
   --frame-snug-inset: clamp(0.375rem, 0.25rem + 0.6vw, 0.75rem);
+  /*
+    The contour a work on the wall takes when it is pointed at or focused
+    (03-11-2026, the artist's reference): a thin line flush against the
+    board's outer edge. Not the accent — it says "this one", not "press
+    here", and the focus ring already carries the accent. A soft warm brown
+    rather than the primary ink, which read as too hard a line around a
+    painting: halfway between the muted ink and the header's clay line, so
+    it is mixed from the palette rather than added to it (about #998780;
+    compared on the wall against the ink, the muted ink alone and the clay
+    alone, which nearly vanished). See the snug tone in ArtworkFrame.module.css.
+  */
+  --contour-width: 1.5px;
+  --contour-color: color-mix(in srgb, var(--text-muted), var(--line-on-band));
 
   /* ================================================================ *
    * EDGES AND MOTION
@@ -467,6 +500,8 @@
     --text-sm: 1rem;
     --text-base: 1.125rem;
     --text-md: 1.25rem;
+    --text-title: 1.25rem;
+    --text-detail: 1.125rem;
   }
 }
 
@@ -505,21 +540,15 @@
  * line, marked lang="en" — keeps the Latin settings, and :lang(en) restates
  * them for exactly that case. English pages are untouched.
  *
- * - The display face one weight heavier: light headings become regular,
- *   regular titles and the About lead become medium.
  * - Running text at 1.55 rather than 1.65. Hebrew has almost no ascenders or
  *   descenders, and Assistant's Hebrew stands 14% taller than its Latin
  *   x-height, so the Latin leading left Hebrew paragraphs reading as
  *   separate lines.
  */
 :lang(he) {
-  --weight-display-light: var(--weight-normal);
-  --weight-display-regular: var(--weight-medium);
   --leading-normal: 1.55;
 }
 
 :lang(en) {
-  --weight-display-light: var(--weight-light);
-  --weight-display-regular: var(--weight-normal);
   --leading-normal: 1.65;
 }

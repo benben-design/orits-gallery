@@ -137,7 +137,7 @@
 
 .title {
   font-size: var(--text-md);
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-heading);
   color: var(--text-primary);
 }
 
@@ -223,7 +223,7 @@
 
 .itemTitle {
   font-size: var(--text-base);
-  font-weight: var(--weight-display-regular);
+  font-weight: var(--weight-title);
   color: var(--text-primary);
 }
 

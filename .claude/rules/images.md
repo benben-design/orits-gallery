@@ -63,6 +63,9 @@ three columns, because it closes on three works.
 - **Still mounted**: ArtworkFrame's `snug` tone is a thin near-white board
   (`--frame-snug-inset`, 6–12px) carrying the frame shadow, so the rule below —
   a small painting never meets the wall without separation — still holds.
+  Pointed at or focused, the board takes a thin dark contour on its outer
+  edge (03-11-2026) — outside the board, so the painting is never touched;
+  see frontend/styles.md.
 - **Rows do not align, on purpose.** The rule that cards must be equal so rows
   line up applies to the shared box, and **the cart is the only list left in
   it**: a cart is read line by line against its prices, so its rows must be

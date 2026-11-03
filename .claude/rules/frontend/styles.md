@@ -91,8 +91,10 @@ and 18px from 48rem; **nothing a visitor reads is below 14px**, which is what
 `--text-xs` now is — the floor, not a size for fine print. The steps moved
 together (`--text-sm` 15/16, `--text-md` 19/20, `--text-lg` up a step) because
 raising body text alone left card titles smaller than the paragraphs under
-them. `--text-xl` is the admin's page titles now. Section
-headings take **`--text-section`** (22 to 34px), and **a public page's own heading takes `--text-page`** (28 to 44px), a clear step above it at every width (30-10-2026; the page heading had been the smaller of the two). The artwork page caps its title at 26px while the painting stacks above it, so a long title stays on one line at 360px. Her name on About, `--text-2xl`, stays the largest type on the site, and the admin keeps `--text-xl`. **The header holds its
+them. `--text-xl` is the admin's page titles now. **The headings and the
+cards have their own scale since 03-11-2026** — see "The type scale" under
+Typography below. Her name on About, `--text-2xl`, stays the largest type on
+the site, and the admin keeps `--text-xl`. **The header holds its
 own sizes**, `--text-nav` and `--text-nav-count`, at what they were — it was
 tuned word by word against the brush name and verified pixel-identical after
 the change; never point a header word back at a reading step.
@@ -129,6 +131,18 @@ they come into view, scrolling either way — the mat and the painting on it ris
 piece, a beat apart along each row in reading order (`--duration-rise`,
 starting from `--rise-from-opacity` so nothing is ever blank); and on a device that
 hovers a card's painting lifts 3px with its shadow deepening to the bare one.
+**On the wall the hovered board also takes a contour** (03-11-2026, the
+artist's reference): 1.5px of a soft warm brown flush against its outer edge —
+`--contour-color`, mixed from `--text-muted` and `--line-on-band` (about
+`#998780`), lighter than the ink at her request and chosen on the wall against
+the ink, the muted ink and the clay alone —
+fading in with the lift — `--contour-width` / `--contour-color`, drawn in
+`ArtworkFrame.module.css` as a spread shadow on the board's `::after`, so it
+takes no room and nothing on the wall moves (measured: zero pixels on every
+card, portrait, square and landscape, both languages). Not a border: Chrome
+rounds a border down to whole device pixels and left a gap at a 1.25 scale.
+Pointer devices only; keyboard focus shows it too, inside the accent focus
+ring, which stays. Not motion, so reduced motion shows it with no fade.
 Sections used to rise in and paintings to fade in as they loaded; both were
 removed because, with the spacing, they made the scroll feel empty. Both moves
 live behind `prefers-reduced-motion: no-preference`, and the rise is switched on by
@@ -258,20 +272,66 @@ script face is a third typeface, and the rule above still applies to it.
 
 Loaded once, through Next's font handling. Not imported ad hoc in a component.
 
-**Hebrew sets the display face one weight heavier, and its running text
-tighter (30-10-2026).** Frank Ruhl's Hebrew draws markedly lighter than its
-Latin at the same weight (measured: Hebrew at 500 matches Latin at 400), so
-every display-face rule asks for `--weight-display-light` or
-`--weight-display-regular`, never a raw weight, and `:lang(he)` in
-`app/tokens.css` steps them to 400 and 500. Hebrew body text sets at 1.55
-rather than 1.65 (`--leading-normal`), because it has almost no ascenders or
-descenders. Both are keyed on language, not direction, so the English line
-inside the Hebrew hero keeps the Latin settings, and `:lang(en)` restates
-them. English is unchanged. **The artwork page's phone stack is 7px shorter in
-Hebrew** for the same reason (`--plate-stack` in `ArtworkDetail.module.css`),
-which is what keeps "add to cart" 8px above the WhatsApp disc in both
-languages. A new display-face rule takes one of the two tokens, or it will be
-light in Hebrew.
+**The faces: Heebo for display, Assistant for body (03-11-2026).** Heebo
+replaced Frank Ruhl Libre, which the artist found old-fashioned; it went onto
+the site before her final word, and the comparison at `/admin/dev` stays up
+until she confirms it. **The display face is never preloaded** — preloading it
+put its files ahead of the first painting on a phone (30-10-2026) — and **only
+the weights the site sets are loaded**: 300, 400 and 600, which Google serves as one
+variable file per subset — adding 300 for the hero added no file.
+
+**Two display weights, by role, and no Hebrew step.** Every display-face rule
+asks for `--weight-hero` (300), `--weight-heading` (600) or `--weight-title`
+(400), never a raw weight. The hero line alone is light: at 600 it read as too
+loud. Heading is the role, not the tag: page and section
+headings, her name on About, a footer column, a promise, a dialog's heading.
+Title is a painting's title anywhere, and any running text in the display face —
+the About lead, the footer's line, a total, the full-screen caption. Frank
+Ruhl's Hebrew drew a weight lighter than its Latin, so Hebrew used to step one
+weight heavier; **Heebo was measured before that was carried over** (stems at
+200px: 18 and 18 at 400, 25 and 25 at 600) and its two scripts match, so the
+step is gone. Measure the next face the same way before assuming either.
+
+**The type scale (03-11-2026)**, all in `app/tokens.css`:
+
+| Token | Phone | From 48rem | Weight | Used by |
+|---|---|---|---|---|
+| `--text-hero` | 30px at 375 | up to 48 | hero (300) | the homepage's positioning line — **one line at 375 in both languages**, and always above `--text-section` |
+| `--text-page` | 28 | 28 | heading | a page's own heading; the artwork title from 60rem |
+| `--text-section` | 24 | 24 | heading | a heading inside a page; **the artwork title below 60rem** |
+| `--text-title` | 18 | 20 | title | a painting's title on a card — the wall, gallery, homepage, "more works" |
+| `--text-detail` | 16 | 18 | body | a card's medium, size and price |
+
+The small desktop headings are the artist's call, so the paintings carry the
+page. The card sizes are for cards only: the artwork page keeps its price and
+specs at their own sizes. Her name on About, and every display-face text outside
+the table, kept its size when the face changed.
+
+**The artwork title is 24px on a phone so it stays on one line at 360px**,
+because the phone stack assumes one line and a second one puts "add to cart"
+under the WhatsApp disc. Measured on all 32 published titles on 03-11-2026,
+against 297px of room: **Hebrew fits up to 24 characters** ("פרחים ורודים באגרטל
+כחול", 274px) and every title of 25 or more wrapped; **English fits up to 27**
+("Pink Flowers in a Blue Vase", 296px), but width decides, not count —
+"Autumn Beyond the Window", 24 characters, is 303px and wraps. **Treat 23
+characters in English and 24 in Hebrew as the length a new title can be trusted
+to fit**, and check anything longer on a 360px phone.
+
+**Six published titles still take two lines at 360px**, recorded rather than
+worked around: "השביל המתפתל בדרך אל הכפר", "לשתות לחיים עם כוס יין אדום",
+"Cloudbreak Over Turquoise Water", "A Sailboat in a Coastal Town" and "Autumn
+Beyond the Window" — all buyable, so on a 360px phone their "add to cart" sits
+under the disc until the page scrolls — and "Radiant Sunset Over Quiet Waters" /
+"שקיעה זוהרת מעל מים שקטים", which is sold and has no button. Only 360 was
+measured for these; a wider phone has more room.
+
+**Hebrew running text sets tighter**: 1.55 rather than 1.65
+(`--leading-normal`), because it has almost no ascenders or descenders. Keyed
+on language, not direction, so the English line inside the Hebrew hero keeps
+the Latin setting. **The artwork page's phone stack is 8px shorter in Hebrew**
+for that reason (`--plate-stack` in `ArtworkDetail.module.css`), which keeps
+"add to cart" exactly 8px above the WhatsApp disc in both languages —
+re-measured with Heebo at 360, 390 and 414 on every buyable work.
 
 **No spaced capitals anywhere on the public site (30-10-2026).** Labels,
 buttons, badges and totals are sentence case and untracked in English, the way
