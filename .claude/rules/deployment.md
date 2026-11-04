@@ -275,7 +275,7 @@ with every header forged by the client:
 | Header | What Netlify did |
 |---|---|
 | `x-nf-client-connection-ip` | **Overwritten** with the real address. A forged value never arrives |
-| `x-forwarded-for` | The client's value is **kept**, and Netlify appends after it: `"147.235.217.51, 63.178.53.27"`. The left-most entry is whatever the client wrote; the right-most is **Netlify's own edge address**, the same for every visitor |
+| `x-forwarded-for` | The client's value is **kept**, and Netlify appends after it: `"203.0.113.7, 63.178.53.27"` — the client's real address replaced here by a documentation one (203.0.113.0/24), since the repository is public. The left-most entry is whatever the client wrote; the right-most is **Netlify's own edge address**, the same for every visitor |
 | `x-real-ip` | Passed through **exactly as sent** |
 | `client-ip` | Absent |
 
